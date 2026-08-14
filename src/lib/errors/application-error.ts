@@ -21,7 +21,7 @@ export type ApplicationErrorCode =
   | "QR_TOKEN_REVOKED"
   | "QR_TOKEN_EXPIRED"
   | "QR_PIN_REQUIRED"
-  | "QR_PIN_INVALID";
+  | "QR_ACCESS_DENIED";
 
 const publicMessages: Record<ApplicationErrorCode, string> = {
   UNAUTHORIZED: "Debes iniciar sesión para continuar.",
@@ -48,7 +48,8 @@ const publicMessages: Record<ApplicationErrorCode, string> = {
   QR_TOKEN_REVOKED: "La credencial de la tarjeta digital fue revocada.",
   QR_TOKEN_EXPIRED: "La credencial de la tarjeta digital expiró.",
   QR_PIN_REQUIRED: "Ingresa el PIN para consultar la tarjeta digital.",
-  QR_PIN_INVALID: "El PIN ingresado no es válido.",
+  QR_ACCESS_DENIED:
+    "No fue posible verificar la credencial. Revisa los datos o inténtalo más tarde.",
 };
 
 export class ApplicationError extends Error {

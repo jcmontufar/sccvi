@@ -7,6 +7,16 @@ import {
   hashPin,
   verifyPin,
 } from "@/modules/qr/services/qr-crypto";
+import {
+  isPinAttemptLocked,
+  maximumFailedPinAttempts,
+  nextFailedPinAttemptState,
+  resetPinAttemptState,
+} from "@/modules/qr/services/qr-pin-throttle";
+import {
+  qrPinSchema,
+  qrTokenInputSchema,
+} from "@/modules/qr/schemas/qr-schema";
 
 describe("QR credential security", () => {
   it("generates opaque random tokens and deterministic hashes", () => {
@@ -19,12 +29,41 @@ describe("QR credential security", () => {
   });
 
   it("hashes PINs with salt and verifies only the correct PIN", async () => {
-    const firstHash = await hashPin("4826");
-    const secondHash = await hashPin("4826");
+    const firstHash = await hashPin("482619");
+    const secondHash = await hashPin("482619");
     expect(firstHash).not.toBe(secondHash);
-    expect(firstHash).not.toContain("4826");
-    await expect(verifyPin("4826", firstHash)).resolves.toBe(true);
-    await expect(verifyPin("0000", firstHash)).resolves.toBe(false);
+    expect(firstHash).not.toContain("482619");
+    await expect(verifyPin("482619", firstHash)).resolves.toBe(true);
+    await expect(verifyPin("000000", firstHash)).resolves.toBe(false);
+  });
+
+  it("rejects PINs shorter than six digits", () => {
+    expect(qrPinSchema.safeParse("12345").success).toBe(false);
+    expect(
+      qrTokenInputSchema.safeParse({ expiresAt: "", pin: "12345" }).success,
+    ).toBe(false);
+  });
+
+  it("locks repeated failures after the configured limit", () => {
+    const now = new Date("2026-08-14T12:00:00Z");
+    let state = resetPinAttemptState();
+    for (let attempt = 0; attempt < maximumFailedPinAttempts; attempt += 1) {
+      state = nextFailedPinAttemptState(state, now);
+    }
+    expect(state.failedPinAttempts).toBe(maximumFailedPinAttempts);
+    expect(isPinAttemptLocked(state, now)).toBe(true);
+  });
+
+  it("resets prior failures after successful PIN verification", async () => {
+    const pinHash = await hashPin("482619");
+    let state = nextFailedPinAttemptState(resetPinAttemptState());
+    state = nextFailedPinAttemptState(state);
+    expect(state.failedPinAttempts).toBe(2);
+    await expect(verifyPin("482619", pinHash)).resolves.toBe(true);
+    expect(resetPinAttemptState()).toEqual({
+      failedPinAttempts: 0,
+      pinLockedUntil: null,
+    });
   });
 
   it("rejects revoked and expired credentials", () => {

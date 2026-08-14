@@ -56,7 +56,7 @@ export function DigitalCardAccess({
           className="mt-2 h-10 w-full rounded-lg border bg-background px-3"
           inputMode="numeric"
           name="pin"
-          pattern="[0-9]{4,12}"
+          pattern="[0-9]{6,12}"
           required
           type="password"
         />

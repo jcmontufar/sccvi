@@ -639,6 +639,8 @@ Fields:
 - childId: UUID, required
 - tokenHash: string, required, unique
 - pinHash: string, optional
+- failedPinAttempts: integer, default 0
+- pinLockedUntil: datetime, optional
 - expiresAt: datetime, optional
 - revokedAt: datetime, optional
 - lastUsedAt: datetime, optional
@@ -661,6 +663,7 @@ Rules:
 - Revoked token must not provide access
 - Expired token must not provide access when expiration is configured
 - PIN must never be stored in plaintext
+- Repeated invalid PIN attempts must use persistent throttling shared by all application instances
 
 ---
 

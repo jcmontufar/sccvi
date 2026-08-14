@@ -20,6 +20,11 @@ import {
   hashPin,
   verifyPin,
 } from "@/modules/qr/services/qr-crypto";
+import {
+  isPinAttemptLocked,
+  nextFailedPinAttemptState,
+  resetPinAttemptState,
+} from "@/modules/qr/services/qr-pin-throttle";
 
 export async function listChildCredentials(
   user: ApplicationUser,
@@ -106,34 +111,76 @@ export async function revokeChildCredential(
   });
 }
 
-export async function accessDigitalCard(rawToken: string, pinValue?: string) {
+export async function accessDigitalCard(
+  rawToken: string,
+  pinValue?: string,
+  currentInstant = new Date(),
+) {
   const token = qrOpaqueTokenSchema.parse(rawToken);
-  const credential = await getPrisma().qRToken.findUnique({
-    where: { tokenHash: hashOpaqueToken(token) },
-    include: {
-      child: {
-        select: {
-          fullName: true,
-          dateOfBirth: true,
-          sex: true,
-          isActive: true,
+  const tokenHash = hashOpaqueToken(token);
+  const result = await getPrisma().$transaction(async (transaction) => {
+    const candidate = await transaction.qRToken.findUnique({
+      where: { tokenHash },
+      select: { id: true },
+    });
+    if (!candidate) throw new ApplicationError("QR_TOKEN_INVALID");
+
+    await transaction.$queryRaw`
+      SELECT "id"
+      FROM "QRToken"
+      WHERE "id" = ${candidate.id}::uuid
+      FOR UPDATE
+    `;
+    const credential = await transaction.qRToken.findUnique({
+      where: { id: candidate.id },
+      include: {
+        child: {
+          select: {
+            fullName: true,
+            dateOfBirth: true,
+            sex: true,
+            isActive: true,
+          },
         },
       },
-    },
-  });
-  if (!credential) throw new ApplicationError("QR_TOKEN_INVALID");
-  assertCredentialAvailable(credential);
-  if (!credential.child.isActive)
-    throw new ApplicationError("QR_TOKEN_INVALID");
-  if (credential.pinHash) {
+    });
+    if (!credential) throw new ApplicationError("QR_TOKEN_INVALID");
+    assertCredentialAvailable(credential, currentInstant);
+    if (!credential.child.isActive)
+      throw new ApplicationError("QR_TOKEN_INVALID");
+
+    if (!credential.pinHash) {
+      await transaction.qRToken.update({
+        where: { id: credential.id },
+        data: { lastUsedAt: currentInstant },
+      });
+      return { status: "granted" as const, child: credential.child };
+    }
     if (!pinValue) throw new ApplicationError("QR_PIN_REQUIRED");
-    const pin = qrPinSchema.parse(pinValue);
-    if (!(await verifyPin(pin, credential.pinHash)))
-      throw new ApplicationError("QR_PIN_INVALID");
-  }
-  await getPrisma().qRToken.update({
-    where: { id: credential.id },
-    data: { lastUsedAt: new Date() },
+    if (isPinAttemptLocked(credential, currentInstant)) {
+      return { status: "denied" as const };
+    }
+
+    const parsedPin = qrPinSchema.safeParse(pinValue);
+    const pinMatches =
+      parsedPin.success &&
+      (await verifyPin(parsedPin.data, credential.pinHash));
+    if (!pinMatches) {
+      await transaction.qRToken.update({
+        where: { id: credential.id },
+        data: nextFailedPinAttemptState(credential, currentInstant),
+      });
+      return { status: "denied" as const };
+    }
+
+    await transaction.qRToken.update({
+      where: { id: credential.id },
+      data: { ...resetPinAttemptState(), lastUsedAt: currentInstant },
+    });
+    return { status: "granted" as const, child: credential.child };
   });
-  return credential.child;
+  if (result.status === "denied") {
+    throw new ApplicationError("QR_ACCESS_DENIED");
+  }
+  return result.child;
 }

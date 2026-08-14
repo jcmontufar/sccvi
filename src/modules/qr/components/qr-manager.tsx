@@ -58,8 +58,8 @@ export function QRManager({
             className="mt-2 h-10 w-full rounded-lg border bg-background px-3"
             inputMode="numeric"
             name="pin"
-            pattern="[0-9]{4,12}"
-            placeholder="4 a 12 dígitos"
+            pattern="[0-9]{6,12}"
+            placeholder="6 a 12 dígitos"
             type="password"
           />
         </label>

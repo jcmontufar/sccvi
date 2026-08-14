@@ -9,7 +9,7 @@ export const qrTokenInputSchema = z.object({
       z.literal(""),
       z
         .string()
-        .regex(/^\d{4,12}$/, "El PIN debe contener entre 4 y 12 dígitos."),
+        .regex(/^\d{6,12}$/, "El PIN debe contener entre 6 y 12 dígitos."),
     ])
     .transform((value) => value || null),
 });
@@ -20,4 +20,4 @@ export const qrOpaqueTokenSchema = z
 
 export const qrPinSchema = z
   .string()
-  .regex(/^\d{4,12}$/, "El PIN no es válido.");
+  .regex(/^\d{6,12}$/, "El PIN no es válido.");

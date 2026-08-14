@@ -107,9 +107,13 @@ QR payloads contain only an application access URL with a cryptographically rand
 token. SCCVI stores a SHA-256 token hash, never the raw token. The raw token is returned once
 at credential creation so the authorized user can render the QR code.
 
-Optional numeric PINs contain 4 to 12 digits and are stored as salted scrypt hashes. PIN
-comparison uses constant-time comparison. QR access rejects unknown, revoked, expired, or
-inactive-child credentials before showing a card. Successful access updates `lastUsedAt`.
+Optional numeric PINs contain 6 to 12 digits and are stored as salted scrypt hashes. PIN
+comparison uses constant-time comparison. Five consecutive invalid PIN attempts lock the
+credential for 15 minutes. Failed-attempt counters and lock expiration are stored in
+PostgreSQL and updates are serialized with a row lock, so enforcement is shared across
+application instances. A correct PIN resets the failed-attempt state. Invalid and locked
+PIN submissions return the same safe response. QR access rejects unknown, revoked, expired,
+or inactive-child credentials before showing a card. Successful access updates `lastUsedAt`.
 Generation and revocation are audited.
 
 The initial public digital card exposes only the child's name, date of birth, and recorded

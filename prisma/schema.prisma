@@ -378,6 +378,8 @@ model QRToken {
   childId         String    @db.Uuid
   tokenHash       String    @unique
   pinHash         String?
+  failedPinAttempts Int      @default(0)
+  pinLockedUntil  DateTime? @db.Timestamptz(3)
   expiresAt       DateTime? @db.Timestamptz(3)
   revokedAt       DateTime? @db.Timestamptz(3)
   lastUsedAt      DateTime? @db.Timestamptz(3)
