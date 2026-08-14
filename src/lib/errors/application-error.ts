@@ -1,0 +1,37 @@
+export type ApplicationErrorCode =
+  | "UNAUTHORIZED"
+  | "FORBIDDEN"
+  | "VALIDATION_ERROR"
+  | "PROFILE_INACTIVE"
+  | "PROFILE_NOT_FOUND"
+  | "HEALTH_CENTER_NOT_FOUND"
+  | "COMMUNITY_NOT_FOUND"
+  | "COMMUNITY_DUPLICATE";
+
+const publicMessages: Record<ApplicationErrorCode, string> = {
+  UNAUTHORIZED: "Debes iniciar sesión para continuar.",
+  FORBIDDEN: "No tienes permiso para realizar esta acción.",
+  VALIDATION_ERROR: "Revisa la información ingresada.",
+  PROFILE_INACTIVE: "Tu cuenta de SCCVI está inactiva.",
+  PROFILE_NOT_FOUND: "Tu cuenta no tiene un perfil activo en SCCVI.",
+  HEALTH_CENTER_NOT_FOUND: "No se encontró el centro de salud.",
+  COMMUNITY_NOT_FOUND: "No se encontró la comunidad.",
+  COMMUNITY_DUPLICATE:
+    "Ya existe una comunidad con ese nombre en el centro de salud.",
+};
+
+export class ApplicationError extends Error {
+  constructor(
+    public readonly code: ApplicationErrorCode,
+    message = publicMessages[code],
+  ) {
+    super(message);
+    this.name = "ApplicationError";
+  }
+}
+
+export function getSafeErrorMessage(error: unknown) {
+  return error instanceof ApplicationError
+    ? error.message
+    : "No fue posible completar la operación. Inténtalo de nuevo.";
+}

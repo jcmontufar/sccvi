@@ -1106,3 +1106,59 @@ If a requested change appears to violate a medical safety, security, privacy, or
 Prefer correctness, security, maintainability and traceability over unnecessary complexity.
 
 SCCVI should remain simple enough to develop efficiently while being robust enough to reliably support its defined requirements.
+
+---
+
+## 46. User Interface Language
+
+All user-facing SCCVI interface content must be written in Spanish.
+
+This includes:
+
+- Navigation
+- Page titles
+- Buttons
+- Form labels
+- Placeholders
+- Validation messages shown to users
+- Tables
+- Empty states
+- Alerts
+- Notifications
+- Dashboard text
+- Report labels
+- QR digital card text
+- User-visible error messages
+
+Internal implementation may remain in English.
+
+Use English for:
+
+- TypeScript identifiers
+- Function names
+- Variable names
+- File names
+- Prisma models
+- Database fields
+- Enums
+- Internal error codes
+- Technical documentation when appropriate
+
+Example:
+
+Internal code:
+
+`createChild()`
+`Child`
+`GrowthRecord`
+
+User interface:
+
+`Registrar niño`
+`Historial de crecimiento`
+`Guardar`
+`Cancelar`
+
+Do not mix English and Spanish in the user interface unless the term is a widely accepted technical or proper name.
+
+Spanish is the default application language for SCCVI.
