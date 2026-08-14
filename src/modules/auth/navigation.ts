@@ -12,5 +12,11 @@ export function getNavigation(role: ApplicationRole): NavigationItem[] {
     );
   }
 
+  if (role !== "GUARDIAN") {
+    items.push({ href: "/app/tutores", label: "Tutores" });
+  }
+
+  items.push({ href: "/app/ninos", label: "Niños" });
+
   return items;
 }

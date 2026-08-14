@@ -50,6 +50,29 @@ not treated as a replacement for SCCVI server authorization. A complete RLS poli
 has not been invented in this batch and must be added only through an approved future task
 or architecture decision.
 
+## Guardian and Child Resource Access
+
+A `GUARDIAN` application profile can read a child only when its `User.id` is linked to an
+active `Guardian` record and that guardian is explicitly associated with the child through
+`ChildGuardian`. The same server-loaded relationship is required to read the child's growth
+history. A child identifier from a URL, form, or request is never sufficient authorization.
+
+Organizational access remains center-scoped. `HEALTH_STAFF` may manage guardians, children,
+guardian-child relationships, and factual growth measurements within its assigned center.
+`CENTER_MANAGER` has read-only access to these records within its assigned center.
+Guardians cannot create or correct growth measurements.
+
+## Growth Record Traceability
+
+Growth measurements remain factual historical records. New measurements and authorized
+corrections create targeted `AuditLog` entries. Corrections require a reason and record the
+names of changed fields without duplicating measurement values in audit metadata. Growth
+records are never physically deleted by this workflow.
+
+This targeted traceability supports TASK-032 without introducing the complete future audit
+service. No WHO assessment, percentile, Z-score, classification, or clinical threshold is
+implemented in this boundary.
+
 ## Error and Secret Handling
 
 User-visible errors use safe Spanish messages. Provider errors, stack traces, SQL errors,
