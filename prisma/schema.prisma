@@ -1,0 +1,408 @@
+generator client {
+  provider = "prisma-client"
+  output   = "../src/generated/prisma"
+}
+
+datasource db {
+  provider = "postgresql"
+}
+
+enum UserRole {
+  ADMIN
+  HEALTH_STAFF
+  CENTER_MANAGER
+  GUARDIAN
+}
+
+enum NotificationChannel {
+  EMAIL
+  TELEGRAM
+  WHATSAPP
+}
+
+enum Sex {
+  MALE
+  FEMALE
+}
+
+enum GrowthIndicator {
+  WEIGHT_FOR_AGE
+  HEIGHT_FOR_AGE
+}
+
+enum AlertType {
+  GROWTH
+  VACCINATION
+  MISSED_FOLLOW_UP
+}
+
+enum AlertSeverity {
+  PREVENTIVE
+  CRITICAL
+}
+
+enum AlertStatus {
+  OPEN
+  REVIEWED
+  RESOLVED
+}
+
+enum NotificationStatus {
+  PENDING
+  SENT
+  FAILED
+}
+
+enum CampaignStatus {
+  DRAFT
+  SCHEDULED
+  PROCESSING
+  COMPLETED
+  FAILED
+}
+
+enum CampaignRecipientStatus {
+  PENDING
+  SENT
+  FAILED
+  SKIPPED
+}
+
+model HealthCenter {
+  id          String      @id @default(uuid()) @db.Uuid
+  name        String
+  code        String?     @unique
+  address     String?
+  phone       String?
+  email       String?
+  isActive    Boolean     @default(true)
+  createdAt   DateTime    @default(now()) @db.Timestamptz(3)
+  updatedAt   DateTime    @updatedAt @db.Timestamptz(3)
+  users       User[]
+  communities Community[]
+}
+
+model User {
+  id                       String         @id @default(uuid()) @db.Uuid
+  authUserId               String         @unique @db.Uuid
+  healthCenterId           String?        @db.Uuid
+  fullName                 String
+  email                    String
+  role                     UserRole
+  isActive                 Boolean        @default(true)
+  createdAt                DateTime       @default(now()) @db.Timestamptz(3)
+  updatedAt                DateTime       @updatedAt @db.Timestamptz(3)
+  healthCenter             HealthCenter?  @relation(fields: [healthCenterId], references: [id], onDelete: Restrict)
+  guardian                 Guardian?
+  growthRecordsMeasured    GrowthRecord[] @relation("GrowthRecordMeasuredBy")
+  vaccinationsAdministered Vaccination[]  @relation("VaccinationAdministeredBy")
+  alertsReviewed           Alert[]        @relation("AlertReviewedBy")
+  alertsResolved           Alert[]        @relation("AlertResolvedBy")
+  campaignsCreated         Campaign[]     @relation("CampaignCreatedBy")
+  qrTokensCreated          QRToken[]      @relation("QRTokenCreatedBy")
+  auditLogs                AuditLog[]
+
+  @@index([healthCenterId])
+  @@index([role])
+}
+
+model Community {
+  id                String       @id @default(uuid()) @db.Uuid
+  healthCenterId    String       @db.Uuid
+  name              String
+  location          String?
+  estimatedFamilies Int?
+  isActive          Boolean      @default(true)
+  createdAt         DateTime     @default(now()) @db.Timestamptz(3)
+  updatedAt         DateTime     @updatedAt @db.Timestamptz(3)
+  healthCenter      HealthCenter @relation(fields: [healthCenterId], references: [id], onDelete: Restrict)
+  guardians         Guardian[]
+  children          Child[]
+
+  @@unique([healthCenterId, name])
+  @@index([healthCenterId])
+}
+
+model Guardian {
+  id                           String               @id @default(uuid()) @db.Uuid
+  communityId                  String               @db.Uuid
+  userId                       String?              @unique @db.Uuid
+  fullName                     String
+  identification               String?
+  phone                        String?
+  email                        String?
+  preferredNotificationChannel NotificationChannel?
+  isActive                     Boolean              @default(true)
+  createdAt                    DateTime             @default(now()) @db.Timestamptz(3)
+  updatedAt                    DateTime             @updatedAt @db.Timestamptz(3)
+  community                    Community            @relation(fields: [communityId], references: [id], onDelete: Restrict)
+  user                         User?                @relation(fields: [userId], references: [id], onDelete: SetNull)
+  childGuardians               ChildGuardian[]
+  notifications                Notification[]
+  campaignRecipients           CampaignRecipient[]
+
+  @@index([communityId])
+}
+
+model Child {
+  id             String          @id @default(uuid()) @db.Uuid
+  communityId    String          @db.Uuid
+  fullName       String
+  dateOfBirth    DateTime        @db.Date
+  sex            Sex
+  isActive       Boolean         @default(true)
+  createdAt      DateTime        @default(now()) @db.Timestamptz(3)
+  updatedAt      DateTime        @updatedAt @db.Timestamptz(3)
+  community      Community       @relation(fields: [communityId], references: [id], onDelete: Restrict)
+  childGuardians ChildGuardian[]
+  growthRecords  GrowthRecord[]
+  vaccinations   Vaccination[]
+  alerts         Alert[]
+  qrTokens       QRToken[]
+
+  @@index([communityId])
+}
+
+model ChildGuardian {
+  id               String   @id @default(uuid()) @db.Uuid
+  childId          String   @db.Uuid
+  guardianId       String   @db.Uuid
+  relationshipType String?
+  isPrimary        Boolean  @default(false)
+  createdAt        DateTime @default(now()) @db.Timestamptz(3)
+  updatedAt        DateTime @updatedAt @db.Timestamptz(3)
+  child            Child    @relation(fields: [childId], references: [id], onDelete: Restrict)
+  guardian         Guardian @relation(fields: [guardianId], references: [id], onDelete: Restrict)
+
+  @@unique([childId, guardianId])
+  @@index([childId])
+  @@index([guardianId])
+}
+
+model GrowthRecord {
+  id               String             @id @default(uuid()) @db.Uuid
+  childId          String             @db.Uuid
+  measuredByUserId String             @db.Uuid
+  measurementDate  DateTime           @db.Date
+  weightKg         Decimal            @db.Decimal(6, 3)
+  heightCm         Decimal            @db.Decimal(6, 2)
+  notes            String?            @db.Text
+  createdAt        DateTime           @default(now()) @db.Timestamptz(3)
+  updatedAt        DateTime           @updatedAt @db.Timestamptz(3)
+  child            Child              @relation(fields: [childId], references: [id], onDelete: Restrict)
+  measuredBy       User               @relation("GrowthRecordMeasuredBy", fields: [measuredByUserId], references: [id], onDelete: Restrict)
+  assessments      GrowthAssessment[]
+
+  @@index([childId])
+  @@index([measurementDate])
+  @@index([measuredByUserId])
+}
+
+model GrowthAssessment {
+  id              String          @id @default(uuid()) @db.Uuid
+  growthRecordId  String          @db.Uuid
+  indicator       GrowthIndicator
+  zScore          Decimal?        @db.Decimal(7, 4)
+  percentile      Decimal?        @db.Decimal(6, 3)
+  classification  String?
+  standardName    String
+  standardVersion String
+  calculatedAt    DateTime        @db.Timestamptz(3)
+  createdAt       DateTime        @default(now()) @db.Timestamptz(3)
+  updatedAt       DateTime        @updatedAt @db.Timestamptz(3)
+  growthRecord    GrowthRecord    @relation(fields: [growthRecordId], references: [id], onDelete: Restrict)
+
+  @@unique([growthRecordId, indicator, standardVersion])
+  @@index([growthRecordId])
+}
+
+model GrowthReference {
+  id                   String          @id @default(uuid()) @db.Uuid
+  standardName         String
+  standardVersion      String
+  sex                  Sex
+  indicator            GrowthIndicator
+  ageReference         Decimal         @db.Decimal(8, 3)
+  parameterL           Decimal?        @db.Decimal(14, 10)
+  parameterM           Decimal?        @db.Decimal(14, 10)
+  parameterS           Decimal?        @db.Decimal(14, 10)
+  additionalParameters Json?
+  createdAt            DateTime        @default(now()) @db.Timestamptz(3)
+
+  @@index([standardName, standardVersion])
+  @@index([sex, indicator, ageReference])
+}
+
+model Vaccine {
+  id          String            @id @default(uuid()) @db.Uuid
+  name        String            @unique
+  description String?           @db.Text
+  isActive    Boolean           @default(true)
+  createdAt   DateTime          @default(now()) @db.Timestamptz(3)
+  updatedAt   DateTime          @updatedAt @db.Timestamptz(3)
+  schedules   VaccineSchedule[]
+}
+
+model VaccineSchedule {
+  id                  String        @id @default(uuid()) @db.Uuid
+  vaccineId           String        @db.Uuid
+  doseNumber          Int
+  recommendedAgeDays  Int?
+  minimumAgeDays      Int?
+  maximumAgeDays      Int?
+  minimumIntervalDays Int?
+  scheduleName        String
+  scheduleVersion     String
+  isActive            Boolean       @default(true)
+  createdAt           DateTime      @default(now()) @db.Timestamptz(3)
+  updatedAt           DateTime      @updatedAt @db.Timestamptz(3)
+  vaccine             Vaccine       @relation(fields: [vaccineId], references: [id], onDelete: Restrict)
+  vaccinations        Vaccination[]
+
+  @@unique([vaccineId, doseNumber, scheduleVersion])
+  @@index([vaccineId])
+}
+
+model Vaccination {
+  id                   String          @id @default(uuid()) @db.Uuid
+  childId              String          @db.Uuid
+  vaccineScheduleId    String          @db.Uuid
+  administeredByUserId String          @db.Uuid
+  applicationDate      DateTime        @db.Date
+  nextDoseDate         DateTime?       @db.Date
+  notes                String?         @db.Text
+  createdAt            DateTime        @default(now()) @db.Timestamptz(3)
+  updatedAt            DateTime        @updatedAt @db.Timestamptz(3)
+  child                Child           @relation(fields: [childId], references: [id], onDelete: Restrict)
+  vaccineSchedule      VaccineSchedule @relation(fields: [vaccineScheduleId], references: [id], onDelete: Restrict)
+  administeredBy       User            @relation("VaccinationAdministeredBy", fields: [administeredByUserId], references: [id], onDelete: Restrict)
+
+  @@index([childId])
+  @@index([applicationDate])
+  @@index([vaccineScheduleId])
+  @@index([administeredByUserId])
+}
+
+model Alert {
+  id               String         @id @default(uuid()) @db.Uuid
+  childId          String         @db.Uuid
+  type             AlertType
+  severity         AlertSeverity
+  status           AlertStatus    @default(OPEN)
+  title            String
+  message          String         @db.Text
+  sourceType       String?
+  sourceId         String?
+  reviewedAt       DateTime?      @db.Timestamptz(3)
+  reviewedByUserId String?        @db.Uuid
+  resolvedAt       DateTime?      @db.Timestamptz(3)
+  resolvedByUserId String?        @db.Uuid
+  createdAt        DateTime       @default(now()) @db.Timestamptz(3)
+  updatedAt        DateTime       @updatedAt @db.Timestamptz(3)
+  child            Child          @relation(fields: [childId], references: [id], onDelete: Restrict)
+  reviewedBy       User?          @relation("AlertReviewedBy", fields: [reviewedByUserId], references: [id], onDelete: SetNull)
+  resolvedBy       User?          @relation("AlertResolvedBy", fields: [resolvedByUserId], references: [id], onDelete: SetNull)
+  notifications    Notification[]
+
+  @@index([childId])
+  @@index([status])
+  @@index([severity])
+  @@index([reviewedByUserId])
+  @@index([resolvedByUserId])
+}
+
+model Notification {
+  id                  String              @id @default(uuid()) @db.Uuid
+  guardianId          String?             @db.Uuid
+  alertId             String?             @db.Uuid
+  campaignRecipientId String?             @db.Uuid
+  channel             NotificationChannel
+  destination         String
+  subject             String?
+  message             String              @db.Text
+  status              NotificationStatus  @default(PENDING)
+  providerMessageId   String?
+  errorMessage        String?             @db.Text
+  sentAt              DateTime?           @db.Timestamptz(3)
+  createdAt           DateTime            @default(now()) @db.Timestamptz(3)
+  updatedAt           DateTime            @updatedAt @db.Timestamptz(3)
+  guardian            Guardian?           @relation(fields: [guardianId], references: [id], onDelete: SetNull)
+  alert               Alert?              @relation(fields: [alertId], references: [id], onDelete: SetNull)
+  campaignRecipient   CampaignRecipient?  @relation(fields: [campaignRecipientId], references: [id], onDelete: SetNull)
+
+  @@index([guardianId])
+  @@index([alertId])
+  @@index([campaignRecipientId])
+  @@index([status])
+}
+
+model Campaign {
+  id              String              @id @default(uuid()) @db.Uuid
+  createdByUserId String              @db.Uuid
+  name            String
+  subject         String?
+  message         String              @db.Text
+  status          CampaignStatus      @default(DRAFT)
+  segmentation    Json?
+  scheduledAt     DateTime?           @db.Timestamptz(3)
+  startedAt       DateTime?           @db.Timestamptz(3)
+  completedAt     DateTime?           @db.Timestamptz(3)
+  createdAt       DateTime            @default(now()) @db.Timestamptz(3)
+  updatedAt       DateTime            @updatedAt @db.Timestamptz(3)
+  createdBy       User                @relation("CampaignCreatedBy", fields: [createdByUserId], references: [id], onDelete: Restrict)
+  recipients      CampaignRecipient[]
+
+  @@index([createdByUserId])
+  @@index([status])
+}
+
+model CampaignRecipient {
+  id            String                  @id @default(uuid()) @db.Uuid
+  campaignId    String                  @db.Uuid
+  guardianId    String                  @db.Uuid
+  status        CampaignRecipientStatus @default(PENDING)
+  createdAt     DateTime                @default(now()) @db.Timestamptz(3)
+  updatedAt     DateTime                @updatedAt @db.Timestamptz(3)
+  campaign      Campaign                @relation(fields: [campaignId], references: [id], onDelete: Restrict)
+  guardian      Guardian                @relation(fields: [guardianId], references: [id], onDelete: Restrict)
+  notifications Notification[]
+
+  @@unique([campaignId, guardianId])
+  @@index([campaignId])
+  @@index([guardianId])
+  @@index([status])
+}
+
+model QRToken {
+  id              String    @id @default(uuid()) @db.Uuid
+  childId         String    @db.Uuid
+  tokenHash       String    @unique
+  pinHash         String?
+  expiresAt       DateTime? @db.Timestamptz(3)
+  revokedAt       DateTime? @db.Timestamptz(3)
+  lastUsedAt      DateTime? @db.Timestamptz(3)
+  createdByUserId String    @db.Uuid
+  createdAt       DateTime  @default(now()) @db.Timestamptz(3)
+  updatedAt       DateTime  @updatedAt @db.Timestamptz(3)
+  child           Child     @relation(fields: [childId], references: [id], onDelete: Restrict)
+  createdBy       User      @relation("QRTokenCreatedBy", fields: [createdByUserId], references: [id], onDelete: Restrict)
+
+  @@index([childId])
+  @@index([createdByUserId])
+}
+
+model AuditLog {
+  id         String   @id @default(uuid()) @db.Uuid
+  userId     String?  @db.Uuid
+  action     String
+  entityType String?
+  entityId   String?
+  metadata   Json?
+  ipAddress  String?
+  userAgent  String?
+  createdAt  DateTime @default(now()) @db.Timestamptz(3)
+  user       User?    @relation(fields: [userId], references: [id], onDelete: SetNull)
+
+  @@index([userId])
+  @@index([createdAt])
+}

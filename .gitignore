@@ -36,6 +36,7 @@ Thumbs.db
 # Prisma local databases, if ever used
 *.db
 *.db-journal
+/src/generated/prisma/
 
 # Temporary files
 *.tmp
