@@ -5,6 +5,7 @@
   "scripts": {
     "dev": "next dev",
     "build": "next build",
+    "typecheck": "node -e \"require('node:fs').rmSync('.next/dev', { recursive: true, force: true })\" && next typegen && tsc --noEmit",
     "start": "next start"
   },
   "dependencies": {
