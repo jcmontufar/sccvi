@@ -38,10 +38,64 @@ The repository contains normalized, reviewable CSV derivatives:
 | `prisma/data/who-2006/weight-for-age.csv` | `62d1d0d3d68bcc5a6a6c50d07f0acf0ea99e9f49d873d6ca185d4259da730ded` |
 | `prisma/data/who-2006/length-height-for-age.csv` | `1f504e7fd1d1b13f55efa909a20d24cae618072146712996240380822ad0a921` |
 
-Each file has 1,857 daily rows per sex. Import validates checksums, row count,
-sex, indicator, complete age sequence, positive LMS parameters, and the expected
+### Redistribution and repository policy
+
+The normalized CSV files are committed to the repository; they are not generated
+from an undocumented local file and are not ignored by Git. This is approach A of
+the BATCH-05 reproducibility decision.
+
+The basis for retaining them is the official [WHO terms and conditions for data
+compilations](https://www.who.int/about/policies/publishing/data-policy/terms-and-conditions),
+which grant a royalty-free, worldwide, non-exclusive right to reproduce, extract,
+download, copy, and distribute WHO datasets for public-health purposes, subject
+to WHO attribution and the other stated conditions. SCCVI uses the data for its
+municipal child-growth public-health purpose. WHO retains copyright; inclusion
+does not imply WHO endorsement, and the data are provided without warranty. Any
+use outside that public-health purpose requires a separate licensing review.
+
+### Deterministic normalization
+
+The verified `igrowup-sas.zip` archive was extracted and only the two source
+tables identified above were used. The normalized output is UTF-8 CSV with LF
+line endings and this fixed column order:
+
+`standardName,standardVersion,sex,indicator,ageDays,l,m,s,measurementMode`
+
+The transformation:
+
+- maps source sex `1` to `MALE` and `2` to `FEMALE`;
+- maps `age` directly to integer elapsed days without interpolation;
+- copies the source `l`, `m`, and `s` values without recalculation or rounding;
+- maps `loh` directly to `L` or `H` for length/height and leaves it empty for
+  weight;
+- adds only the constant standard name, version, and indicator identifiers; and
+- orders each indicator deterministically by sex and age from 0 through 1856.
+
+No source row is filled, interpolated, or substituted. Each committed file has
+1,857 daily rows per sex. Import validates the committed-file SHA-256, row count,
+sex, indicator, complete age sequence, positive LMS parameters, and expected
 length/height mode before replacing only the same standard/version rows in one
 transaction.
+
+### Fresh-checkout workflow
+
+No `who:prepare` step is needed because the checksum-pinned normalized files are
+versioned. From a clean checkout of the branch:
+
+```text
+npm install
+npm run who:validate
+```
+
+After configuring the confirmed SCCVI development database outside version
+control, import with:
+
+```text
+npm run who:import
+```
+
+`who:validate` requires no database or secret and must report 7,428 rows before
+an import is attempted.
 
 ## Calculation and measurement decision
 
