@@ -3,7 +3,10 @@ import "server-only";
 import { getPrisma } from "@/lib/prisma";
 import { authorize } from "@/modules/auth/authorization";
 import type { ApplicationUser } from "@/modules/auth/types";
-import { getFollowUpEvaluationDate } from "@/modules/alerts/services/missed-follow-up-rule";
+import {
+  getFollowUpEvaluationDate,
+  getMissedFollowUpAlertIdentity,
+} from "@/modules/alerts/services/missed-follow-up-rule";
 import { sendOperationalAlertEmails } from "@/modules/notifications/services/alert-email-service";
 
 export async function generateMissedFollowUpAlerts(
@@ -30,23 +33,20 @@ export async function generateMissedFollowUpAlerts(
 
   const alerts = [];
   for (const followUp of followUps) {
+    const identity = getMissedFollowUpAlertIdentity(followUp.id);
     const alert = await getPrisma().alert.upsert({
       where: {
-        type_sourceType_sourceId: {
-          type: "MISSED_FOLLOW_UP",
-          sourceType: "GrowthFollowUp",
-          sourceId: followUp.id,
-        },
+        type_sourceType_sourceId: identity,
       },
       update: {},
       create: {
         childId: followUp.childId,
-        type: "MISSED_FOLLOW_UP",
+        type: identity.type,
         severity: "PREVENTIVE",
         title: "Seguimiento de crecimiento pendiente",
         message: `El seguimiento programado para ${followUp.dueDate.toLocaleDateString("es-GT", { timeZone: "UTC" })} requiere coordinación con el centro de salud. Esta alerta no constituye un diagnóstico médico.`,
-        sourceType: "GrowthFollowUp",
-        sourceId: followUp.id,
+        sourceType: identity.sourceType,
+        sourceId: identity.sourceId,
       },
     });
     await sendOperationalAlertEmails(user, alert.id);

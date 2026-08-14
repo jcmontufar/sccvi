@@ -1,6 +1,9 @@
 import { describe, expect, it } from "vitest";
 
-import { shouldCreateMissedFollowUpAlert } from "@/modules/alerts/services/missed-follow-up-rule";
+import {
+  getMissedFollowUpAlertIdentity,
+  shouldCreateMissedFollowUpAlert,
+} from "@/modules/alerts/services/missed-follow-up-rule";
 import { can } from "@/modules/auth/authorization";
 import type { ApplicationUser } from "@/modules/auth/types";
 
@@ -66,5 +69,15 @@ describe("missed growth follow-up rule", () => {
         new Date("2026-08-15T03:30:00.000Z"),
       ),
     ).toBe(false);
+  });
+
+  it("reuses one database identity for duplicate alert attempts", () => {
+    const firstAttempt = getMissedFollowUpAlertIdentity("follow-up-1");
+    const repeatedAttempt = getMissedFollowUpAlertIdentity("follow-up-1");
+
+    expect(repeatedAttempt).toEqual(firstAttempt);
+    expect(getMissedFollowUpAlertIdentity("follow-up-2")).not.toEqual(
+      firstAttempt,
+    );
   });
 });
