@@ -12,6 +12,7 @@
     "prisma:generate": "prisma generate",
     "prisma:seed": "prisma db seed",
     "prisma:validate": "prisma validate",
+    "test": "vitest run",
     "typecheck": "node -e \"require('node:fs').rmSync('.next/dev', { recursive: true, force: true })\" && next typegen && tsc --noEmit",
     "start": "next start"
   },
@@ -49,6 +50,7 @@
     "prisma": "7.9.1",
     "tailwindcss": "4.3.3",
     "tsx": "4.23.12",
-    "typescript": "5.9.3"
+    "typescript": "5.9.3",
+    "vitest": "4.1.10"
   }
 }

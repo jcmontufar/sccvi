@@ -1,3 +1,5 @@
+import Link from "next/link";
+
 import { Button } from "@/components/ui/button";
 
 export default function Home() {
@@ -15,7 +17,7 @@ export default function Home() {
             Sistema de Control de Crecimiento y Vacunación Infantil
           </p>
         </div>
-        <Button type="button">Componente reutilizable</Button>
+        <Button render={<Link href="/iniciar-sesion" />}>Ingresar</Button>
       </section>
     </main>
   );
