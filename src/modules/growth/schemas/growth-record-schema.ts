@@ -1,14 +1,16 @@
 import { z } from "zod";
 
+import { getCurrentBusinessDate } from "@/lib/date/business-date";
+
 export const growthRecordIdSchema = z.uuid("La medición no es válida.");
 
-export function createGrowthRecordSchema(
-  today = new Date().toISOString().slice(0, 10),
-) {
+export function createGrowthRecordSchema(currentInstant = new Date()) {
+  const currentBusinessDate = getCurrentBusinessDate({ currentInstant });
+
   return z.object({
     measurementDate: z.iso
       .date("Ingresa una fecha de medición válida.")
-      .refine((value) => value <= today, {
+      .refine((value) => value <= currentBusinessDate, {
         message: "La fecha de medición no puede estar en el futuro.",
       }),
     weightKg: z.coerce
@@ -27,10 +29,12 @@ export function createGrowthRecordSchema(
   });
 }
 
-export const growthCorrectionSchema = createGrowthRecordSchema().extend({
-  correctionReason: z
-    .string()
-    .trim()
-    .min(5, "Explica brevemente el motivo de la corrección.")
-    .max(500, "El motivo no puede superar 500 caracteres."),
-});
+export function createGrowthCorrectionSchema(currentInstant = new Date()) {
+  return createGrowthRecordSchema(currentInstant).extend({
+    correctionReason: z
+      .string()
+      .trim()
+      .min(5, "Explica brevemente el motivo de la corrección.")
+      .max(500, "El motivo no puede superar 500 caracteres."),
+  });
+}

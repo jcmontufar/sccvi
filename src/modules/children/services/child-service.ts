@@ -8,7 +8,7 @@ import type { ApplicationUser } from "@/modules/auth/types";
 import {
   childGuardianInputSchema,
   childIdSchema,
-  childInputSchema,
+  createChildInputSchema,
   childSearchSchema,
 } from "@/modules/children/schemas/child-schema";
 import { validateChildGuardianAssociation } from "@/modules/children/services/child-guardian-rules";
@@ -115,7 +115,7 @@ export async function getChild(user: ApplicationUser, id: string) {
 }
 
 export async function createChild(user: ApplicationUser, input: unknown) {
-  const data = childInputSchema.parse(input);
+  const data = createChildInputSchema().parse(input);
   await validateCommunity(user, data.communityId, "child:create");
   return getPrisma().child.create({
     data: {
@@ -133,7 +133,7 @@ export async function updateChild(
 ) {
   const child = await getChild(user, id);
   authorize(user, "child:update", childAccessResource(child));
-  const data = childInputSchema.parse(input);
+  const data = createChildInputSchema().parse(input);
   await validateCommunity(user, data.communityId, "child:update");
   return getPrisma().child.update({
     where: { id: child.id },

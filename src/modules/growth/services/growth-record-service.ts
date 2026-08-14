@@ -10,7 +10,7 @@ import {
 } from "@/modules/children/services/child-service";
 import {
   createGrowthRecordSchema,
-  growthCorrectionSchema,
+  createGrowthCorrectionSchema,
   growthRecordIdSchema,
 } from "@/modules/growth/schemas/growth-record-schema";
 import { calculateExactAge } from "@/modules/growth/utils/exact-age";
@@ -125,7 +125,7 @@ export async function correctGrowthRecord(
   const child = await getChild(user, childId);
   authorize(user, "growth:update", childAccessResource(child));
   const record = await getGrowthRecord(user, child.id, recordId);
-  const data = growthCorrectionSchema.parse(input);
+  const data = createGrowthCorrectionSchema().parse(input);
   validateAfterBirth(child.dateOfBirth, data.measurementDate);
   const changedFields = [
     record.measurementDate.toISOString().slice(0, 10) !== data.measurementDate
