@@ -1,1 +1,2 @@
+* text=auto eol=lf
 prisma/data/who-2006/*.csv text eol=lf

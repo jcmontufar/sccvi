@@ -42,8 +42,9 @@ The repository contains normalized, reviewable CSV derivatives:
 
 The normalized CSV files are committed to the repository; they are not generated
 from an undocumented local file and are not ignored by Git. This is approach A of
-the BATCH-05 reproducibility decision. `.gitattributes` forces LF checkout for
-these byte-verified CSV artifacts so Git cannot change their hashes on Windows.
+the BATCH-05 reproducibility decision. The repository enforces LF checkout for
+text files, with an explicit `.gitattributes` rule for these byte-verified CSV
+artifacts, so Git cannot change their hashes on Windows.
 
 The basis for retaining them is the official [WHO terms and conditions for data
 compilations](https://www.who.int/about/policies/publishing/data-policy/terms-and-conditions),
