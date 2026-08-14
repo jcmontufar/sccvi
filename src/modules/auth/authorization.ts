@@ -24,7 +24,23 @@ export type AuthorizedAction =
   | "child:manage-guardians"
   | "growth:list"
   | "growth:create"
-  | "growth:update";
+  | "growth:update"
+  | "vaccine:list"
+  | "vaccine:read"
+  | "vaccine:create"
+  | "vaccine:update"
+  | "vaccine:deactivate"
+  | "alert:list"
+  | "alert:read"
+  | "alert:review"
+  | "alert:resolve"
+  | "notification:create"
+  | "campaign:list"
+  | "campaign:read"
+  | "campaign:create"
+  | "qr:manage"
+  | "dashboard:read"
+  | "report:read";
 
 export type AuthorizationResource = {
   healthCenterId?: string | null;
@@ -55,6 +71,22 @@ const allowedRoles: Record<AuthorizedAction, readonly ApplicationRole[]> = {
   "growth:list": ["ADMIN", "HEALTH_STAFF", "CENTER_MANAGER", "GUARDIAN"],
   "growth:create": ["ADMIN", "HEALTH_STAFF"],
   "growth:update": ["ADMIN", "HEALTH_STAFF"],
+  "vaccine:list": ["ADMIN", "HEALTH_STAFF", "CENTER_MANAGER"],
+  "vaccine:read": ["ADMIN", "HEALTH_STAFF", "CENTER_MANAGER"],
+  "vaccine:create": ["ADMIN"],
+  "vaccine:update": ["ADMIN"],
+  "vaccine:deactivate": ["ADMIN"],
+  "alert:list": ["ADMIN", "HEALTH_STAFF", "CENTER_MANAGER", "GUARDIAN"],
+  "alert:read": ["ADMIN", "HEALTH_STAFF", "CENTER_MANAGER", "GUARDIAN"],
+  "alert:review": ["ADMIN", "HEALTH_STAFF", "CENTER_MANAGER"],
+  "alert:resolve": ["ADMIN", "HEALTH_STAFF", "CENTER_MANAGER"],
+  "notification:create": ["ADMIN", "HEALTH_STAFF", "CENTER_MANAGER"],
+  "campaign:list": ["ADMIN", "CENTER_MANAGER"],
+  "campaign:read": ["ADMIN", "CENTER_MANAGER"],
+  "campaign:create": ["ADMIN", "CENTER_MANAGER"],
+  "qr:manage": ["ADMIN", "HEALTH_STAFF"],
+  "dashboard:read": ["ADMIN", "HEALTH_STAFF", "CENTER_MANAGER", "GUARDIAN"],
+  "report:read": ["ADMIN", "HEALTH_STAFF", "CENTER_MANAGER"],
 };
 
 export function can(

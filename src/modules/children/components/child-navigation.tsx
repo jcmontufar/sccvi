@@ -1,13 +1,15 @@
 import Link from "next/link";
 
-const futureSections = ["Vacunación", "Alertas", "Carné digital"];
+const futureSections = ["Vacunación"];
 
 export function ChildNavigation({
   childId,
   active,
+  canManageDigitalCard = false,
 }: {
   childId: string;
-  active: "summary" | "growth";
+  active: "summary" | "growth" | "card";
+  canManageDigitalCard?: boolean;
 }) {
   const links = [
     { href: `/app/ninos/${childId}`, label: "Resumen", key: "summary" },
@@ -16,13 +18,21 @@ export function ChildNavigation({
       label: "Crecimiento",
       key: "growth",
     },
+    {
+      href: `/app/ninos/${childId}/tarjeta`,
+      label: "Tarjeta digital",
+      key: "card",
+    },
   ] as const;
+  const visibleLinks = canManageDigitalCard
+    ? links
+    : links.filter((item) => item.key !== "card");
   return (
     <nav
       aria-label="Secciones del perfil del niño"
       className="flex gap-2 overflow-x-auto border-b pb-3"
     >
-      {links.map((item) => (
+      {visibleLinks.map((item) => (
         <Link
           aria-current={active === item.key ? "page" : undefined}
           className={

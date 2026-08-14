@@ -1,0 +1,107 @@
+import { requireApplicationUser } from "@/modules/auth/session";
+import { getReport } from "@/modules/reports/services/report-service";
+
+export default async function ReportsPage({
+  searchParams,
+}: {
+  searchParams: Promise<{ type?: string; from?: string; to?: string }>;
+}) {
+  const query = await searchParams;
+  const filters = {
+    type: query.type ?? "communities",
+    from: query.from ?? "",
+    to: query.to ?? "",
+  };
+  const report = await getReport(await requireApplicationUser(), filters);
+  const exportQuery = new URLSearchParams(filters).toString();
+  return (
+    <section className="space-y-6">
+      <header>
+        <h1 className="text-3xl font-semibold">Reportes</h1>
+        <p className="mt-2 text-muted-foreground">
+          Información operacional autorizada. No incluye cobertura ni
+          cumplimiento de vacunación.
+        </p>
+      </header>
+      <form className="grid gap-3 rounded-xl border bg-card p-4 sm:grid-cols-3">
+        <label className="text-sm font-medium">
+          Reporte
+          <select
+            className="mt-2 h-10 w-full rounded-lg border bg-background px-3"
+            defaultValue={filters.type}
+            name="type"
+          >
+            <option value="communities">Comunidades</option>
+            <option value="growth">Crecimiento factual</option>
+            <option value="alerts">Alertas</option>
+          </select>
+        </label>
+        <label className="text-sm font-medium">
+          Desde
+          <input
+            className="mt-2 h-10 w-full rounded-lg border bg-background px-3"
+            defaultValue={filters.from}
+            name="from"
+            type="date"
+          />
+        </label>
+        <label className="text-sm font-medium">
+          Hasta
+          <input
+            className="mt-2 h-10 w-full rounded-lg border bg-background px-3"
+            defaultValue={filters.to}
+            name="to"
+            type="date"
+          />
+        </label>
+        <button
+          className="h-10 rounded-lg bg-primary px-4 text-sm text-primary-foreground sm:w-fit"
+          type="submit"
+        >
+          Generar reporte
+        </button>
+      </form>
+      <div className="flex gap-3">
+        <a
+          className="rounded-lg border px-4 py-2 text-sm"
+          href={`/api/v1/reports/pdf?${exportQuery}`}
+        >
+          Exportar PDF
+        </a>
+        <a
+          className="rounded-lg border px-4 py-2 text-sm"
+          href={`/api/v1/reports/excel?${exportQuery}`}
+        >
+          Exportar Excel
+        </a>
+      </div>
+      <div className="overflow-x-auto rounded-xl border">
+        <table className="w-full min-w-3xl text-sm">
+          <thead className="bg-muted">
+            <tr>
+              <th className="p-3 text-left">Fecha</th>
+              <th className="p-3 text-left">Centro</th>
+              <th className="p-3 text-left">Comunidad</th>
+              <th className="p-3 text-left">Registro</th>
+              <th className="p-3 text-left">Detalle</th>
+            </tr>
+          </thead>
+          <tbody>
+            {report.rows.map((row, index) => (
+              <tr
+                className="border-t"
+                key={`${row.fecha}-${row.registro}-${index}`}
+              >
+                <td className="p-3">{row.fecha}</td>
+                <td className="p-3">{row.centro}</td>
+                <td className="p-3">{row.comunidad}</td>
+                <td className="p-3">{row.registro}</td>
+                <td className="p-3">{row.detalle}</td>
+              </tr>
+            ))}
+          </tbody>
+        </table>
+      </div>
+    </section>
+  );
+}

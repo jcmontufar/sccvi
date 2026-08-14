@@ -26,6 +26,9 @@ export default async function ChildDetailPage({
   const canManageGuardians = can(user, "child:manage-guardians", {
     healthCenterId: child.community.healthCenterId,
   });
+  const canManageDigitalCard = can(user, "qr:manage", {
+    healthCenterId: child.community.healthCenterId,
+  });
   const guardians = canManageGuardians
     ? await listGuardians(user, {
         search: "",
@@ -49,7 +52,11 @@ export default async function ChildDetailPage({
           </Button>
         ) : null}
       </header>
-      <ChildNavigation active="summary" childId={child.id} />
+      <ChildNavigation
+        active="summary"
+        canManageDigitalCard={canManageDigitalCard}
+        childId={child.id}
+      />
       {query.creado || query.actualizado ? (
         <p className="rounded-lg bg-primary/10 p-3 text-sm">
           La información se guardó correctamente.
