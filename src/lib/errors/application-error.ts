@@ -12,6 +12,7 @@ export type ApplicationErrorCode =
   | "CHILD_GUARDIAN_DUPLICATE"
   | "GROWTH_RECORD_NOT_FOUND"
   | "INVALID_GROWTH_MEASUREMENT"
+  | "GROWTH_STANDARD_NOT_FOUND"
   | "VACCINE_NOT_FOUND"
   | "VACCINE_DUPLICATE"
   | "ALERT_NOT_FOUND"
@@ -39,6 +40,8 @@ const publicMessages: Record<ApplicationErrorCode, string> = {
     "El tutor o responsable ya está asociado con este niño.",
   GROWTH_RECORD_NOT_FOUND: "No se encontró la medición de crecimiento.",
   INVALID_GROWTH_MEASUREMENT: "La medición de crecimiento no es válida.",
+  GROWTH_STANDARD_NOT_FOUND:
+    "No se encontró la referencia de crecimiento requerida.",
   VACCINE_NOT_FOUND: "No se encontró la vacuna solicitada.",
   VACCINE_DUPLICATE: "Ya existe una vacuna con ese nombre.",
   ALERT_NOT_FOUND: "No se encontró la alerta solicitada.",

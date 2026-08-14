@@ -274,6 +274,8 @@ Fields:
 - measurementDate: date/datetime, required
 - weightKg: decimal, required
 - heightCm: decimal, required
+- measurementMethod: GrowthMeasurementMethod, required for new measurements;
+  nullable only for legacy compatibility
 - notes: text, optional
 - createdAt: datetime
 - updatedAt: datetime
@@ -288,6 +290,9 @@ N → 1 User
 
 GrowthRecord
 1 → N GrowthAssessment
+
+GrowthRecord
+1 → 0..1 GrowthFollowUp as the explicit next follow-up source
 
 Rules:
 
@@ -364,6 +369,31 @@ This table must not be populated using invented reference values.
 
 Its final structure must be reviewed after selecting the approved WHO
 dataset.
+
+ADR-005 selects the WHO Child Growth Standards 2006 daily LMS tables. The
+physical model uniquely identifies standard + version + sex + indicator + age.
+
+---
+
+# 11A. GrowthFollowUp
+
+Stores an explicit next follow-up scheduled by authorized staff from a growth
+measurement.
+
+Fields:
+
+- id: UUID, primary key
+- childId: UUID, required
+- scheduledByUserId: UUID, required
+- sourceGrowthRecordId: UUID, required, unique
+- dueDate: date, required
+- completedAt: datetime, optional
+- completedByGrowthRecordId: UUID, optional
+- createdAt: datetime
+- updatedAt: datetime
+
+A later growth measurement may complete the follow-up. One source measurement
+may schedule at most one next follow-up.
 
 ---
 
@@ -765,6 +795,15 @@ CampaignRecipient:
 campaignId + guardianId
 
 QRToken.tokenHash
+
+GrowthReference:
+standardName + standardVersion + sex + indicator + ageReference
+
+Alert:
+type + sourceType + sourceId
+
+Notification:
+alertId + guardianId + channel
 
 Additional constraints may be introduced when justified.
 

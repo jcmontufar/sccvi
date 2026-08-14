@@ -18,6 +18,8 @@ function inputFrom(formData: FormData) {
     measurementDate: formData.get("measurementDate"),
     weightKg: formData.get("weightKg"),
     heightCm: formData.get("heightCm"),
+    measurementMethod: formData.get("measurementMethod"),
+    nextFollowUpDate: formData.get("nextFollowUpDate"),
     notes: formData.get("notes"),
     correctionReason: formData.get("correctionReason"),
   };

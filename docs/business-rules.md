@@ -676,3 +676,15 @@ Codex must report the missing dependency rather than inventing clinical data.
 The initial SCCVI deployment may use a single health center.
 
 The data model should preserve the ability to support multiple health centers without requiring a complete architectural redesign.
+
+---
+
+## BR-065 — Explicit Growth Follow-Up
+
+A missed growth follow-up may be generated only from a next follow-up date
+explicitly scheduled by authorized staff. A later growth measurement for the
+same child completes that follow-up, including a measurement performed before
+the due date. Without an approved grace period, an incomplete follow-up becomes
+overdue on the first America/Guatemala business date after its due date.
+
+The same follow-up must not create more than one alert.

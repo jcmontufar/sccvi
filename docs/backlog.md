@@ -804,7 +804,7 @@ Acceptance Criteria:
 
 ### TASK-034 — Select and Document WHO Dataset
 
-Status: BLOCKED  
+Status: IN_REVIEW
 Priority: P0  
 Dependencies: External domain decision
 
@@ -828,7 +828,7 @@ No implementation may invent this information.
 
 ### TASK-035 — Import WHO Growth Reference Data
 
-Status: BLOCKED  
+Status: IN_REVIEW
 Priority: P0  
 Dependencies: TASK-034
 
@@ -848,7 +848,7 @@ Acceptance Criteria:
 
 ### TASK-036 — Growth Assessment Engine
 
-Status: BLOCKED  
+Status: IN_REVIEW
 Priority: P0  
 Dependencies: TASK-031, TASK-035
 
@@ -861,6 +861,9 @@ Implement:
 - Percentile calculation where supported
 - Classification
 
+Implementation note: BATCH-05 persists z-score and percentile but leaves
+classification null because SCCVI has not approved classification thresholds.
+
 Acceptance Criteria:
 
 - Calculations use approved dataset
@@ -872,7 +875,7 @@ Acceptance Criteria:
 
 ### TASK-037 — Growth Assessment Persistence
 
-Status: BLOCKED  
+Status: IN_REVIEW
 Priority: P1  
 Dependencies: TASK-036
 
@@ -892,7 +895,7 @@ Acceptance Criteria:
 
 ### TASK-038 — Growth Charts
 
-Status: BLOCKED  
+Status: IN_REVIEW
 Priority: P2  
 Dependencies: TASK-036, TASK-037
 
@@ -1117,6 +1120,9 @@ Status: BLOCKED
 Priority: P0  
 Dependencies: TASK-036, TASK-047
 
+Blocked reason: SCCVI has not approved growth alert z-score thresholds,
+classification policy or alert wording. BATCH-05 does not invent them.
+
 Requirements:
 
 Generate appropriate monitoring alerts from approved growth assessment.
@@ -1152,7 +1158,7 @@ Acceptance Criteria:
 
 ### TASK-050 — Missed Follow-Up Alerts
 
-Status: TODO  
+Status: IN_REVIEW
 Priority: P2  
 Dependencies: TASK-047
 
@@ -1212,7 +1218,7 @@ Acceptance Criteria:
 
 ### TASK-053 — Select Email Provider
 
-Status: BLOCKED  
+Status: IN_REVIEW
 Priority: P1  
 Dependencies: External technical decision
 
@@ -1231,7 +1237,7 @@ Acceptance Criteria:
 
 ### TASK-054 — Email Provider Integration
 
-Status: BLOCKED  
+Status: IN_REVIEW
 Priority: P1  
 Dependencies: TASK-052, TASK-053
 
@@ -1250,9 +1256,13 @@ Acceptance Criteria:
 
 ### TASK-055 — Alert Email Notifications
 
-Status: BLOCKED  
+Status: IN_REVIEW
 Priority: P1  
 Dependencies: TASK-054, TASK-048 and/or TASK-049
+
+BATCH-05 operational scope: `MISSED_FOLLOW_UP` email is enabled by the explicit
+TASK-050 rule. Growth and vaccination alert emails remain blocked with their
+respective rule tasks.
 
 Requirements:
 
@@ -2189,7 +2199,9 @@ Login
 → Alerts
 → Email notification
 
-Growth assessment and vaccination schedule functionality that depends on external approved datasets remains blocked until those datasets are formally selected.
+WHO growth assessment is enabled by the approved 2006 standard recorded in
+ADR-005. Vaccination schedule functionality remains blocked until its
+authoritative current source and exact version are formally selected.
 
 ---
 

@@ -41,7 +41,7 @@ checked against that scope on the server to prevent IDOR.
 
 ## Row Level Security Boundary
 
-At the time of BATCH-02, Row Level Security is enabled on the 18 SCCVI application tables
+Row Level Security is enabled on the SCCVI application tables
 in the development Supabase database, with no application-table RLS policies defined.
 This denies direct anon/authenticated Data API table access by default.
 
@@ -125,6 +125,9 @@ policy is documented.
 ## Notification Provider Boundary
 
 The notification service defines a provider-independent email contract and persists
-`PENDING`, `SENT`, and `FAILED` states. Only an adapter-confirmed success can become `SENT`;
-provider failure becomes `FAILED`. No provider adapter or live delivery is configured while
-TASK-053 remains blocked, and campaign creation never claims message delivery.
+`PENDING`, `SENT`, and `FAILED` states. Resend is the approved initial adapter. Only an
+adapter-confirmed success can become `SENT`; missing configuration or provider failure becomes
+`FAILED` with a safe message. API keys remain server-only environment values. Operational alert
+email currently applies only to missed growth follow-up, respects explicit guardian `EMAIL`
+preference, and is deduplicated by alert, guardian and channel. Campaign creation still does not
+claim message delivery.

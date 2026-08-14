@@ -2,6 +2,7 @@ export type NotificationMessage = {
   destination: string;
   subject?: string;
   message: string;
+  idempotencyKey?: string;
 };
 
 export type NotificationDeliveryResult =
