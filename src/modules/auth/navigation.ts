@@ -18,5 +18,20 @@ export function getNavigation(role: ApplicationRole): NavigationItem[] {
 
   items.push({ href: "/app/ninos", label: "Niños" });
 
+  if (role !== "GUARDIAN") {
+    items.push(
+      { href: "/app/vacunas", label: "Vacunas" },
+      { href: "/app/alertas", label: "Alertas" },
+    );
+  }
+
+  if (role === "ADMIN" || role === "CENTER_MANAGER") {
+    items.push({ href: "/app/campanas", label: "Campañas" });
+  }
+
+  if (role !== "GUARDIAN") {
+    items.push({ href: "/app/reportes", label: "Reportes" });
+  }
+
   return items;
 }

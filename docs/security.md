@@ -78,3 +78,49 @@ implemented in this boundary.
 User-visible errors use safe Spanish messages. Provider errors, stack traces, SQL errors,
 credentials, tokens, passwords, and internal security details must not be returned to the
 interface or written to audit metadata.
+
+## BATCH-04 Authorization Boundaries
+
+Vaccine catalog mutation is restricted to `ADMIN`; health staff and center managers may
+consult catalog metadata. No vaccine schedule, dose timing, or vaccination-status rule is
+created by this catalog workflow.
+
+Alerts are loaded through child and health-center scope. Guardians can read alerts only for
+explicitly associated children and cannot review or resolve them. Operational roles follow
+their assigned-center scope. The conservative lifecycle is `OPEN` → `REVIEWED` → `RESOLVED`;
+skipped or reverse transitions are rejected, and resolution creates an audit record.
+
+Campaigns are restricted to `ADMIN` and `CENTER_MANAGER`. Center managers can create and
+read campaigns only inside their assigned center. Recipient previews use active guardians
+with email addresses and active associated children, segmented only by authorized community
+and age. Vaccination-status segmentation and actual delivery remain unavailable until their
+medical/provider dependencies are approved.
+
+Dashboard and report queries apply the same server-side center scope as their source
+modules. Guardians do not receive operational reports. Reports include only community,
+factual growth-measurement, and generic alert data; schedule-derived coverage and incomplete
+vaccination reports remain excluded.
+
+## QR Credential Security
+
+QR payloads contain only an application access URL with a cryptographically random opaque
+token. SCCVI stores a SHA-256 token hash, never the raw token. The raw token is returned once
+at credential creation so the authorized user can render the QR code.
+
+Optional numeric PINs contain 4 to 12 digits and are stored as salted scrypt hashes. PIN
+comparison uses constant-time comparison. QR access rejects unknown, revoked, expired, or
+inactive-child credentials before showing a card. Successful access updates `lastUsedAt`.
+Generation and revocation are audited.
+
+The initial public digital card exposes only the child's name, date of birth, and recorded
+sex after credential validation. It intentionally excludes growth measurements, alerts,
+vaccination history, internal child identifiers, guardian information, and organizational
+details. This is the minimum useful card assumption until an approved public-card field
+policy is documented.
+
+## Notification Provider Boundary
+
+The notification service defines a provider-independent email contract and persists
+`PENDING`, `SENT`, and `FAILED` states. Only an adapter-confirmed success can become `SENT`;
+provider failure becomes `FAILED`. No provider adapter or live delivery is configured while
+TASK-053 remains blocked, and campaign creation never claims message delivery.
