@@ -3,6 +3,8 @@
 This directory intentionally versions the normalized WHO reference CSV files
 required by SCCVI. They are part of the repository and allow `npm run
 who:validate` to run from a clean checkout without local source files.
+Their LF line endings are enforced by the repository's `.gitattributes` because
+validation intentionally checks the exact artifact bytes.
 
 Source: the official WHO `igrowup-sas.zip` package at
 https://cdn.who.int/media/docs/default-source/child-growth/child-growth-standards/software/igrowup-sas.zip?sfvrsn=20022035_2,
