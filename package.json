@@ -12,6 +12,8 @@
     "prisma:generate": "prisma generate",
     "prisma:seed": "prisma db seed",
     "prisma:validate": "prisma validate",
+    "who:validate": "tsx scripts/import-who-growth.ts --validate-only",
+    "who:import": "tsx scripts/import-who-growth.ts",
     "test": "vitest run",
     "typecheck": "node -e \"require('node:fs').rmSync('.next/dev', { recursive: true, force: true })\" && next typegen && tsc --noEmit",
     "start": "next start"
@@ -33,6 +35,8 @@
     "qrcode": "^1.5.4",
     "react": "19.2.8",
     "react-dom": "19.2.8",
+    "recharts": "^3.10.1",
+    "resend": "^6.20.0",
     "server-only": "0.0.1",
     "shadcn": "4.18.0",
     "tailwind-merge": "3.6.0",

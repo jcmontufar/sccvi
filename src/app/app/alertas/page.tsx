@@ -1,7 +1,9 @@
 import Link from "next/link";
 
 import { Button } from "@/components/ui/button";
+import { can } from "@/modules/auth/authorization";
 import { requireApplicationUser } from "@/modules/auth/session";
+import { RefreshFollowUpsButton } from "@/modules/alerts/components/refresh-follow-ups-button";
 import { listAlerts } from "@/modules/alerts/services/alert-service";
 
 const labels = {
@@ -25,12 +27,15 @@ export default async function AlertsPage({
   });
   return (
     <section className="space-y-6">
-      <header>
-        <h1 className="text-3xl font-semibold">Alertas</h1>
-        <p className="mt-2 text-muted-foreground">
-          Seguimiento preventivo. Las alertas no constituyen diagnósticos
-          médicos.
-        </p>
+      <header className="flex flex-wrap items-end justify-between gap-4">
+        <div>
+          <h1 className="text-3xl font-semibold">Alertas</h1>
+          <p className="mt-2 text-muted-foreground">
+            Seguimiento preventivo. Las alertas no constituyen diagnósticos
+            médicos.
+          </p>
+        </div>
+        {can(user, "alert:review") ? <RefreshFollowUpsButton /> : null}
       </header>
       <form className="grid gap-3 rounded-xl border bg-card p-4 sm:grid-cols-2">
         <label className="text-sm font-medium">

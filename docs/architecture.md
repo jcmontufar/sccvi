@@ -579,7 +579,7 @@ Notification Provider
 
 Initial provider type:
 
-Email
+Email through the Resend adapter selected in ADR-005
 
 Future optional provider types:
 

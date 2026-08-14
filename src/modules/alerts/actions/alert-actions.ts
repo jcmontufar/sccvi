@@ -8,6 +8,7 @@ import {
   resolveAlert,
   reviewAlert,
 } from "@/modules/alerts/services/alert-service";
+import { generateMissedFollowUpAlerts } from "@/modules/alerts/services/missed-follow-up-service";
 
 async function transition(id: string, action: "review" | "resolve") {
   try {
@@ -25,3 +26,20 @@ async function transition(id: string, action: "review" | "resolve") {
 export const reviewAlertAction = async (id: string) => transition(id, "review");
 export const resolveAlertAction = async (id: string) =>
   transition(id, "resolve");
+
+export type RefreshFollowUpsState = { error?: string };
+
+export async function refreshMissedFollowUpsAction(
+  _state: RefreshFollowUpsState,
+  _formData: FormData,
+) {
+  void _state;
+  void _formData;
+  try {
+    await generateMissedFollowUpAlerts(await requireApplicationUser());
+    revalidatePath("/app/alertas");
+  } catch (error) {
+    return { error: getSafeErrorMessage(error) };
+  }
+  return {};
+}

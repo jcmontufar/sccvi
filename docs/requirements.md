@@ -643,13 +643,15 @@ These features must not be added unless the project scope is explicitly changed.
 
 ---
 
-## 33. External Decisions Still Required
+## 33. External Decisions
 
 The following decisions must be completed before their dependent functionality is finalized:
 
 ### WHO Dataset
 
-An approved official WHO growth reference dataset and version must be selected.
+Resolved for the initial indicators: WHO Child Growth Standards 2006, using the
+official daily LMS tables for weight-for-age and length/height-for-age. Source,
+version, checksums and measurement methodology are recorded in ADR-005.
 
 ### Vaccination Schedule
 
@@ -657,6 +659,9 @@ An approved vaccination schedule and version must be selected and documented.
 
 ### Email Provider
 
-An email delivery provider must be selected before final provider integration.
+Resolved: Resend is the initial email provider behind the provider-independent
+notification service. Configuration and secret handling are recorded in ADR-005.
 
 These unresolved decisions must not be filled using invented data.
+
+Only the vaccination schedule remains unresolved after ADR-005.

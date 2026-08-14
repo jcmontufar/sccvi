@@ -5,6 +5,7 @@ import { Button } from "@/components/ui/button";
 import { can } from "@/modules/auth/authorization";
 import { requireApplicationUser } from "@/modules/auth/session";
 import { ChildNavigation } from "@/modules/children/components/child-navigation";
+import { GrowthHistoryCharts } from "@/modules/growth/components/growth-history-charts";
 import {
   childAccessResource,
   getChild,
@@ -28,6 +29,18 @@ export default async function GrowthHistoryPage({
   const records = await listGrowthRecords(user, child.id);
   const query = await searchParams;
   const canRegister = can(user, "growth:create", childAccessResource(child));
+  const chartData = records
+    .map((record) => ({
+      ageDays: record.exactAge.totalDays,
+      date: record.measurementDate.toLocaleDateString("es-GT", {
+        timeZone: "UTC",
+      }),
+      weightKg: Number(record.weightKg),
+      heightCm: Number(record.heightCm),
+      whoWeightMedianKg: record.whoWeightMedianKg,
+      whoHeightMedianCm: record.whoHeightMedianCm,
+    }))
+    .reverse();
   return (
     <section className="space-y-6">
       <header className="flex flex-wrap items-end justify-between gap-4">
@@ -53,9 +66,12 @@ export default async function GrowthHistoryPage({
         </p>
       ) : null}
       <div className="rounded-lg border border-dashed p-4 text-sm text-muted-foreground">
-        Esta sección presenta únicamente mediciones históricas. No incluye
-        evaluación, clasificación ni referencia de la OMS.
+        Las evaluaciones usan los Estándares de Crecimiento Infantil de la OMS
+        2006. Son apoyo para seguimiento y no constituyen un diagnóstico médico.
+        No se asigna una clasificación clínica porque sus umbrales aún no están
+        aprobados para SCCVI.
       </div>
+      <GrowthHistoryCharts data={chartData} />
       {records.length ? (
         <div className="overflow-x-auto rounded-xl border bg-card">
           <table className="w-full min-w-3xl text-left text-sm">
@@ -65,6 +81,8 @@ export default async function GrowthHistoryPage({
                 <th className="p-4">Edad en la medición</th>
                 <th className="p-4">Peso</th>
                 <th className="p-4">Talla</th>
+                <th className="p-4">Evaluación OMS</th>
+                <th className="p-4">Seguimiento</th>
                 <th className="p-4">Registró</th>
                 <th className="p-4">Acciones</th>
               </tr>
@@ -80,6 +98,40 @@ export default async function GrowthHistoryPage({
                   <td className="p-4">{ageLabel(record.exactAge)}</td>
                   <td className="p-4">{record.weightKg.toString()} kg</td>
                   <td className="p-4">{record.heightCm.toString()} cm</td>
+                  <td className="p-4">
+                    {record.assessments.length ? (
+                      <ul className="space-y-1">
+                        {record.assessments.map((assessment) => (
+                          <li key={assessment.indicator}>
+                            {assessment.indicator === "WEIGHT_FOR_AGE"
+                              ? "Peso/edad"
+                              : "Talla/edad"}
+                            : Z {assessment.zScore?.toString() ?? "—"} · P{" "}
+                            {assessment.percentile?.toString() ?? "—"}
+                          </li>
+                        ))}
+                      </ul>
+                    ) : (
+                      <span className="text-muted-foreground">
+                        No disponible para esta edad
+                      </span>
+                    )}
+                  </td>
+                  <td className="p-4">
+                    {record.scheduledFollowUp ? (
+                      <span>
+                        {record.scheduledFollowUp.dueDate.toLocaleDateString(
+                          "es-GT",
+                          { timeZone: "UTC" },
+                        )}
+                        {record.scheduledFollowUp.completedAt
+                          ? " · completado"
+                          : " · pendiente"}
+                      </span>
+                    ) : (
+                      "No programado"
+                    )}
+                  </td>
                   <td className="p-4">{record.measuredBy.fullName}</td>
                   <td className="p-4">
                     {can(user, "growth:update", childAccessResource(child)) ? (

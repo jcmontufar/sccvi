@@ -20,7 +20,16 @@ export async function queueEmailNotification(
 ) {
   authorize(user, "notification:create");
   return getPrisma().notification.create({
-    data: { ...message, channel: "EMAIL", status: "PENDING" },
+    data: {
+      destination: message.destination,
+      subject: message.subject,
+      message: message.message,
+      guardianId: message.guardianId,
+      alertId: message.alertId,
+      campaignRecipientId: message.campaignRecipientId,
+      channel: "EMAIL",
+      status: "PENDING",
+    },
   });
 }
 
@@ -64,6 +73,7 @@ export async function deliverQueuedNotification(
     destination: notification.destination,
     subject: notification.subject ?? undefined,
     message: notification.message,
+    idempotencyKey: `notification/${notification.id}`,
   });
   return getPrisma().notification.update({
     where: { id: notification.id },

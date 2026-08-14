@@ -16,6 +16,7 @@ type GrowthRecordFormProps = {
     measurementDate: Date;
     weightKg: { toString(): string };
     heightCm: { toString(): string };
+    measurementMethod: "RECUMBENT_LENGTH" | "STANDING_HEIGHT" | null;
     notes: string | null;
   };
 };
@@ -33,7 +34,7 @@ export function GrowthRecordForm({ childId, record }: GrowthRecordFormProps) {
       action={formAction}
       className="space-y-5 rounded-xl border bg-card p-5 sm:p-6"
     >
-      <div className="grid gap-5 sm:grid-cols-3">
+      <div className="grid gap-5 sm:grid-cols-2 lg:grid-cols-4">
         <label className="text-sm font-medium" htmlFor="measurementDate">
           Fecha de medición
           <input
@@ -73,7 +74,37 @@ export function GrowthRecordForm({ childId, record }: GrowthRecordFormProps) {
             type="number"
           />
         </label>
+        <label className="text-sm font-medium" htmlFor="measurementMethod">
+          Método de talla
+          <select
+            className="mt-2 h-10 w-full rounded-lg border bg-background px-3 font-normal"
+            defaultValue={record?.measurementMethod ?? ""}
+            id="measurementMethod"
+            name="measurementMethod"
+            required
+          >
+            <option disabled value="">
+              Selecciona un método
+            </option>
+            <option value="RECUMBENT_LENGTH">Longitud recostada</option>
+            <option value="STANDING_HEIGHT">Talla de pie</option>
+          </select>
+        </label>
       </div>
+      {!record ? (
+        <label className="block text-sm font-medium" htmlFor="nextFollowUpDate">
+          Próxima fecha de seguimiento (opcional)
+          <input
+            className="mt-2 h-10 w-full rounded-lg border bg-background px-3 font-normal sm:max-w-xs"
+            id="nextFollowUpDate"
+            name="nextFollowUpDate"
+            type="date"
+          />
+          <span className="mt-1 block font-normal text-muted-foreground">
+            Solo se crearán alertas si el personal programa esta fecha.
+          </span>
+        </label>
+      ) : null}
       <label className="block text-sm font-medium" htmlFor="notes">
         Notas
         <textarea

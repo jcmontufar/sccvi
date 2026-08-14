@@ -30,6 +30,11 @@ enum GrowthIndicator {
   HEIGHT_FOR_AGE
 }
 
+enum GrowthMeasurementMethod {
+  RECUMBENT_LENGTH
+  STANDING_HEIGHT
+}
+
 enum AlertType {
   GROWTH
   VACCINATION
@@ -83,23 +88,24 @@ model HealthCenter {
 }
 
 model User {
-  id                       String         @id @default(uuid()) @db.Uuid
-  authUserId               String         @unique @db.Uuid
-  healthCenterId           String?        @db.Uuid
+  id                       String           @id @default(uuid()) @db.Uuid
+  authUserId               String           @unique @db.Uuid
+  healthCenterId           String?          @db.Uuid
   fullName                 String
   email                    String
   role                     UserRole
-  isActive                 Boolean        @default(true)
-  createdAt                DateTime       @default(now()) @db.Timestamptz(3)
-  updatedAt                DateTime       @updatedAt @db.Timestamptz(3)
-  healthCenter             HealthCenter?  @relation(fields: [healthCenterId], references: [id], onDelete: Restrict)
+  isActive                 Boolean          @default(true)
+  createdAt                DateTime         @default(now()) @db.Timestamptz(3)
+  updatedAt                DateTime         @updatedAt @db.Timestamptz(3)
+  healthCenter             HealthCenter?    @relation(fields: [healthCenterId], references: [id], onDelete: Restrict)
   guardian                 Guardian?
-  growthRecordsMeasured    GrowthRecord[] @relation("GrowthRecordMeasuredBy")
-  vaccinationsAdministered Vaccination[]  @relation("VaccinationAdministeredBy")
-  alertsReviewed           Alert[]        @relation("AlertReviewedBy")
-  alertsResolved           Alert[]        @relation("AlertResolvedBy")
-  campaignsCreated         Campaign[]     @relation("CampaignCreatedBy")
-  qrTokensCreated          QRToken[]      @relation("QRTokenCreatedBy")
+  growthRecordsMeasured    GrowthRecord[]   @relation("GrowthRecordMeasuredBy")
+  growthFollowUpsScheduled GrowthFollowUp[] @relation("GrowthFollowUpScheduledBy")
+  vaccinationsAdministered Vaccination[]    @relation("VaccinationAdministeredBy")
+  alertsReviewed           Alert[]          @relation("AlertReviewedBy")
+  alertsResolved           Alert[]          @relation("AlertResolvedBy")
+  campaignsCreated         Campaign[]       @relation("CampaignCreatedBy")
+  qrTokensCreated          QRToken[]        @relation("QRTokenCreatedBy")
   auditLogs                AuditLog[]
 
   @@index([healthCenterId])
@@ -145,20 +151,21 @@ model Guardian {
 }
 
 model Child {
-  id             String          @id @default(uuid()) @db.Uuid
-  communityId    String          @db.Uuid
-  fullName       String
-  dateOfBirth    DateTime        @db.Date
-  sex            Sex
-  isActive       Boolean         @default(true)
-  createdAt      DateTime        @default(now()) @db.Timestamptz(3)
-  updatedAt      DateTime        @updatedAt @db.Timestamptz(3)
-  community      Community       @relation(fields: [communityId], references: [id], onDelete: Restrict)
-  childGuardians ChildGuardian[]
-  growthRecords  GrowthRecord[]
-  vaccinations   Vaccination[]
-  alerts         Alert[]
-  qrTokens       QRToken[]
+  id              String           @id @default(uuid()) @db.Uuid
+  communityId     String           @db.Uuid
+  fullName        String
+  dateOfBirth     DateTime         @db.Date
+  sex             Sex
+  isActive        Boolean          @default(true)
+  createdAt       DateTime         @default(now()) @db.Timestamptz(3)
+  updatedAt       DateTime         @updatedAt @db.Timestamptz(3)
+  community       Community        @relation(fields: [communityId], references: [id], onDelete: Restrict)
+  childGuardians  ChildGuardian[]
+  growthRecords   GrowthRecord[]
+  growthFollowUps GrowthFollowUp[]
+  vaccinations    Vaccination[]
+  alerts          Alert[]
+  qrTokens        QRToken[]
 
   @@index([communityId])
 }
@@ -180,18 +187,21 @@ model ChildGuardian {
 }
 
 model GrowthRecord {
-  id               String             @id @default(uuid()) @db.Uuid
-  childId          String             @db.Uuid
-  measuredByUserId String             @db.Uuid
-  measurementDate  DateTime           @db.Date
-  weightKg         Decimal            @db.Decimal(6, 3)
-  heightCm         Decimal            @db.Decimal(6, 2)
-  notes            String?            @db.Text
-  createdAt        DateTime           @default(now()) @db.Timestamptz(3)
-  updatedAt        DateTime           @updatedAt @db.Timestamptz(3)
-  child            Child              @relation(fields: [childId], references: [id], onDelete: Restrict)
-  measuredBy       User               @relation("GrowthRecordMeasuredBy", fields: [measuredByUserId], references: [id], onDelete: Restrict)
-  assessments      GrowthAssessment[]
+  id                 String                   @id @default(uuid()) @db.Uuid
+  childId            String                   @db.Uuid
+  measuredByUserId   String                   @db.Uuid
+  measurementDate    DateTime                 @db.Date
+  weightKg           Decimal                  @db.Decimal(6, 3)
+  heightCm           Decimal                  @db.Decimal(6, 2)
+  measurementMethod  GrowthMeasurementMethod?
+  notes              String?                  @db.Text
+  createdAt          DateTime                 @default(now()) @db.Timestamptz(3)
+  updatedAt          DateTime                 @updatedAt @db.Timestamptz(3)
+  child              Child                    @relation(fields: [childId], references: [id], onDelete: Restrict)
+  measuredBy         User                     @relation("GrowthRecordMeasuredBy", fields: [measuredByUserId], references: [id], onDelete: Restrict)
+  assessments        GrowthAssessment[]
+  scheduledFollowUp  GrowthFollowUp?          @relation("GrowthFollowUpSourceRecord")
+  completedFollowUps GrowthFollowUp[]         @relation("GrowthFollowUpCompletedByRecord")
 
   @@index([childId])
   @@index([measurementDate])
@@ -229,8 +239,30 @@ model GrowthReference {
   additionalParameters Json?
   createdAt            DateTime        @default(now()) @db.Timestamptz(3)
 
+  @@unique([standardName, standardVersion, sex, indicator, ageReference])
   @@index([standardName, standardVersion])
   @@index([sex, indicator, ageReference])
+}
+
+model GrowthFollowUp {
+  id                        String        @id @default(uuid()) @db.Uuid
+  childId                   String        @db.Uuid
+  scheduledByUserId         String        @db.Uuid
+  sourceGrowthRecordId      String        @unique @db.Uuid
+  dueDate                   DateTime      @db.Date
+  completedAt               DateTime?     @db.Timestamptz(3)
+  completedByGrowthRecordId String?       @db.Uuid
+  createdAt                 DateTime      @default(now()) @db.Timestamptz(3)
+  updatedAt                 DateTime      @updatedAt @db.Timestamptz(3)
+  child                     Child         @relation(fields: [childId], references: [id], onDelete: Restrict)
+  scheduledBy               User          @relation("GrowthFollowUpScheduledBy", fields: [scheduledByUserId], references: [id], onDelete: Restrict)
+  sourceGrowthRecord        GrowthRecord  @relation("GrowthFollowUpSourceRecord", fields: [sourceGrowthRecordId], references: [id], onDelete: Restrict)
+  completedByGrowthRecord   GrowthRecord? @relation("GrowthFollowUpCompletedByRecord", fields: [completedByGrowthRecordId], references: [id], onDelete: Restrict)
+
+  @@index([childId, dueDate])
+  @@index([completedAt])
+  @@index([scheduledByUserId])
+  @@index([completedByGrowthRecordId])
 }
 
 model Vaccine {
@@ -304,6 +336,7 @@ model Alert {
   resolvedBy       User?          @relation("AlertResolvedBy", fields: [resolvedByUserId], references: [id], onDelete: SetNull)
   notifications    Notification[]
 
+  @@unique([type, sourceType, sourceId])
   @@index([childId])
   @@index([status])
   @@index([severity])
@@ -330,6 +363,7 @@ model Notification {
   alert               Alert?              @relation(fields: [alertId], references: [id], onDelete: SetNull)
   campaignRecipient   CampaignRecipient?  @relation(fields: [campaignRecipientId], references: [id], onDelete: SetNull)
 
+  @@unique([alertId, guardianId, channel])
   @@index([guardianId])
   @@index([alertId])
   @@index([campaignRecipientId])
@@ -374,20 +408,20 @@ model CampaignRecipient {
 }
 
 model QRToken {
-  id              String    @id @default(uuid()) @db.Uuid
-  childId         String    @db.Uuid
-  tokenHash       String    @unique
-  pinHash         String?
-  failedPinAttempts Int      @default(0)
-  pinLockedUntil  DateTime? @db.Timestamptz(3)
-  expiresAt       DateTime? @db.Timestamptz(3)
-  revokedAt       DateTime? @db.Timestamptz(3)
-  lastUsedAt      DateTime? @db.Timestamptz(3)
-  createdByUserId String    @db.Uuid
-  createdAt       DateTime  @default(now()) @db.Timestamptz(3)
-  updatedAt       DateTime  @updatedAt @db.Timestamptz(3)
-  child           Child     @relation(fields: [childId], references: [id], onDelete: Restrict)
-  createdBy       User      @relation("QRTokenCreatedBy", fields: [createdByUserId], references: [id], onDelete: Restrict)
+  id                String    @id @default(uuid()) @db.Uuid
+  childId           String    @db.Uuid
+  tokenHash         String    @unique
+  pinHash           String?
+  failedPinAttempts Int       @default(0)
+  pinLockedUntil    DateTime? @db.Timestamptz(3)
+  expiresAt         DateTime? @db.Timestamptz(3)
+  revokedAt         DateTime? @db.Timestamptz(3)
+  lastUsedAt        DateTime? @db.Timestamptz(3)
+  createdByUserId   String    @db.Uuid
+  createdAt         DateTime  @default(now()) @db.Timestamptz(3)
+  updatedAt         DateTime  @updatedAt @db.Timestamptz(3)
+  child             Child     @relation(fields: [childId], references: [id], onDelete: Restrict)
+  createdBy         User      @relation("QRTokenCreatedBy", fields: [createdByUserId], references: [id], onDelete: Restrict)
 
   @@index([childId])
   @@index([createdByUserId])
