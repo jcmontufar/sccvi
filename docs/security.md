@@ -66,8 +66,8 @@ Guardians cannot create or correct growth measurements.
 
 Growth measurements remain factual historical records. New measurements and authorized
 corrections create targeted `AuditLog` entries. Corrections require a reason and record the
-names of changed fields without duplicating measurement values in audit metadata. Growth
-records are never physically deleted by this workflow.
+changed fields plus protected before/after measurement values so an authorized reviewer can
+reconstruct the correction. Growth records are never physically deleted by this workflow.
 
 This targeted traceability supports TASK-032 without introducing the complete future audit
 service. No WHO assessment, percentile, Z-score, classification, or clinical threshold is

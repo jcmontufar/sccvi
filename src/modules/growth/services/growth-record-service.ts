@@ -153,7 +153,22 @@ export async function correctGrowthRecord(
         action: "GROWTH_RECORD_CORRECTED",
         entityType: "GrowthRecord",
         entityId: record.id,
-        metadata: { reason: data.correctionReason, changedFields },
+        metadata: {
+          reason: data.correctionReason,
+          changedFields,
+          previousMeasurement: {
+            measurementDate: record.measurementDate.toISOString().slice(0, 10),
+            weightKg: record.weightKg.toString(),
+            heightCm: record.heightCm.toString(),
+            notes: record.notes,
+          },
+          correctedMeasurement: {
+            measurementDate: data.measurementDate,
+            weightKg: String(data.weightKg),
+            heightCm: String(data.heightCm),
+            notes: data.notes,
+          },
+        },
       },
     });
     return corrected;
