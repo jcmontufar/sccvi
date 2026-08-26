@@ -60,10 +60,12 @@ Playwright requires the database guard plus
 Supabase URL and anonymous key, a fictional test user, and an authorized
 fictional child fixture. The exact variable names are listed in `.env.example`.
 
-Optional local QR fixtures support valid, revoked, expired, PIN and locked
-credential paths. Raw QR tokens and PINs stay in `.env.test.local`; Playwright
-traces and videos are disabled so those credentials are not captured. Test
-output must never print these variables.
+Global setup deterministically derives and provisions isolated valid, revoked,
+expired, PIN-protected and lockout QR fixtures for the configured fictional
+child. Raw values exist only in the Playwright process environment; they are
+not written to disk or logs. Global teardown re-verifies the persisted database
+identity and removes exactly those token hashes. Playwright traces and videos
+are disabled so ephemeral credentials are not captured.
 
 The local server receives the isolated test database and Supabase public
 configuration explicitly. It must not reuse an already-running development
@@ -81,8 +83,8 @@ successful live E2E run.
 - Growth: historical measurement, persisted history and WHO assessment display.
 - Vaccination: factual registration, applied status and historical cohort
   regression.
-- QR: invalid, valid, revoked, expired, PIN and repeated-failure paths when the
-  corresponding isolated fixtures exist.
+- QR: invalid, valid, revoked, expired, correct PIN and persistent lockout,
+  using fixtures created and removed by verified test setup.
 
 Screenshots are retained only on failure. Visible assertions use Spanish UI
 content. Test data is fictional and is not suitable for clinical use.

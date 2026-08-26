@@ -48,7 +48,6 @@ Represents a health center using SCCVI.
 Fields:
 
 - id: UUID, primary key
-- officialCode: string, optional, unique for reconciled authoritative identity
 - name: string, required
 - code: string, optional, unique when present
 - address: string, optional
@@ -405,6 +404,7 @@ Represents a vaccine definition.
 Fields:
 
 - id: UUID, primary key
+- officialCode: string, optional, unique for reconciled authoritative identity
 - name: string, required
 - description: text, optional
 - isActive: boolean, default true
@@ -991,3 +991,27 @@ The SCCVI database should prioritize:
 
 The database must support the domain rather than merely mirror the user
 interface.
+
+---
+
+# 31. Physical Schema Review — BATCH-08
+
+Reviewed against `prisma/schema.prisma` and all four versioned migrations on
+2026-08-26. The physical schema contains 20 models: the registry hierarchy,
+explicit guardian-child relation, factual/derived growth models, follow-up,
+versioned vaccination models, alerts, notifications, campaigns, QR credentials
+and audit logs described above.
+
+Implementation-specific confirmations:
+
+- UUID keys, restrictive historical foreign keys and documented indexes are
+  present.
+- `Child.dateOfBirth`, measurement/application dates and schedule dates use
+  PostgreSQL `date`; operational timestamps use `timestamptz(3)`.
+- Growth measurements and LMS-derived values use explicit decimal precision.
+- `Vaccine.officialCode`, not `HealthCenter`, stores authoritative vaccine
+  identity reconciliation.
+- Schedule provenance is normalized through `VaccineScheduleVersion`; legacy
+  schedule linkage remains nullable to avoid destructive migration.
+- Persistent QR attempt fields support multi-instance throttling.
+- No migration is modified by this review and no schema change is required.
