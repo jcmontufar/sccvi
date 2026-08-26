@@ -1,4 +1,7 @@
-import { getSafeErrorMessage } from "@/lib/errors/application-error";
+import {
+  getSafeErrorMessage,
+  getSafeHttpStatus,
+} from "@/lib/errors/application-error";
 import { requireApplicationUser } from "@/modules/auth/session";
 import { createExcelReport } from "@/modules/reports/services/report-export";
 import { getReport } from "@/modules/reports/services/report-service";
@@ -27,7 +30,7 @@ export async function GET(request: Request) {
         success: false,
         error: { code: "REPORT_ERROR", message: getSafeErrorMessage(error) },
       },
-      { status: 400 },
+      { status: getSafeHttpStatus(error) },
     );
   }
 }

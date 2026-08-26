@@ -4,6 +4,7 @@ import { ApplicationError } from "@/lib/errors/application-error";
 import { getPrisma } from "@/lib/prisma";
 import { authorize } from "@/modules/auth/authorization";
 import type { ApplicationUser } from "@/modules/auth/types";
+import { recordAuditEvent } from "@/modules/audit/services/audit-service";
 import {
   childAccessResource,
   getChild,
@@ -85,13 +86,23 @@ export async function reviewAlert(user: ApplicationUser, id: string) {
   const alert = await getAlert(user, id);
   authorize(user, "alert:review", alertResource(alert));
   assertAlertTransition(alert.status, "REVIEWED");
-  return getPrisma().alert.update({
-    where: { id: alert.id },
-    data: {
-      status: "REVIEWED",
-      reviewedAt: new Date(),
-      reviewedByUserId: user.id,
-    },
+  return getPrisma().$transaction(async (transaction) => {
+    const reviewed = await transaction.alert.update({
+      where: { id: alert.id },
+      data: {
+        status: "REVIEWED",
+        reviewedAt: new Date(),
+        reviewedByUserId: user.id,
+      },
+    });
+    await recordAuditEvent(transaction, {
+      userId: user.id,
+      action: "ALERT_REVIEWED",
+      entityType: "Alert",
+      entityId: alert.id,
+      metadata: { childId: alert.childId },
+    });
+    return reviewed;
   });
 }
 
@@ -108,13 +119,12 @@ export async function resolveAlert(user: ApplicationUser, id: string) {
         resolvedByUserId: user.id,
       },
     });
-    await transaction.auditLog.create({
-      data: {
-        userId: user.id,
-        action: "ALERT_RESOLVED",
-        entityType: "Alert",
-        entityId: alert.id,
-      },
+    await recordAuditEvent(transaction, {
+      userId: user.id,
+      action: "ALERT_RESOLVED",
+      entityType: "Alert",
+      entityId: alert.id,
+      metadata: { childId: alert.childId },
     });
     return resolved;
   });

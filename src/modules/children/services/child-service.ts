@@ -3,8 +3,10 @@ import "server-only";
 import type { Prisma } from "@/generated/prisma/client";
 import { ApplicationError } from "@/lib/errors/application-error";
 import { getPrisma } from "@/lib/prisma";
+import { activeStateSchema } from "@/lib/validation/common-schema";
 import { authorize } from "@/modules/auth/authorization";
 import type { ApplicationUser } from "@/modules/auth/types";
+import { recordAuditEvent } from "@/modules/audit/services/audit-service";
 import {
   childGuardianInputSchema,
   childIdSchema,
@@ -117,12 +119,22 @@ export async function getChild(user: ApplicationUser, id: string) {
 export async function createChild(user: ApplicationUser, input: unknown) {
   const data = createChildInputSchema().parse(input);
   await validateCommunity(user, data.communityId, "child:create");
-  return getPrisma().child.create({
-    data: {
-      ...data,
-      dateOfBirth: new Date(`${data.dateOfBirth}T00:00:00.000Z`),
-    },
-    select: childSelect,
+  return getPrisma().$transaction(async (transaction) => {
+    const child = await transaction.child.create({
+      data: {
+        ...data,
+        dateOfBirth: new Date(`${data.dateOfBirth}T00:00:00.000Z`),
+      },
+      select: childSelect,
+    });
+    await recordAuditEvent(transaction, {
+      userId: user.id,
+      action: "CHILD_CREATED",
+      entityType: "Child",
+      entityId: child.id,
+      metadata: { communityId: child.communityId },
+    });
+    return child;
   });
 }
 
@@ -135,13 +147,31 @@ export async function updateChild(
   authorize(user, "child:update", childAccessResource(child));
   const data = createChildInputSchema().parse(input);
   await validateCommunity(user, data.communityId, "child:update");
-  return getPrisma().child.update({
-    where: { id: child.id },
-    data: {
-      ...data,
-      dateOfBirth: new Date(`${data.dateOfBirth}T00:00:00.000Z`),
-    },
-    select: childSelect,
+  const changedFields = [
+    child.communityId !== data.communityId ? "communityId" : null,
+    child.fullName !== data.fullName ? "fullName" : null,
+    child.dateOfBirth.toISOString().slice(0, 10) !== data.dateOfBirth
+      ? "dateOfBirth"
+      : null,
+    child.sex !== data.sex ? "sex" : null,
+  ].filter((value): value is string => Boolean(value));
+  return getPrisma().$transaction(async (transaction) => {
+    const updated = await transaction.child.update({
+      where: { id: child.id },
+      data: {
+        ...data,
+        dateOfBirth: new Date(`${data.dateOfBirth}T00:00:00.000Z`),
+      },
+      select: childSelect,
+    });
+    await recordAuditEvent(transaction, {
+      userId: user.id,
+      action: "CHILD_UPDATED",
+      entityType: "Child",
+      entityId: child.id,
+      metadata: { changedFields },
+    });
+    return updated;
   });
 }
 
@@ -152,10 +182,21 @@ export async function setChildActive(
 ) {
   const child = await getChild(user, id);
   authorize(user, "child:deactivate", childAccessResource(child));
-  return getPrisma().child.update({
-    where: { id: child.id },
-    data: { isActive },
-    select: childSelect,
+  const activeState = activeStateSchema.parse(isActive);
+  return getPrisma().$transaction(async (transaction) => {
+    const updated = await transaction.child.update({
+      where: { id: child.id },
+      data: { isActive: activeState },
+      select: childSelect,
+    });
+    await recordAuditEvent(transaction, {
+      userId: user.id,
+      action: "CHILD_STATUS_CHANGED",
+      entityType: "Child",
+      entityId: child.id,
+      metadata: { isActive: activeState },
+    });
+    return updated;
   });
 }
 

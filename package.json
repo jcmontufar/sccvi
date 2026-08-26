@@ -16,7 +16,10 @@
     "who:import": "tsx scripts/import-who-growth.ts",
     "vaccination:validate": "tsx scripts/import-vaccination-schedule.ts --validate-only",
     "vaccination:import": "tsx scripts/import-vaccination-schedule.ts",
+    "openapi:validate": "redocly lint docs/api/openapi.yaml",
     "test": "vitest run",
+    "test:integration": "vitest run --config vitest.integration.config.mts",
+    "test:e2e": "playwright test",
     "typecheck": "node -e \"require('node:fs').rmSync('.next/dev', { recursive: true, force: true })\" && next typegen && tsc --noEmit",
     "start": "next start"
   },
@@ -30,7 +33,6 @@
     "clsx": "2.1.1",
     "dotenv": "17.4.2",
     "exceljs": "^4.4.0",
-    "lucide-react": "1.31.0",
     "next": "16.3.1",
     "pdf-lib": "^1.17.1",
     "pg": "8.23.0",
@@ -46,6 +48,8 @@
     "zod": "4.4.3"
   },
   "devDependencies": {
+    "@playwright/test": "1.62.1",
+    "@redocly/cli": "2.47.0",
     "@tailwindcss/postcss": "4.3.3",
     "@types/node": "26.2.0",
     "@types/pg": "8.21.0",

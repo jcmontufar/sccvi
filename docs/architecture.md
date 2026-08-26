@@ -728,6 +728,12 @@ Possible audited events:
 Audit logging should provide useful traceability without logging every
 UI interaction.
 
+The centralized server-only audit service defines approved actions and entity
+types and removes credential-like metadata keys recursively. Critical events
+are written in the same Prisma transaction as the domain mutation. Audit
+persistence therefore fails closed: a write failure rolls back the associated
+critical operation rather than leaving an unaudited change.
+
 ---
 
 ## 25. API Architecture
@@ -954,6 +960,11 @@ Growth assessment
 Vaccination
 → Pending dose calculation
 
+Integration execution requires a separately confirmed test database. The test
+guard rejects production, the shared development URL and missing confirmation.
+Fixtures are uniquely namespaced and cleaned by recorded identifiers; global
+schema resets are prohibited.
+
 ### End-to-End Tests
 
 Playwright will test critical user workflows.
@@ -971,6 +982,11 @@ Create child
 Register growth measurement
 ↓
 View growth history/chart
+
+Playwright uses an isolated application/database/Auth environment and a
+dedicated fictional user. Missing test credentials are an explicit live-test
+blocker, never permission to reuse personal or production credentials. Detailed
+variables and commands are documented in `docs/testing.md`.
 
 ---
 

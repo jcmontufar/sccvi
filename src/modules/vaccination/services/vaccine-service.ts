@@ -3,6 +3,7 @@ import "server-only";
 import { Prisma } from "@/generated/prisma/client";
 import { ApplicationError } from "@/lib/errors/application-error";
 import { getPrisma } from "@/lib/prisma";
+import { activeStateSchema } from "@/lib/validation/common-schema";
 import { authorize } from "@/modules/auth/authorization";
 import type { ApplicationUser } from "@/modules/auth/types";
 import {
@@ -79,10 +80,11 @@ export async function setVaccineActive(
   id: string,
   isActive: boolean,
 ) {
+  const activeState = activeStateSchema.parse(isActive);
   authorize(user, "vaccine:deactivate");
   await getVaccine(user, id);
   return getPrisma().vaccine.update({
     where: { id: vaccineIdSchema.parse(id) },
-    data: { isActive },
+    data: { isActive: activeState },
   });
 }

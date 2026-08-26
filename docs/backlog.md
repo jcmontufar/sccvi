@@ -1542,7 +1542,7 @@ Acceptance Criteria:
 
 ### TASK-068 — Audit Service
 
-Status: TODO  
+Status: IN_REVIEW
 Priority: P1  
 Dependencies: Core application foundation
 
@@ -1560,7 +1560,7 @@ Acceptance Criteria:
 
 ### TASK-069 — Integrate Critical Audit Events
 
-Status: TODO  
+Status: IN_REVIEW
 Priority: P1  
 Dependencies: TASK-068
 
@@ -1584,7 +1584,7 @@ Acceptance Criteria:
 
 ### TASK-070 — OpenAPI Foundation
 
-Status: TODO  
+Status: IN_REVIEW
 Priority: P2  
 Dependencies: Public REST endpoints exist
 
@@ -1605,7 +1605,7 @@ Acceptance Criteria:
 
 ### TASK-071 — Unit Test Coverage Review
 
-Status: TODO  
+Status: IN_REVIEW
 Priority: P1  
 Dependencies: Core modules implemented
 
@@ -1630,9 +1630,12 @@ Acceptance Criteria:
 
 ### TASK-072 — Integration Test Suite
 
-Status: TODO  
+Status: BLOCKED
 Priority: P1  
 Dependencies: Core modules implemented
+
+Blocked reason: safe infrastructure and persistence coverage are implemented,
+but no isolated test database is configured for live execution.
 
 Requirements:
 
@@ -1647,9 +1650,12 @@ Acceptance Criteria:
 
 ### TASK-073 — Playwright E2E Foundation
 
-Status: TODO  
+Status: BLOCKED
 Priority: P1  
 Dependencies: Authentication and core UI
+
+Blocked reason: Playwright configuration is implemented, but no isolated test
+database, Supabase test project or fictional test user is configured.
 
 Requirements:
 
@@ -1665,9 +1671,12 @@ Acceptance Criteria:
 
 ### TASK-074 — Core Registry E2E
 
-Status: TODO  
+Status: BLOCKED
 Priority: P1  
 Dependencies: TASK-073, core registry UI
+
+Blocked reason: the workflow is implemented but cannot execute until the
+TASK-073 isolated environment is available.
 
 Workflow:
 
@@ -1684,9 +1693,12 @@ Acceptance Criteria:
 
 ### TASK-075 — Growth E2E
 
-Status: BLOCKED  
+Status: BLOCKED
 Priority: P1  
 Dependencies: TASK-073, growth engine/UI
+
+Blocked reason: implementation exists, but live execution requires the isolated
+test database, Supabase test project, fictional test user and child fixture.
 
 Workflow:
 
@@ -1708,6 +1720,10 @@ Status: BLOCKED
 Priority: P1  
 Dependencies: TASK-073, vaccination functionality
 
+Blocked reason: implementation exists, but live execution requires the isolated
+test database, Supabase test project and controlled current/historical child
+fixtures.
+
 Workflow:
 
 Login
@@ -1723,9 +1739,12 @@ Acceptance Criteria:
 
 ### TASK-077 — QR Security E2E
 
-Status: TODO  
+Status: BLOCKED
 Priority: P0  
 Dependencies: TASK-059, TASK-061, TASK-073
+
+Blocked reason: implementation exists, but live execution requires isolated
+valid, revoked, expired, PIN and lockout credentials that can be cleaned safely.
 
 Test:
 
@@ -1745,7 +1764,7 @@ Acceptance Criteria:
 
 ### TASK-078 — Authorization Security Review
 
-Status: TODO  
+Status: IN_REVIEW
 Priority: P0  
 Dependencies: Core protected modules
 
@@ -1767,7 +1786,7 @@ Acceptance Criteria:
 
 ### TASK-079 — Secret and Configuration Review
 
-Status: TODO  
+Status: IN_REVIEW
 Priority: P0  
 Dependencies: Deployment preparation
 
@@ -1789,7 +1808,7 @@ Acceptance Criteria:
 
 ### TASK-080 — Input Validation Review
 
-Status: TODO  
+Status: IN_REVIEW
 Priority: P1  
 Dependencies: Core application
 
@@ -1805,7 +1824,7 @@ Acceptance Criteria:
 
 ### TASK-081 — Dependency Review
 
-Status: TODO  
+Status: IN_REVIEW
 Priority: P1  
 Dependencies: Application substantially implemented
 

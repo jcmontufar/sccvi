@@ -2,6 +2,7 @@ import "server-only";
 
 import { ApplicationError } from "@/lib/errors/application-error";
 import { getPrisma } from "@/lib/prisma";
+import { activeStateSchema } from "@/lib/validation/common-schema";
 import { authorize } from "@/modules/auth/authorization";
 import type { ApplicationUser } from "@/modules/auth/types";
 import {
@@ -150,13 +151,14 @@ export async function setGuardianActive(
   id: string,
   isActive: boolean,
 ) {
+  const activeState = activeStateSchema.parse(isActive);
   const guardian = await getGuardian(user, id);
   authorize(user, "guardian:deactivate", {
     healthCenterId: guardian.community.healthCenterId,
   });
   return getPrisma().guardian.update({
     where: { id: guardian.id },
-    data: { isActive },
+    data: { isActive: activeState },
     select: guardianSelect,
   });
 }
