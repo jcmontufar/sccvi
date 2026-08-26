@@ -476,6 +476,17 @@ source URL, source SHA-256 and active state. Imported current rows reference thi
 entity. Nullable linkage on pre-existing schedule rows avoids a destructive
 migration; application status logic accepts only approved versioned rows.
 
+The effective interval is not, by itself, a retrospective cohort assignment.
+Application logic intersects each unrecorded dose opportunity with that
+interval. For the `GT-MSPAS-2026-01-12` hexavalent series, the first 2-month
+opportunity must be on or after `effectiveFrom`; otherwise current-version
+hexavalent rows are excluded from derived status and alert evaluation because
+historical pentavalent/IPV reconciliation is not defined by the approved
+source. No additional database status is stored for this exclusion.
+
+This applicability filter never mutates or removes `Vaccination` rows. Factual
+records retain their original schedule/version linkage and application date.
+
 ---
 
 # 14. Vaccination

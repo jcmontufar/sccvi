@@ -1,9 +1,11 @@
 import { describe, expect, it } from "vitest";
 
 import {
+  evaluateVaccinationDose,
   getScheduledDate,
   getVaccinationEvaluationDate,
   getVaccinationStatus,
+  isDoseApplicableToVersion,
   selectApplicableScheduleVersion,
 } from "@/modules/vaccination/services/vaccination-status";
 
@@ -13,6 +15,12 @@ const twoMonthDose = {
   maximumAgeMonths: null,
   maximumAgeDays: null,
   maximumAgeExclusive: false,
+};
+
+const currentVersion = {
+  code: "GT-MSPAS-2026-01-12",
+  effectiveFrom: "2026-01-12",
+  effectiveTo: null,
 };
 
 describe("vaccination status engine", () => {
@@ -97,5 +105,84 @@ describe("vaccination status engine", () => {
     expect(selectApplicableScheduleVersion(versions, "2026-08-25")?.code).toBe(
       "CURRENT",
     );
+  });
+
+  it("excludes current hexavalent doses when the infant series began before applicability", () => {
+    expect(
+      evaluateVaccinationDose(
+        {
+          dateOfBirth: "2024-01-01",
+          schedule: { ...twoMonthDose, recommendedAgeMonths: 6 },
+          seriesStartTiming: twoMonthDose,
+          version: currentVersion,
+        },
+        "2026-08-25",
+      ),
+    ).toBeNull();
+  });
+
+  it("evaluates a child legitimately beginning hexavalent after applicability", () => {
+    expect(
+      evaluateVaccinationDose(
+        {
+          dateOfBirth: "2025-12-01",
+          schedule: twoMonthDose,
+          seriesStartTiming: twoMonthDose,
+          version: currentVersion,
+        },
+        "2026-03-01",
+      ),
+    ).toBe("OVERDUE");
+  });
+
+  it("treats effectiveFrom as an inclusive hexavalent cohort boundary", () => {
+    expect(
+      isDoseApplicableToVersion({
+        dateOfBirth: "2025-11-12",
+        schedule: twoMonthDose,
+        seriesStartTiming: twoMonthDose,
+        version: currentVersion,
+      }),
+    ).toBe(true);
+    expect(
+      isDoseApplicableToVersion({
+        dateOfBirth: "2025-11-11",
+        schedule: twoMonthDose,
+        seriesStartTiming: twoMonthDose,
+        version: currentVersion,
+      }),
+    ).toBe(false);
+  });
+
+  it("preserves factual historical vaccination for an otherwise inapplicable dose", () => {
+    expect(
+      evaluateVaccinationDose(
+        {
+          dateOfBirth: "2024-01-01",
+          schedule: twoMonthDose,
+          seriesStartTiming: twoMonthDose,
+          version: currentVersion,
+        },
+        "2026-08-25",
+        "2024-03-01",
+      ),
+    ).toBe("APPLIED");
+  });
+
+  it("keeps a current non-series dose whose opportunity follows applicability", () => {
+    const fourYearDose = {
+      ...twoMonthDose,
+      recommendedAgeMonths: 48,
+    };
+    expect(
+      evaluateVaccinationDose(
+        {
+          dateOfBirth: "2024-01-01",
+          schedule: fourYearDose,
+          version: currentVersion,
+        },
+        "2026-08-25",
+      ),
+    ).toBe("PENDING");
   });
 });

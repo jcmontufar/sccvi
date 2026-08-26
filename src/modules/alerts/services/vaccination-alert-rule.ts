@@ -1,6 +1,6 @@
 import type { VaccinationStatus } from "@/modules/vaccination/services/vaccination-status";
 
-export function shouldCreateVaccinationAlert(status: VaccinationStatus) {
+export function shouldCreateVaccinationAlert(status: VaccinationStatus | null) {
   return status === "OVERDUE";
 }
 

@@ -112,12 +112,35 @@ cutover criterion or catch-up equivalence algorithm. SCCVI therefore:
 ## Version applicability
 
 `VaccineScheduleVersion` stores authority, publication, effective dates, URL and
-source hash. Current status evaluation selects the latest active version whose
-effective interval contains the Guatemala business date. The initial version's
-effective date is its dated publication, 2026-01-12, because the source does not
-state a different retroactive date. This is the least destructive explicit
-assumption and can be superseded by a later version without rewriting factual
-`Vaccination` rows.
+source hash. Current status evaluation first selects the latest active version
+whose effective interval contains the Guatemala business date, then evaluates
+applicability for each dose opportunity. An unrecorded dose is not assessed
+under a version when its complete documented opportunity is before
+`effectiveFrom` or starts after `effectiveTo`.
+
+The initial version's effective date is its dated publication, 2026-01-12,
+because the source does not state a different retroactive date. The official
+hexavalent transition statement says that new schedules begin with hexavalent
+while already-started pentavalent/polio schedules may be completed. It does not
+provide enough information to deterministically reconcile every historical
+child, nor does it define product equivalence or catch-up rules. SCCVI therefore
+uses this conservative cohort rule for the hexavalent series:
+
+- the child's first routine hexavalent opportunity (the 2-month dose) must fall
+  on or after `effectiveFrom` and within the version interval;
+- otherwise unrecorded hexavalent rows from this version are excluded from the
+  public status list and cannot become `OVERDUE` or generate alerts;
+- no fourth public status is introduced: omission represents an unresolved,
+  inapplicable historical reconciliation rather than a clinical conclusion;
+- a factual `Vaccination` is never mutated or deleted by applicability
+  evaluation; when linked to an evaluated current-version row, it remains
+  visible as `APPLIED` even if the unrecorded opportunity would be excluded.
+
+For non-series doses, an opportunity supported by the current source remains
+assessable when its documented target/window overlaps the version interval.
+This does not establish pentavalent/IPV equivalence, infer catch-up, or silently
+convert prior records. A future authoritative reconciliation policy may replace
+this rule prospectively without rewriting factual `Vaccination` rows.
 
 Every vaccination remains linked to the exact schedule row and version used at
 registration. Import updates matching version/dose identities, marks removed

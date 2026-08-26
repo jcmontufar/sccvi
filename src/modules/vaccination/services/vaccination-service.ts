@@ -12,9 +12,9 @@ import {
 import { createVaccinationInputSchema } from "@/modules/vaccination/schemas/vaccination-schema";
 import { assertVaccinationRegistration } from "@/modules/vaccination/services/vaccination-registration";
 import {
+  evaluateVaccinationDose,
   getScheduledDate,
   getVaccinationEvaluationDate,
-  getVaccinationStatus,
 } from "@/modules/vaccination/services/vaccination-status";
 
 function dateOnly(value: Date) {
@@ -60,37 +60,73 @@ export async function listChildVaccinationStatuses(
     ],
   });
   const birthDate = dateOnly(child.dateOfBirth);
+  const versionApplicability = {
+    code: version.code,
+    effectiveFrom: dateOnly(version.effectiveFrom),
+    effectiveTo: version.effectiveTo ? dateOnly(version.effectiveTo) : null,
+  };
+  const hexavalentSeriesStart = schedules.find(
+    (schedule) =>
+      schedule.vaccine.officialCode === "HEXAVALENT" &&
+      schedule.doseNumber === 1,
+  );
+  const hexavalentSeriesStartTiming = hexavalentSeriesStart
+    ? {
+        recommendedAgeMonths: hexavalentSeriesStart.recommendedAgeMonths,
+        recommendedAgeDays: hexavalentSeriesStart.recommendedAgeDays,
+        minimumAgeMonths: hexavalentSeriesStart.minimumAgeMonths,
+        minimumAgeDays: hexavalentSeriesStart.minimumAgeDays,
+        maximumAgeMonths: hexavalentSeriesStart.maximumAgeMonths,
+        maximumAgeDays: hexavalentSeriesStart.maximumAgeDays,
+        maximumAgeExclusive: hexavalentSeriesStart.maximumAgeExclusive,
+      }
+    : undefined;
   return {
     child,
     version,
     evaluationDate,
-    doses: schedules.map((schedule) => {
+    doses: schedules.flatMap((schedule) => {
       const vaccination = schedule.vaccinations[0];
+      const applicationDate = vaccination
+        ? dateOnly(vaccination.applicationDate)
+        : null;
       const timing = {
         recommendedAgeMonths: schedule.recommendedAgeMonths,
         recommendedAgeDays: schedule.recommendedAgeDays,
+        minimumAgeMonths: schedule.minimumAgeMonths,
+        minimumAgeDays: schedule.minimumAgeDays,
         maximumAgeMonths: schedule.maximumAgeMonths,
         maximumAgeDays: schedule.maximumAgeDays,
         maximumAgeExclusive: schedule.maximumAgeExclusive,
       };
-      return {
-        id: schedule.id,
-        doseCode: schedule.doseCode ?? schedule.id,
-        doseName: schedule.doseName ?? `Dosis ${schedule.doseNumber}`,
-        vaccineName: schedule.vaccine.name,
-        scheduledDate: getScheduledDate(birthDate, timing),
-        timingNote: schedule.timingNote,
-        status: getVaccinationStatus(
-          birthDate,
-          evaluationDate,
-          timing,
-          vaccination ? dateOnly(vaccination.applicationDate) : null,
-        ),
-        vaccinationId: vaccination?.id ?? null,
-        applicationDate: vaccination
-          ? dateOnly(vaccination.applicationDate)
-          : null,
-      };
+      const status = evaluateVaccinationDose(
+        {
+          dateOfBirth: birthDate,
+          schedule: timing,
+          version: versionApplicability,
+          seriesStartTiming:
+            schedule.vaccine.officialCode === "HEXAVALENT"
+              ? hexavalentSeriesStartTiming
+              : undefined,
+        },
+        evaluationDate,
+        applicationDate,
+      );
+      return status
+        ? [
+            {
+              id: schedule.id,
+              doseCode: schedule.doseCode ?? schedule.id,
+              doseName: schedule.doseName ?? `Dosis ${schedule.doseNumber}`,
+              vaccineName: schedule.vaccine.name,
+              scheduledDate: getScheduledDate(birthDate, timing),
+              timingNote: schedule.timingNote,
+              status,
+              vaccinationId: vaccination?.id ?? null,
+              applicationDate,
+            },
+          ]
+        : [];
     }),
   };
 }
