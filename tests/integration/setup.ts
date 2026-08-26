@@ -1,3 +1,3 @@
-import { requireIsolatedTestDatabase } from "../support/test-environment";
+import { verifyIsolatedTestDatabase } from "../support/test-environment";
 
-requireIsolatedTestDatabase();
+await verifyIsolatedTestDatabase();

@@ -3,7 +3,10 @@ import { PrismaPg } from "@prisma/adapter-pg";
 import { afterAll, describe, expect, it } from "vitest";
 
 import { PrismaClient } from "@/generated/prisma/client";
-import { requireIsolatedTestDatabase } from "../support/test-environment";
+import {
+  requireIsolatedTestDatabase,
+  verifyIsolatedTestDatabase,
+} from "../support/test-environment";
 
 const prisma = new PrismaClient({
   adapter: new PrismaPg({ connectionString: requireIsolatedTestDatabase() }),
@@ -12,6 +15,7 @@ const suffix = randomUUID();
 const ids: Record<string, string> = {};
 
 afterAll(async () => {
+  await verifyIsolatedTestDatabase();
   await prisma.$transaction(async (transaction) => {
     if (ids.qr) await transaction.qRToken.deleteMany({ where: { id: ids.qr } });
     if (ids.alert)

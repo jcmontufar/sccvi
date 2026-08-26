@@ -1,34 +1,43 @@
 import { config } from "dotenv";
+import { Pool, type PoolClient } from "pg";
+
+import {
+  validateTestDatabaseEnvironment,
+  verifyPersistedTestDatabaseIdentity,
+} from "../../src/lib/testing/test-database-identity";
 
 config({ path: ".env.test.local", quiet: true });
 
-const confirmation = "isolated-fictional-test-data-only";
-
 export function requireIsolatedTestDatabase() {
-  const testDatabaseUrl = process.env.TEST_DATABASE_URL;
-  if (!testDatabaseUrl) {
-    throw new Error(
-      "LIVE TEST EXECUTION BLOCKED: TEST_DATABASE_URL is not configured.",
-    );
-  }
-  if (process.env.SCCVI_TEST_DATABASE_CONFIRMED !== confirmation) {
-    throw new Error(
-      "LIVE TEST EXECUTION BLOCKED: the isolated test database confirmation is missing.",
-    );
-  }
-  if (
-    process.env.NODE_ENV === "production" ||
-    testDatabaseUrl === process.env.DATABASE_URL ||
-    testDatabaseUrl === process.env.DIRECT_URL
-  ) {
-    throw new Error(
-      "Unsafe test database configuration: refusing development/production database access.",
-    );
-  }
-  return testDatabaseUrl;
+  return validateTestDatabaseEnvironment(process.env).databaseUrl;
 }
 
-export function requireE2EEnvironment() {
+export async function verifyIsolatedTestDatabase(
+  existingClient?: PoolClient,
+): Promise<void> {
+  const configuration = validateTestDatabaseEnvironment(process.env);
+  if (existingClient) {
+    await verifyPersistedTestDatabaseIdentity(
+      existingClient,
+      configuration.expectedIdentity,
+    );
+    return;
+  }
+
+  const pool = new Pool({ connectionString: configuration.databaseUrl });
+  const client = await pool.connect();
+  try {
+    await verifyPersistedTestDatabaseIdentity(
+      client,
+      configuration.expectedIdentity,
+    );
+  } finally {
+    client.release();
+    await pool.end();
+  }
+}
+
+export async function requireE2EEnvironment() {
   requireIsolatedTestDatabase();
   if (process.env.E2E_TARGET_CONFIRMED !== "isolated-test-application-only") {
     throw new Error(
@@ -48,4 +57,5 @@ export function requireE2EEnvironment() {
       `LIVE TEST EXECUTION BLOCKED: missing ${missing.join(", ")}.`,
     );
   }
+  await verifyIsolatedTestDatabase();
 }

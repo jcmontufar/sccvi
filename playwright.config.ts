@@ -2,7 +2,7 @@ import { defineConfig, devices } from "@playwright/test";
 
 import { requireE2EEnvironment } from "./tests/support/test-environment";
 
-requireE2EEnvironment();
+await requireE2EEnvironment();
 
 const baseURL = process.env.E2E_BASE_URL ?? "http://127.0.0.1:3000";
 

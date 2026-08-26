@@ -3,7 +3,10 @@ import { PrismaPg } from "@prisma/adapter-pg";
 import { afterAll, describe, expect, it } from "vitest";
 
 import { PrismaClient } from "@/generated/prisma/client";
-import { requireIsolatedTestDatabase } from "../support/test-environment";
+import {
+  requireIsolatedTestDatabase,
+  verifyIsolatedTestDatabase,
+} from "../support/test-environment";
 
 const prisma = new PrismaClient({
   adapter: new PrismaPg({ connectionString: requireIsolatedTestDatabase() }),
@@ -12,6 +15,7 @@ const createdIds: string[] = [];
 
 afterAll(async () => {
   if (createdIds.length) {
+    await verifyIsolatedTestDatabase();
     await prisma.auditLog.deleteMany({ where: { id: { in: createdIds } } });
   }
   await prisma.$disconnect();

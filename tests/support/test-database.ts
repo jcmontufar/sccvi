@@ -1,6 +1,9 @@
 import { Pool } from "pg";
 
-import { requireIsolatedTestDatabase } from "./test-environment";
+import {
+  requireIsolatedTestDatabase,
+  verifyIsolatedTestDatabase,
+} from "./test-environment";
 
 export async function cleanupCoreRegistryFixture(names: {
   community: string;
@@ -10,6 +13,7 @@ export async function cleanupCoreRegistryFixture(names: {
   const pool = new Pool({ connectionString: requireIsolatedTestDatabase() });
   const client = await pool.connect();
   try {
+    await verifyIsolatedTestDatabase(client);
     await client.query("BEGIN");
     const community = await client.query<{ id: string }>(
       'SELECT "id" FROM "Community" WHERE "name" = $1 LIMIT 1',
