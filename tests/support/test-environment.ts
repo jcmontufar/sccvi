@@ -1,12 +1,10 @@
-import { config } from "dotenv";
 import { Pool, type PoolClient } from "pg";
 
 import {
   validateTestDatabaseEnvironment,
   verifyPersistedTestDatabaseIdentity,
 } from "../../src/lib/testing/test-database-identity";
-
-config({ path: ".env.test.local", quiet: true });
+import "./load-test-environment";
 
 export function requireIsolatedTestDatabase() {
   return validateTestDatabaseEnvironment(process.env).databaseUrl;
