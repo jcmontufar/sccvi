@@ -14,6 +14,7 @@ import {
   resetPinAttemptState,
 } from "@/modules/qr/services/qr-pin-throttle";
 import {
+  qrCredentialIdSchema,
   qrPinSchema,
   qrTokenInputSchema,
 } from "@/modules/qr/schemas/qr-schema";
@@ -42,6 +43,10 @@ describe("QR credential security", () => {
     expect(
       qrTokenInputSchema.safeParse({ expiresAt: "", pin: "12345" }).success,
     ).toBe(false);
+  });
+
+  it("rejects a malformed credential identifier before persistence access", () => {
+    expect(qrCredentialIdSchema.safeParse("not-a-uuid").success).toBe(false);
   });
 
   it("locks repeated failures after the configured limit", () => {

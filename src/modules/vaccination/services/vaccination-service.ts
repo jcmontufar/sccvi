@@ -5,6 +5,7 @@ import { ApplicationError } from "@/lib/errors/application-error";
 import { getPrisma } from "@/lib/prisma";
 import { authorize } from "@/modules/auth/authorization";
 import type { ApplicationUser } from "@/modules/auth/types";
+import { recordAuditEvent } from "@/modules/audit/services/audit-service";
 import {
   childAccessResource,
   getChild,
@@ -179,16 +180,14 @@ export async function createVaccination(
           notes: data.notes,
         },
       });
-      await transaction.auditLog.create({
-        data: {
-          userId: user.id,
-          action: "VACCINATION_CREATED",
-          entityType: "Vaccination",
-          entityId: vaccination.id,
-          metadata: {
-            childId: child.id,
-            vaccineScheduleId: schedule.id,
-          },
+      await recordAuditEvent(transaction, {
+        userId: user.id,
+        action: "VACCINATION_CREATED",
+        entityType: "Vaccination",
+        entityId: vaccination.id,
+        metadata: {
+          childId: child.id,
+          vaccineScheduleId: schedule.id,
         },
       });
       return vaccination;

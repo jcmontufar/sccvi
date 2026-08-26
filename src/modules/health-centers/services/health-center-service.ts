@@ -2,6 +2,7 @@ import "server-only";
 
 import { ApplicationError } from "@/lib/errors/application-error";
 import { getPrisma } from "@/lib/prisma";
+import { activeStateSchema } from "@/lib/validation/common-schema";
 import { authorize } from "@/modules/auth/authorization";
 import type { ApplicationUser } from "@/modules/auth/types";
 import {
@@ -70,10 +71,11 @@ export async function setHealthCenterActive(
   isActive: boolean,
 ) {
   const healthCenterId = healthCenterIdSchema.parse(id);
+  const activeState = activeStateSchema.parse(isActive);
   authorize(user, "health-center:change-status", { healthCenterId });
   return getPrisma().healthCenter.update({
     where: { id: healthCenterId },
-    data: { isActive },
+    data: { isActive: activeState },
     select: healthCenterSelect,
   });
 }

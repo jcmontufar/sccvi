@@ -1,4 +1,5 @@
 import { ApplicationError } from "@/lib/errors/application-error";
+import { activeStateSchema } from "@/lib/validation/common-schema";
 import { authorize } from "@/modules/auth/authorization";
 import type { ApplicationUser } from "@/modules/auth/types";
 import {
@@ -103,12 +104,13 @@ export class CommunityService {
   }
 
   async setActive(user: ApplicationUser, id: string, isActive: boolean) {
+    const activeState = activeStateSchema.parse(isActive);
     const communityId = communityIdSchema.parse(id);
     const existing = await this.repository.findById(communityId);
     if (!existing) throw new ApplicationError("COMMUNITY_NOT_FOUND");
     authorize(user, "community:deactivate", {
       healthCenterId: existing.healthCenterId,
     });
-    return this.repository.setActive(communityId, isActive);
+    return this.repository.setActive(communityId, activeState);
   }
 }

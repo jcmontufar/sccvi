@@ -4,6 +4,7 @@ import { ApplicationError } from "@/lib/errors/application-error";
 import { getPrisma } from "@/lib/prisma";
 import { authorize } from "@/modules/auth/authorization";
 import type { ApplicationUser } from "@/modules/auth/types";
+import { recordAuditEvent } from "@/modules/audit/services/audit-service";
 import {
   childAccessResource,
   getChild,
@@ -188,14 +189,12 @@ export async function createGrowthRecord(
       });
     }
     await calculateAndPersistGrowthAssessments(transaction, child, record);
-    await transaction.auditLog.create({
-      data: {
-        userId: user.id,
-        action: "GROWTH_RECORD_CREATED",
-        entityType: "GrowthRecord",
-        entityId: record.id,
-        metadata: { childId: child.id },
-      },
+    await recordAuditEvent(transaction, {
+      userId: user.id,
+      action: "GROWTH_RECORD_CREATED",
+      entityType: "GrowthRecord",
+      entityId: record.id,
+      metadata: { childId: child.id },
     });
     return record;
   });
@@ -275,29 +274,25 @@ export async function correctGrowthRecord(
       },
     });
     await calculateAndPersistGrowthAssessments(transaction, child, corrected);
-    await transaction.auditLog.create({
-      data: {
-        userId: user.id,
-        action: "GROWTH_RECORD_CORRECTED",
-        entityType: "GrowthRecord",
-        entityId: record.id,
-        metadata: {
-          reason: data.correctionReason,
-          changedFields,
-          previousMeasurement: {
-            measurementDate: record.measurementDate.toISOString().slice(0, 10),
-            weightKg: record.weightKg.toString(),
-            heightCm: record.heightCm.toString(),
-            measurementMethod: record.measurementMethod,
-            notes: record.notes,
-          },
-          correctedMeasurement: {
-            measurementDate: data.measurementDate,
-            weightKg: String(data.weightKg),
-            heightCm: String(data.heightCm),
-            measurementMethod: data.measurementMethod,
-            notes: data.notes,
-          },
+    await recordAuditEvent(transaction, {
+      userId: user.id,
+      action: "GROWTH_RECORD_CORRECTED",
+      entityType: "GrowthRecord",
+      entityId: record.id,
+      metadata: {
+        reason: data.correctionReason,
+        changedFields,
+        previousMeasurement: {
+          measurementDate: record.measurementDate.toISOString().slice(0, 10),
+          weightKg: record.weightKg.toString(),
+          heightCm: record.heightCm.toString(),
+          measurementMethod: record.measurementMethod,
+        },
+        correctedMeasurement: {
+          measurementDate: data.measurementDate,
+          weightKg: String(data.weightKg),
+          heightCm: String(data.heightCm),
+          measurementMethod: data.measurementMethod,
         },
       },
     });

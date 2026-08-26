@@ -1,0 +1,138 @@
+openapi: 3.1.0
+info:
+  title: SCCVI REST API
+  version: 0.1.0
+  description: >-
+    Endpoints REST públicos actualmente implementados por SCCVI. Las Server
+    Actions y las páginas de tarjeta digital no forman parte de esta API.
+servers:
+  - url: /api/v1
+security:
+  - sessionCookie: []
+paths:
+  /reports/pdf:
+    get:
+      operationId: exportReportPdf
+      summary: Exportar un reporte autorizado en PDF
+      parameters:
+        - $ref: "#/components/parameters/ReportType"
+        - $ref: "#/components/parameters/FromDate"
+        - $ref: "#/components/parameters/ToDate"
+      responses:
+        "200":
+          description: Archivo PDF del reporte solicitado.
+          headers:
+            Content-Disposition:
+              schema:
+                type: string
+          content:
+            application/pdf:
+              schema:
+                type: string
+                contentEncoding: binary
+        "400":
+          $ref: "#/components/responses/ReportError"
+        "401":
+          $ref: "#/components/responses/ReportError"
+        "403":
+          $ref: "#/components/responses/ReportError"
+        "500":
+          $ref: "#/components/responses/ReportError"
+  /reports/excel:
+    get:
+      operationId: exportReportExcel
+      summary: Exportar un reporte autorizado en Excel
+      parameters:
+        - $ref: "#/components/parameters/ReportType"
+        - $ref: "#/components/parameters/FromDate"
+        - $ref: "#/components/parameters/ToDate"
+      responses:
+        "200":
+          description: Libro Excel del reporte solicitado.
+          headers:
+            Content-Disposition:
+              schema:
+                type: string
+          content:
+            application/vnd.openxmlformats-officedocument.spreadsheetml.sheet:
+              schema:
+                type: string
+                contentEncoding: binary
+        "400":
+          $ref: "#/components/responses/ReportError"
+        "401":
+          $ref: "#/components/responses/ReportError"
+        "403":
+          $ref: "#/components/responses/ReportError"
+        "500":
+          $ref: "#/components/responses/ReportError"
+components:
+  securitySchemes:
+    sessionCookie:
+      type: apiKey
+      in: cookie
+      name: sb-access-token
+      description: >-
+        Sesión Supabase gestionada mediante cookies HTTP. El nombre físico de
+        la cookie puede variar según la configuración del proyecto.
+  parameters:
+    ReportType:
+      name: type
+      in: query
+      required: false
+      description: Tipo de reporte; por defecto communities.
+      schema:
+        type: string
+        default: communities
+        enum:
+          - communities
+          - growth
+          - vaccinations
+          - incomplete-vaccination
+          - alerts
+    FromDate:
+      name: from
+      in: query
+      required: false
+      description: Fecha inicial inclusiva.
+      schema:
+        type: string
+        format: date
+    ToDate:
+      name: to
+      in: query
+      required: false
+      description: Fecha final inclusiva; no puede preceder a from.
+      schema:
+        type: string
+        format: date
+  responses:
+    ReportError:
+      description: Solicitud inválida, sesión ausente o acceso no autorizado.
+      content:
+        application/json:
+          schema:
+            $ref: "#/components/schemas/ErrorResponse"
+  schemas:
+    ErrorResponse:
+      type: object
+      additionalProperties: false
+      required:
+        - success
+        - error
+      properties:
+        success:
+          type: boolean
+          const: false
+        error:
+          type: object
+          additionalProperties: false
+          required:
+            - code
+            - message
+          properties:
+            code:
+              type: string
+              const: REPORT_ERROR
+            message:
+              type: string

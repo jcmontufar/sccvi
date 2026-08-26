@@ -1,5 +1,7 @@
 import { z } from "zod";
 
+export const qrCredentialIdSchema = z.uuid("La credencial no es válida.");
+
 export const qrTokenInputSchema = z.object({
   expiresAt: z
     .union([z.literal(""), z.iso.datetime({ offset: true })])

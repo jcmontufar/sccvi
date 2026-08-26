@@ -4,11 +4,13 @@ import { ApplicationError } from "@/lib/errors/application-error";
 import { getPrisma } from "@/lib/prisma";
 import { authorize } from "@/modules/auth/authorization";
 import type { ApplicationUser } from "@/modules/auth/types";
+import { recordAuditEvent } from "@/modules/audit/services/audit-service";
 import {
   childAccessResource,
   getChild,
 } from "@/modules/children/services/child-service";
 import {
+  qrCredentialIdSchema,
   qrOpaqueTokenSchema,
   qrPinSchema,
   qrTokenInputSchema,
@@ -69,12 +71,14 @@ export async function generateChildCredential(
       },
       select: { id: true },
     });
-    await transaction.auditLog.create({
-      data: {
-        userId: user.id,
-        action: "QR_GENERATED",
-        entityType: "QRToken",
-        entityId: created.id,
+    await recordAuditEvent(transaction, {
+      userId: user.id,
+      action: "QR_GENERATED",
+      entityType: "QRToken",
+      entityId: created.id,
+      metadata: {
+        childId: child.id,
+        accessProtectionEnabled: Boolean(pinHash),
       },
     });
     return created;
@@ -89,8 +93,9 @@ export async function revokeChildCredential(
 ) {
   const child = await getChild(user, childId);
   authorize(user, "qr:manage", childAccessResource(child));
+  const parsedCredentialId = qrCredentialIdSchema.parse(credentialId);
   const credential = await getPrisma().qRToken.findFirst({
-    where: { id: credentialId, childId: child.id },
+    where: { id: parsedCredentialId, childId: child.id },
     select: { id: true },
   });
   if (!credential) throw new ApplicationError("QR_TOKEN_INVALID");
@@ -99,13 +104,12 @@ export async function revokeChildCredential(
       where: { id: credential.id },
       data: { revokedAt: new Date() },
     });
-    await transaction.auditLog.create({
-      data: {
-        userId: user.id,
-        action: "QR_REVOKED",
-        entityType: "QRToken",
-        entityId: credential.id,
-      },
+    await recordAuditEvent(transaction, {
+      userId: user.id,
+      action: "QR_REVOKED",
+      entityType: "QRToken",
+      entityId: credential.id,
+      metadata: { childId: child.id },
     });
     return revoked;
   });

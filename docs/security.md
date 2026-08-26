@@ -79,6 +79,16 @@ User-visible errors use safe Spanish messages. Provider errors, stack traces, SQ
 credentials, tokens, passwords, and internal security details must not be returned to the
 interface or written to audit metadata.
 
+Critical audit events use the centralized server-only audit service. Metadata
+is explicitly selected and credential-like keys are removed recursively.
+Critical audit failures propagate inside the domain transaction so the
+associated operation rolls back rather than succeeding without traceability.
+
+Automated integration and E2E execution must use the isolated environment guard
+documented in `docs/testing.md`. The guard refuses the shared development URL,
+production mode and unconfirmed targets. Playwright does not retain traces or
+videos because QR/PIN workflows may contain ephemeral credentials.
+
 ## BATCH-04 Authorization Boundaries
 
 Vaccine catalog mutation is restricted to `ADMIN`; health staff and center managers may

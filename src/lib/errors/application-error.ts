@@ -1,3 +1,5 @@
+import { ZodError } from "zod";
+
 export type ApplicationErrorCode =
   | "UNAUTHORIZED"
   | "FORBIDDEN"
@@ -73,4 +75,18 @@ export function getSafeErrorMessage(error: unknown) {
   return error instanceof ApplicationError
     ? error.message
     : "No fue posible completar la operación. Inténtalo de nuevo.";
+}
+
+export function getSafeHttpStatus(error: unknown) {
+  if (error instanceof ZodError) return 400;
+  if (!(error instanceof ApplicationError)) return 500;
+  if (error.code === "UNAUTHORIZED") return 401;
+  if (
+    error.code === "FORBIDDEN" ||
+    error.code === "PROFILE_INACTIVE" ||
+    error.code === "PROFILE_NOT_FOUND"
+  ) {
+    return 403;
+  }
+  return 400;
 }

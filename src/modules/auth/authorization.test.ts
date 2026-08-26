@@ -65,4 +65,49 @@ describe("authorization", () => {
       can({ ...user("ADMIN"), isActive: false }, "health-center:list"),
     ).toBe(false);
   });
+
+  it.each([
+    "health-center:read",
+    "community:read",
+    "guardian:read",
+    "child:read",
+    "growth:list",
+    "growth:create",
+    "vaccination:list",
+    "vaccination:create",
+    "alert:read",
+    "alert:resolve",
+    "notification:create",
+    "campaign:read",
+    "qr:manage",
+    "report:read",
+  ] as const)("denies cross-center access for %s", (action) => {
+    expect(can(user("HEALTH_STAFF"), action, { healthCenterId: centerB })).toBe(
+      false,
+    );
+  });
+
+  it("keeps center managers operationally read-only for clinical records", () => {
+    const manager = user("CENTER_MANAGER");
+    const resource = { healthCenterId: centerA };
+    expect(can(manager, "child:read", resource)).toBe(true);
+    expect(can(manager, "child:create", resource)).toBe(false);
+    expect(can(manager, "growth:list", resource)).toBe(true);
+    expect(can(manager, "growth:create", resource)).toBe(false);
+    expect(can(manager, "vaccination:list", resource)).toBe(true);
+    expect(can(manager, "vaccination:create", resource)).toBe(false);
+    expect(can(manager, "qr:manage", resource)).toBe(false);
+  });
+
+  it("allows guardians only associated read paths", () => {
+    const guardian = user("GUARDIAN", null);
+    const associated = { guardianUserIds: [guardian.id] };
+    expect(can(guardian, "child:read", associated)).toBe(true);
+    expect(can(guardian, "growth:list", associated)).toBe(true);
+    expect(can(guardian, "vaccination:list", associated)).toBe(true);
+    expect(can(guardian, "alert:read", associated)).toBe(true);
+    expect(can(guardian, "dashboard:read", associated)).toBe(true);
+    expect(can(guardian, "report:read", associated)).toBe(false);
+    expect(can(guardian, "qr:manage", associated)).toBe(false);
+  });
 });
