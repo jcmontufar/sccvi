@@ -39,9 +39,24 @@ test("PIN incorrecto se deniega y los intentos repetidos se bloquean", async ({
   await page.goto(`/tarjeta/${fixture("E2E_LOCKOUT_QR_TOKEN")}`);
   for (let attempt = 0; attempt < 5; attempt += 1) {
     await page.getByLabel("PIN").fill(String(900000 + attempt));
-    await page.getByRole("button", { name: "Ver tarjeta" }).click();
-    await expect(page.getByText(/acceso.*no pudo ser validado/i)).toBeVisible();
+    await Promise.all([
+      page.waitForResponse(
+        (response) => response.request().method() === "POST",
+      ),
+      page.getByRole("button", { name: "Ver tarjeta" }).click(),
+    ]);
+    await expect(
+      page.getByText(/no fue posible verificar la credencial/i),
+    ).toBeVisible();
   }
+  await page.getByLabel("PIN").fill(fixture("E2E_QR_PIN")!);
+  await Promise.all([
+    page.waitForResponse((response) => response.request().method() === "POST"),
+    page.getByRole("button", { name: "Ver tarjeta" }).click(),
+  ]);
+  await expect(
+    page.getByText(/no fue posible verificar la credencial/i),
+  ).toBeVisible();
 });
 
 test("PIN correcto permite acceso", async ({ page }) => {

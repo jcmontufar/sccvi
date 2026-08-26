@@ -56,7 +56,7 @@ Priority levels:
 
 ### TASK-001 — Initialize Next.js Application
 
-Status: TODO  
+Status: DONE
 Priority: P1  
 Dependencies: None
 
@@ -86,7 +86,7 @@ Acceptance Criteria:
 
 ### TASK-002 — Configure TypeScript Strict Mode
 
-Status: TODO  
+Status: DONE
 Priority: P1  
 Dependencies: TASK-001
 
@@ -106,7 +106,7 @@ Acceptance Criteria:
 
 ### TASK-003 — Configure Code Quality
 
-Status: TODO  
+Status: DONE
 Priority: P1  
 Dependencies: TASK-001
 
@@ -134,7 +134,7 @@ Acceptance Criteria:
 
 ### TASK-004 — Configure UI Foundation
 
-Status: TODO  
+Status: DONE
 Priority: P2  
 Dependencies: TASK-001
 
@@ -156,7 +156,7 @@ Acceptance Criteria:
 
 ### TASK-005 — Environment Validation
 
-Status: TODO  
+Status: DONE
 Priority: P1  
 Dependencies: TASK-001
 
@@ -180,7 +180,7 @@ Acceptance Criteria:
 
 ### TASK-006 — Configure Supabase Project Integration
 
-Status: TODO  
+Status: DONE
 Priority: P1  
 Dependencies: TASK-005
 
@@ -202,7 +202,7 @@ Acceptance Criteria:
 
 ### TASK-007 — Configure Prisma
 
-Status: TODO  
+Status: DONE
 Priority: P1  
 Dependencies: TASK-005
 
@@ -223,7 +223,7 @@ Acceptance Criteria:
 
 ### TASK-008 — Initial Prisma Domain Schema
 
-Status: TODO  
+Status: DONE
 Priority: P1  
 Dependencies: TASK-007
 
@@ -254,7 +254,7 @@ Acceptance Criteria:
 
 ### TASK-009 — Initial Database Migration
 
-Status: TODO  
+Status: DONE
 Priority: P1  
 Dependencies: TASK-008
 
@@ -274,7 +274,7 @@ Acceptance Criteria:
 
 ### TASK-010 — Development Seed Foundation
 
-Status: TODO  
+Status: DONE
 Priority: P2  
 Dependencies: TASK-009
 
@@ -306,7 +306,7 @@ Acceptance Criteria:
 
 ### TASK-011 — Supabase Authentication Foundation
 
-Status: TODO  
+Status: DONE
 Priority: P1  
 Dependencies: TASK-006, TASK-009
 
@@ -327,7 +327,7 @@ Acceptance Criteria:
 
 ### TASK-012 — Login Flow
 
-Status: TODO  
+Status: DONE
 Priority: P1  
 Dependencies: TASK-011
 
@@ -348,7 +348,7 @@ Acceptance Criteria:
 
 ### TASK-013 — Application User Profile
 
-Status: TODO  
+Status: DONE
 Priority: P1  
 Dependencies: TASK-011
 
@@ -367,7 +367,7 @@ Acceptance Criteria:
 
 ### TASK-014 — Authorization Service
 
-Status: TODO  
+Status: DONE
 Priority: P0  
 Dependencies: TASK-013
 
@@ -392,7 +392,7 @@ Acceptance Criteria:
 
 ### TASK-015 — Protected Application Layout
 
-Status: TODO  
+Status: DONE
 Priority: P1  
 Dependencies: TASK-012, TASK-014
 
@@ -416,7 +416,7 @@ Acceptance Criteria:
 
 ### TASK-016 — Health Center Domain
 
-Status: TODO  
+Status: DONE
 Priority: P2  
 Dependencies: TASK-009, TASK-014
 
@@ -435,7 +435,7 @@ Acceptance Criteria:
 
 ### TASK-017 — Health Center Administration
 
-Status: TODO  
+Status: DONE
 Priority: P2  
 Dependencies: TASK-016
 
@@ -456,7 +456,7 @@ Acceptance Criteria:
 
 ### TASK-018 — Community Domain
 
-Status: TODO  
+Status: DONE
 Priority: P1  
 Dependencies: TASK-009, TASK-014
 
@@ -476,7 +476,7 @@ Acceptance Criteria:
 
 ### TASK-019 — Community CRUD
 
-Status: TODO  
+Status: DONE
 Priority: P1  
 Dependencies: TASK-018
 
@@ -499,7 +499,7 @@ Acceptance Criteria:
 
 ### TASK-020 — Community User Interface
 
-Status: TODO  
+Status: DONE
 Priority: P2  
 Dependencies: TASK-019
 
@@ -523,7 +523,7 @@ Acceptance Criteria:
 
 ### TASK-021 — Guardian Domain
 
-Status: TODO  
+Status: DONE
 Priority: P1  
 Dependencies: TASK-009, TASK-014, TASK-018
 
@@ -543,7 +543,7 @@ Acceptance Criteria:
 
 ### TASK-022 — Guardian CRUD
 
-Status: TODO  
+Status: DONE
 Priority: P1  
 Dependencies: TASK-021
 
@@ -565,7 +565,7 @@ Acceptance Criteria:
 
 ### TASK-023 — Guardian User Interface
 
-Status: TODO  
+Status: DONE
 Priority: P2  
 Dependencies: TASK-022
 
@@ -587,7 +587,7 @@ Acceptance Criteria:
 
 ### TASK-024 — Child Domain
 
-Status: TODO  
+Status: DONE
 Priority: P1  
 Dependencies: TASK-009, TASK-014, TASK-018
 
@@ -607,7 +607,7 @@ Acceptance Criteria:
 
 ### TASK-025 — Child-Guardian Relationship
 
-Status: TODO  
+Status: DONE
 Priority: P0  
 Dependencies: TASK-021, TASK-024
 
@@ -628,7 +628,7 @@ Acceptance Criteria:
 
 ### TASK-026 — Guardian Resource Authorization
 
-Status: TODO  
+Status: DONE
 Priority: P0  
 Dependencies: TASK-014, TASK-025
 
@@ -647,7 +647,7 @@ Acceptance Criteria:
 
 ### TASK-027 — Child CRUD
 
-Status: TODO  
+Status: DONE
 Priority: P1  
 Dependencies: TASK-024, TASK-025
 
@@ -670,7 +670,7 @@ Acceptance Criteria:
 
 ### TASK-028 — Child User Interface
 
-Status: TODO  
+Status: DONE
 Priority: P1  
 Dependencies: TASK-027
 
@@ -692,7 +692,7 @@ Acceptance Criteria:
 
 ### TASK-029 — Child Profile Navigation
 
-Status: TODO  
+Status: DONE
 Priority: P2  
 Dependencies: TASK-028
 
@@ -719,7 +719,7 @@ Acceptance Criteria:
 
 ### TASK-030 — Growth Record Domain
 
-Status: TODO  
+Status: DONE
 Priority: P1  
 Dependencies: TASK-027
 
@@ -740,7 +740,7 @@ Acceptance Criteria:
 
 ### TASK-031 — Exact Age Calculation
 
-Status: TODO  
+Status: DONE
 Priority: P0  
 Dependencies: TASK-030
 
@@ -761,7 +761,7 @@ Acceptance Criteria:
 
 ### TASK-032 — Growth Record CRUD
 
-Status: TODO  
+Status: DONE
 Priority: P1  
 Dependencies: TASK-030, TASK-031
 
@@ -782,7 +782,7 @@ Acceptance Criteria:
 
 ### TASK-033 — Growth User Interface
 
-Status: TODO  
+Status: DONE
 Priority: P2  
 Dependencies: TASK-032
 
@@ -804,7 +804,7 @@ Acceptance Criteria:
 
 ### TASK-034 — Select and Document WHO Dataset
 
-Status: IN_REVIEW
+Status: DONE
 Priority: P0  
 Dependencies: External domain decision
 
@@ -828,7 +828,7 @@ No implementation may invent this information.
 
 ### TASK-035 — Import WHO Growth Reference Data
 
-Status: IN_REVIEW
+Status: DONE
 Priority: P0  
 Dependencies: TASK-034
 
@@ -848,7 +848,7 @@ Acceptance Criteria:
 
 ### TASK-036 — Growth Assessment Engine
 
-Status: IN_REVIEW
+Status: IN_PROGRESS
 Priority: P0  
 Dependencies: TASK-031, TASK-035
 
@@ -864,6 +864,11 @@ Implement:
 Implementation note: BATCH-05 persists z-score and percentile but leaves
 classification null because SCCVI has not approved classification thresholds.
 
+Remaining gap: official reference selection, LMS z-score, restricted extension,
+percentile and measurement-mode adjustment are implemented and tested.
+Classification remains incomplete until an approved clinical classification
+policy exists; TASK-048 remains blocked for the same decision.
+
 Acceptance Criteria:
 
 - Calculations use approved dataset
@@ -875,7 +880,7 @@ Acceptance Criteria:
 
 ### TASK-037 — Growth Assessment Persistence
 
-Status: IN_REVIEW
+Status: DONE
 Priority: P1  
 Dependencies: TASK-036
 
@@ -895,7 +900,7 @@ Acceptance Criteria:
 
 ### TASK-038 — Growth Charts
 
-Status: IN_REVIEW
+Status: DONE
 Priority: P2  
 Dependencies: TASK-036, TASK-037
 
@@ -920,7 +925,7 @@ Acceptance Criteria:
 
 ### TASK-039 — Vaccine Domain and CRUD
 
-Status: TODO  
+Status: DONE
 Priority: P1  
 Dependencies: TASK-014
 
@@ -940,7 +945,7 @@ Acceptance Criteria:
 
 ### TASK-040 — Vaccine Catalog UI
 
-Status: TODO  
+Status: DONE
 Priority: P2  
 Dependencies: TASK-039
 
@@ -961,7 +966,7 @@ Acceptance Criteria:
 
 ### TASK-041 — Select and Document Vaccination Schedule
 
-Status: IN_REVIEW
+Status: DONE
 Priority: P0  
 Dependencies: External domain decision
 
@@ -984,7 +989,7 @@ Do not invent schedule data.
 
 ### TASK-042 — Import Vaccination Schedule
 
-Status: IN_REVIEW
+Status: DONE
 Priority: P0  
 Dependencies: TASK-041
 
@@ -1003,7 +1008,7 @@ Acceptance Criteria:
 
 ### TASK-043 — Vaccination Status Engine
 
-Status: IN_REVIEW
+Status: DONE
 Priority: P0  
 Dependencies: TASK-042
 
@@ -1029,7 +1034,7 @@ Acceptance Criteria:
 
 ### TASK-044 — Vaccination Record Domain
 
-Status: IN_REVIEW
+Status: DONE
 Priority: P1  
 Dependencies: TASK-027, TASK-039
 
@@ -1049,7 +1054,7 @@ Acceptance Criteria:
 
 ### TASK-045 — Vaccination Registration
 
-Status: IN_REVIEW
+Status: DONE
 Priority: P1  
 Dependencies: TASK-042, TASK-044
 
@@ -1069,7 +1074,7 @@ Acceptance Criteria:
 
 ### TASK-046 — Vaccination User Interface
 
-Status: IN_REVIEW
+Status: DONE
 Priority: P2  
 Dependencies: TASK-045
 
@@ -1093,7 +1098,7 @@ Acceptance Criteria:
 
 ### TASK-047 — Alert Domain
 
-Status: TODO  
+Status: DONE
 Priority: P1  
 Dependencies: TASK-014, TASK-027
 
@@ -1116,7 +1121,7 @@ Acceptance Criteria:
 
 ### TASK-048 — Growth Alert Rules
 
-Status: BLOCKED  
+Status: BLOCKED
 Priority: P0  
 Dependencies: TASK-036, TASK-047
 
@@ -1137,7 +1142,7 @@ Acceptance Criteria:
 
 ### TASK-049 — Vaccination Alert Rules
 
-Status: IN_REVIEW
+Status: DONE
 Priority: P0  
 Dependencies: TASK-043, TASK-047
 
@@ -1158,7 +1163,7 @@ Acceptance Criteria:
 
 ### TASK-050 — Missed Follow-Up Alerts
 
-Status: IN_REVIEW
+Status: DONE
 Priority: P2  
 Dependencies: TASK-047
 
@@ -1176,7 +1181,7 @@ Acceptance Criteria:
 
 ### TASK-051 — Alert Management UI
 
-Status: TODO  
+Status: DONE
 Priority: P1  
 Dependencies: TASK-047
 
@@ -1200,7 +1205,7 @@ Acceptance Criteria:
 
 ### TASK-052 — Notification Service Abstraction
 
-Status: TODO  
+Status: DONE
 Priority: P1  
 Dependencies: TASK-047
 
@@ -1218,7 +1223,7 @@ Acceptance Criteria:
 
 ### TASK-053 — Select Email Provider
 
-Status: IN_REVIEW
+Status: DONE
 Priority: P1  
 Dependencies: External technical decision
 
@@ -1252,11 +1257,15 @@ Acceptance Criteria:
 - Test email can be delivered in approved environment
 - Failure is recorded correctly
 
+Remaining review: the Resend adapter and success/failure persistence have
+automated coverage, but this repository does not contain evidence of a real
+delivery from an approved external environment.
+
 ---
 
 ### TASK-055 — Alert Email Notifications
 
-Status: IN_REVIEW
+Status: DONE
 Priority: P1  
 Dependencies: TASK-054, TASK-048 and/or TASK-049
 
@@ -1282,7 +1291,7 @@ Acceptance Criteria:
 
 ### TASK-056 — Campaign Domain
 
-Status: TODO  
+Status: DONE
 Priority: P2  
 Dependencies: TASK-052
 
@@ -1350,7 +1359,7 @@ Acceptance Criteria:
 
 ### TASK-059 — QR Token Security Service
 
-Status: TODO  
+Status: DONE
 Priority: P0  
 Dependencies: TASK-014, TASK-027
 
@@ -1373,7 +1382,7 @@ Acceptance Criteria:
 
 ### TASK-060 — QR PIN Protection
 
-Status: TODO  
+Status: DONE
 Priority: P1  
 Dependencies: TASK-059
 
@@ -1393,7 +1402,7 @@ Acceptance Criteria:
 
 ### TASK-061 — Digital Card Access
 
-Status: TODO  
+Status: DONE
 Priority: P1  
 Dependencies: TASK-059
 
@@ -1414,7 +1423,7 @@ Acceptance Criteria:
 
 ### TASK-062 — QR Generation UI
 
-Status: TODO  
+Status: DONE
 Priority: P2  
 Dependencies: TASK-059, TASK-061
 
@@ -1437,7 +1446,7 @@ Acceptance Criteria:
 
 ### TASK-063 — Dashboard Query Layer
 
-Status: TODO  
+Status: DONE
 Priority: P2  
 Dependencies: Core registry and alert functionality
 
@@ -1460,7 +1469,7 @@ Acceptance Criteria:
 
 ### TASK-064 — Dashboard UI
 
-Status: TODO  
+Status: DONE
 Priority: P2  
 Dependencies: TASK-063
 
@@ -1510,7 +1519,7 @@ Acceptance Criteria:
 
 ### TASK-066 — PDF Report Export
 
-Status: TODO  
+Status: DONE
 Priority: P2  
 Dependencies: TASK-065
 
@@ -1524,7 +1533,7 @@ Acceptance Criteria:
 
 ### TASK-067 — Excel Report Export
 
-Status: TODO  
+Status: DONE
 Priority: P2  
 Dependencies: TASK-065
 
@@ -1542,7 +1551,7 @@ Acceptance Criteria:
 
 ### TASK-068 — Audit Service
 
-Status: IN_REVIEW
+Status: DONE
 Priority: P1  
 Dependencies: Core application foundation
 
@@ -1560,7 +1569,7 @@ Acceptance Criteria:
 
 ### TASK-069 — Integrate Critical Audit Events
 
-Status: IN_REVIEW
+Status: IN_PROGRESS
 Priority: P1  
 Dependencies: TASK-068
 
@@ -1578,13 +1587,18 @@ Acceptance Criteria:
 - Important operations create useful audit records
 - Trivial UI events are not excessively logged
 
+Remaining gap: child, growth, vaccination, alert and QR critical events use the
+central transactional service. User administration and relevant authentication
+event workflows are not implemented, so their listed audit events do not yet
+exist.
+
 ---
 
 ## EPIC-20 — API Documentation
 
 ### TASK-070 — OpenAPI Foundation
 
-Status: IN_REVIEW
+Status: DONE
 Priority: P2  
 Dependencies: Public REST endpoints exist
 
@@ -1605,7 +1619,7 @@ Acceptance Criteria:
 
 ### TASK-071 — Unit Test Coverage Review
 
-Status: IN_REVIEW
+Status: DONE
 Priority: P1  
 Dependencies: Core modules implemented
 
@@ -1630,12 +1644,12 @@ Acceptance Criteria:
 
 ### TASK-072 — Integration Test Suite
 
-Status: BLOCKED
+Status: DONE
 Priority: P1  
 Dependencies: Core modules implemented
 
-Blocked reason: safe infrastructure and persistence coverage are implemented,
-but no isolated test database is configured for live execution.
+Verified against the persisted-identity-protected `sccvi-test` database. Both
+integration workflows execute successfully with targeted cleanup.
 
 Requirements:
 
@@ -1650,12 +1664,12 @@ Acceptance Criteria:
 
 ### TASK-073 — Playwright E2E Foundation
 
-Status: BLOCKED
+Status: DONE
 Priority: P1  
 Dependencies: Authentication and core UI
 
-Blocked reason: Playwright configuration is implemented, but no isolated test
-database, Supabase test project or fictional test user is configured.
+The isolated database, Supabase test project, fictional user and desktop/mobile
+projects are operational. Async global setup verifies the target before tests.
 
 Requirements:
 
@@ -1671,12 +1685,12 @@ Acceptance Criteria:
 
 ### TASK-074 — Core Registry E2E
 
-Status: BLOCKED
+Status: DONE
 Priority: P1  
 Dependencies: TASK-073, core registry UI
 
-Blocked reason: the workflow is implemented but cannot execute until the
-TASK-073 isolated environment is available.
+The login → community → guardian → child workflow and invalid required-field
+case pass on desktop Chromium and Pixel 7 with targeted cleanup.
 
 Workflow:
 
@@ -1693,12 +1707,12 @@ Acceptance Criteria:
 
 ### TASK-075 — Growth E2E
 
-Status: BLOCKED
+Status: DONE
 Priority: P1  
 Dependencies: TASK-073, growth engine/UI
 
-Blocked reason: implementation exists, but live execution requires the isolated
-test database, Supabase test project, fictional test user and child fixture.
+The factual measurement, durable history and WHO assessment workflow passes on
+desktop Chromium and Pixel 7 against fictional isolated data.
 
 Workflow:
 
@@ -1716,13 +1730,14 @@ Acceptance Criteria:
 
 ### TASK-076 — Vaccination E2E
 
-Status: BLOCKED  
+Status: DONE
 Priority: P1  
 Dependencies: TASK-073, vaccination functionality
 
-Blocked reason: implementation exists, but live execution requires the isolated
-test database, Supabase test project and controlled current/historical child
-fixtures.
+The source-supported applicable BCG registration and derived applied status
+pass on desktop Chromium and Pixel 7. Historical cohort behavior remains
+covered at unit level because no separate persistent historical child is needed
+for the critical registration workflow.
 
 Workflow:
 
@@ -1739,12 +1754,13 @@ Acceptance Criteria:
 
 ### TASK-077 — QR Security E2E
 
-Status: BLOCKED
+Status: DONE
 Priority: P0  
 Dependencies: TASK-059, TASK-061, TASK-073
 
-Blocked reason: implementation exists, but live execution requires isolated
-valid, revoked, expired, PIN and lockout credentials that can be cleaned safely.
+Global setup provisions deterministic valid, revoked, expired, PIN and lockout
+credentials only after persisted isolated-database identity verification.
+Global teardown re-verifies the identity and removes only their token hashes.
 
 Test:
 
@@ -1764,7 +1780,7 @@ Acceptance Criteria:
 
 ### TASK-078 — Authorization Security Review
 
-Status: IN_REVIEW
+Status: DONE
 Priority: P0  
 Dependencies: Core protected modules
 
@@ -1786,7 +1802,7 @@ Acceptance Criteria:
 
 ### TASK-079 — Secret and Configuration Review
 
-Status: IN_REVIEW
+Status: DONE
 Priority: P0  
 Dependencies: Deployment preparation
 
@@ -1808,7 +1824,7 @@ Acceptance Criteria:
 
 ### TASK-080 — Input Validation Review
 
-Status: IN_REVIEW
+Status: DONE
 Priority: P1  
 Dependencies: Core application
 
@@ -1840,13 +1856,18 @@ Acceptance Criteria:
 - Dependency set justified
 - Critical known issues addressed
 
+Remaining review: no critical advisory is known and direct dependencies are
+justified. Temporarily accepted upstream Prisma/deepmerge and ExcelJS/uuid
+findings remain documented in `docs/security-review-batch-07.md` pending
+compatible upstream fixes.
+
 ---
 
 ## EPIC-23 — Documentation
 
 ### TASK-082 — README Finalization
 
-Status: TODO  
+Status: DONE
 Priority: P2  
 Dependencies: Application setup stable
 
@@ -1871,7 +1892,7 @@ Acceptance Criteria:
 
 ### TASK-083 — Architecture Documentation Review
 
-Status: TODO  
+Status: DONE
 Priority: P2  
 Dependencies: Architecture stable
 
@@ -1887,7 +1908,7 @@ Acceptance Criteria:
 
 ### TASK-084 — Database Documentation Review
 
-Status: TODO  
+Status: DONE
 Priority: P2  
 Dependencies: Database stable
 
@@ -1899,7 +1920,7 @@ Acceptance Criteria:
 
 ### TASK-085 — UML and Project Diagrams
 
-Status: TODO  
+Status: DONE
 Priority: P2  
 Dependencies: Core architecture stable
 
@@ -1921,7 +1942,7 @@ Acceptance Criteria:
 
 ### TASK-086 — GitHub Actions CI
 
-Status: TODO  
+Status: DONE
 Priority: P1  
 Dependencies: Quality scripts configured
 
@@ -1944,7 +1965,7 @@ Acceptance Criteria:
 
 ### TASK-087 — E2E CI Strategy
 
-Status: TODO  
+Status: IN_REVIEW
 Priority: P2  
 Dependencies: TASK-073, TASK-086
 
@@ -1956,13 +1977,17 @@ Acceptance Criteria:
 
 - Critical E2E tests can execute predictably
 
+Remaining review: the fail-closed serialized workflow is versioned, but GitHub
+environment `sccvi-test`, its protection policy and required secrets must be
+configured externally and the workflow must complete once in GitHub Actions.
+
 ---
 
 ## EPIC-25 — Deployment
 
 ### TASK-088 — Staging Environment
 
-Status: TODO  
+Status: TODO
 Priority: P1  
 Dependencies: Core MVP stable
 
@@ -1983,7 +2008,7 @@ Acceptance Criteria:
 
 ### TASK-089 — Production Hosting Decision
 
-Status: TODO  
+Status: TODO
 Priority: P1  
 Dependencies: Application architecture stable
 
@@ -2007,7 +2032,7 @@ Acceptance Criteria:
 
 ### TASK-090 — Production Database Preparation
 
-Status: TODO  
+Status: TODO
 Priority: P0  
 Dependencies: Production deployment approved
 
@@ -2028,7 +2053,7 @@ Acceptance Criteria:
 
 ### TASK-091 — Production Deployment
 
-Status: TODO  
+Status: TODO
 Priority: P0  
 Dependencies: TASK-078, TASK-079, TASK-080, TASK-086, TASK-089, TASK-090
 
@@ -2051,7 +2076,7 @@ Acceptance Criteria:
 
 ### TASK-092 — Production Smoke Tests
 
-Status: TODO  
+Status: TODO
 Priority: P0  
 Dependencies: TASK-091
 
@@ -2072,7 +2097,7 @@ Acceptance Criteria:
 
 ### TASK-093 — Requirements Traceability Review
 
-Status: TODO  
+Status: TODO
 Priority: P1  
 Dependencies: Application substantially complete
 
@@ -2091,7 +2116,7 @@ Acceptance Criteria:
 
 ### TASK-094 — Final Functional Review
 
-Status: TODO  
+Status: TODO
 Priority: P1  
 Dependencies: TASK-093
 
@@ -2107,7 +2132,7 @@ Acceptance Criteria:
 
 ### TASK-095 — Final Medical Logic Review
 
-Status: BLOCKED  
+Status: BLOCKED
 Priority: P0  
 Dependencies: Growth and vaccination engines complete
 
@@ -2131,7 +2156,7 @@ Acceptance Criteria:
 
 ### TASK-096 — Final Security Review
 
-Status: TODO  
+Status: TODO
 Priority: P0  
 Dependencies: Production candidate
 
@@ -2156,7 +2181,7 @@ Acceptance Criteria:
 
 ### TASK-097 — Performance Review
 
-Status: TODO  
+Status: TODO
 Priority: P2  
 Dependencies: Production candidate
 
@@ -2177,7 +2202,7 @@ Acceptance Criteria:
 
 ### TASK-098 — Release Candidate
 
-Status: TODO  
+Status: TODO
 Priority: P1  
 Dependencies: Final reviews complete
 
@@ -2197,7 +2222,7 @@ Acceptance Criteria:
 
 ### TASK-099 — SCCVI v1.0.0
 
-Status: TODO  
+Status: TODO
 Priority: P1  
 Dependencies: TASK-098
 

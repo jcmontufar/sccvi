@@ -62,7 +62,9 @@ Zod
 
 ### Forms
 
-React Hook Form
+React Hook Form is approved when a form requires its client-state features.
+Current forms use React `useActionState` with Next.js Server Actions and Zod;
+no unnecessary form dependency is installed.
 
 ### Charts
 
@@ -988,6 +990,12 @@ dedicated fictional user. Missing test credentials are an explicit live-test
 blocker, never permission to reuse personal or production credentials. Detailed
 variables and commands are documented in `docs/testing.md`.
 
+Playwright global setup performs the asynchronous environment/database
+preflight and provisions deterministic fictional QR lifecycle fixtures only
+after the persisted `ISOLATED_TEST` identity matches. Cleanup repeats that
+identity verification. Desktop Chromium and Pixel 7 execute serially because
+they share one controlled child fixture.
+
 ---
 
 ## 34. Security Architecture
@@ -1036,6 +1044,11 @@ Database and authentication services are provided through Supabase.
 The exact web hosting provider is intentionally not fixed at this stage.
 
 The architecture should avoid unnecessary provider lock-in.
+
+GitHub Actions currently provides validation-only CI. Static quality checks use
+no database secrets. A separate protected job may access only the isolated
+`sccvi-test` environment for integration and Playwright execution. Neither
+workflow deploys the application.
 
 ---
 

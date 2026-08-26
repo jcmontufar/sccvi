@@ -1,0 +1,57 @@
+name: Isolated integration and E2E
+
+on:
+  pull_request:
+  push:
+    branches: [main]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: sccvi-isolated-e2e
+  cancel-in-progress: false
+
+jobs:
+  isolated-tests:
+    if: >-
+      github.event_name != 'pull_request' ||
+      github.event.pull_request.head.repo.full_name == github.repository
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    environment: sccvi-test
+    env:
+      TEST_DATABASE_URL: ${{ secrets.TEST_DATABASE_URL }}
+      TEST_DATABASE_ID: ${{ secrets.TEST_DATABASE_ID }}
+      SCCVI_TEST_DATABASE_CONFIRMED: isolated-fictional-test-data-only
+      E2E_TARGET_CONFIRMED: isolated-test-application-only
+      E2E_USER_EMAIL: ${{ secrets.E2E_USER_EMAIL }}
+      E2E_USER_PASSWORD: ${{ secrets.E2E_USER_PASSWORD }}
+      E2E_SUPABASE_URL: ${{ secrets.E2E_SUPABASE_URL }}
+      E2E_SUPABASE_ANON_KEY: ${{ secrets.E2E_SUPABASE_ANON_KEY }}
+      E2E_EXISTING_CHILD_ID: ${{ secrets.E2E_EXISTING_CHILD_ID }}
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+      - name: Fail closed when isolated secrets are unavailable
+        shell: bash
+        run: |
+          required=(
+            TEST_DATABASE_URL TEST_DATABASE_ID E2E_USER_EMAIL
+            E2E_USER_PASSWORD E2E_SUPABASE_URL E2E_SUPABASE_ANON_KEY
+            E2E_EXISTING_CHILD_ID
+          )
+          for name in "${required[@]}"; do
+            if [ -z "${!name}" ]; then
+              echo "Required isolated test configuration is unavailable."
+              exit 1
+            fi
+          done
+      - run: npm ci
+      - run: npx playwright install --with-deps chromium
+      - run: npm run test:integration
+      - run: npm run test:e2e
