@@ -961,7 +961,7 @@ Acceptance Criteria:
 
 ### TASK-041 — Select and Document Vaccination Schedule
 
-Status: BLOCKED  
+Status: IN_REVIEW
 Priority: P0  
 Dependencies: External domain decision
 
@@ -984,7 +984,7 @@ Do not invent schedule data.
 
 ### TASK-042 — Import Vaccination Schedule
 
-Status: BLOCKED  
+Status: IN_REVIEW
 Priority: P0  
 Dependencies: TASK-041
 
@@ -1003,7 +1003,7 @@ Acceptance Criteria:
 
 ### TASK-043 — Vaccination Status Engine
 
-Status: BLOCKED  
+Status: IN_REVIEW
 Priority: P0  
 Dependencies: TASK-042
 
@@ -1029,7 +1029,7 @@ Acceptance Criteria:
 
 ### TASK-044 — Vaccination Record Domain
 
-Status: TODO  
+Status: IN_REVIEW
 Priority: P1  
 Dependencies: TASK-027, TASK-039
 
@@ -1049,7 +1049,7 @@ Acceptance Criteria:
 
 ### TASK-045 — Vaccination Registration
 
-Status: BLOCKED  
+Status: IN_REVIEW
 Priority: P1  
 Dependencies: TASK-042, TASK-044
 
@@ -1069,7 +1069,7 @@ Acceptance Criteria:
 
 ### TASK-046 — Vaccination User Interface
 
-Status: BLOCKED  
+Status: IN_REVIEW
 Priority: P2  
 Dependencies: TASK-045
 
@@ -1137,7 +1137,7 @@ Acceptance Criteria:
 
 ### TASK-049 — Vaccination Alert Rules
 
-Status: BLOCKED  
+Status: IN_REVIEW
 Priority: P0  
 Dependencies: TASK-043, TASK-047
 
@@ -1260,9 +1260,9 @@ Status: IN_REVIEW
 Priority: P1  
 Dependencies: TASK-054, TASK-048 and/or TASK-049
 
-BATCH-05 operational scope: `MISSED_FOLLOW_UP` email is enabled by the explicit
-TASK-050 rule. Growth and vaccination alert emails remain blocked with their
-respective rule tasks.
+BATCH-06 operational scope: `MISSED_FOLLOW_UP` and deterministic overdue
+`VACCINATION` alert emails are enabled. Growth alert emails remain blocked until
+their rule task defines an operational alert category.
 
 Requirements:
 
@@ -1302,9 +1302,13 @@ Acceptance Criteria:
 
 ### TASK-057 — Campaign Segmentation
 
-Status: TODO  
+Status: IN_PROGRESS
 Priority: P2  
 Dependencies: TASK-056
+
+BATCH-06 scope: community and age segmentation remain operational.
+Vaccination-status targeting remains incomplete because the backlog does not
+define how multiple dose-level states aggregate to one child or guardian.
 
 Initial criteria:
 
@@ -1321,9 +1325,12 @@ Acceptance Criteria:
 
 ### TASK-058 — Campaign User Interface
 
-Status: TODO  
+Status: IN_PROGRESS
 Priority: P2  
 Dependencies: TASK-056, TASK-057
+
+BATCH-06 scope: campaign creation and recipient preview remain operational;
+vaccination-status configuration and actual delivery remain incomplete.
 
 Requirements:
 
@@ -1475,9 +1482,12 @@ Acceptance Criteria:
 
 ### TASK-065 — Reports Query Layer
 
-Status: TODO  
+Status: IN_PROGRESS
 Priority: P2  
 Dependencies: Relevant domain modules
+
+BATCH-06 adds authorized factual vaccination and overdue-dose reports. Coverage
+percentage remains incomplete because no denominator methodology is approved.
 
 Requirements:
 
@@ -2200,8 +2210,8 @@ Login
 → Email notification
 
 WHO growth assessment is enabled by the approved 2006 standard recorded in
-ADR-005. Vaccination schedule functionality remains blocked until its
-authoritative current source and exact version are formally selected.
+ADR-005. Routine vaccination schedule functionality is enabled by the Guatemala
+MSPAS version selected in ADR-006; campaign and catch-up rules remain separate.
 
 ---
 

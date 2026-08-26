@@ -2,7 +2,13 @@ import { z } from "zod";
 
 export const reportFilterSchema = z
   .object({
-    type: z.enum(["communities", "growth", "alerts"]),
+    type: z.enum([
+      "communities",
+      "growth",
+      "vaccinations",
+      "incomplete-vaccination",
+      "alerts",
+    ]),
     from: z.union([z.literal(""), z.iso.date()]).default(""),
     to: z.union([z.literal(""), z.iso.date()]).default(""),
   })

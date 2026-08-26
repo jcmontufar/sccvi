@@ -655,13 +655,13 @@ version, checksums and measurement methodology are recorded in ADR-005.
 
 ### Vaccination Schedule
 
-An approved vaccination schedule and version must be selected and documented.
+Resolved in ADR-006: `GT-MSPAS-2026-01-12` is the approved Guatemala MSPAS
+routine childhood schedule. Campaign doses and undocumented catch-up
+equivalence remain outside that version.
 
 ### Email Provider
 
 Resolved: Resend is the initial email provider behind the provider-independent
 notification service. Configuration and secret handling are recorded in ADR-005.
 
-These unresolved decisions must not be filled using invented data.
-
-Only the vaccination schedule remains unresolved after ADR-005.
+Remaining medical ambiguities must not be filled using invented data.

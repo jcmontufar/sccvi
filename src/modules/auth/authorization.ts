@@ -30,6 +30,8 @@ export type AuthorizedAction =
   | "vaccine:create"
   | "vaccine:update"
   | "vaccine:deactivate"
+  | "vaccination:list"
+  | "vaccination:create"
   | "alert:list"
   | "alert:read"
   | "alert:review"
@@ -76,6 +78,8 @@ const allowedRoles: Record<AuthorizedAction, readonly ApplicationRole[]> = {
   "vaccine:create": ["ADMIN"],
   "vaccine:update": ["ADMIN"],
   "vaccine:deactivate": ["ADMIN"],
+  "vaccination:list": ["ADMIN", "HEALTH_STAFF", "CENTER_MANAGER", "GUARDIAN"],
+  "vaccination:create": ["ADMIN", "HEALTH_STAFF"],
   "alert:list": ["ADMIN", "HEALTH_STAFF", "CENTER_MANAGER", "GUARDIAN"],
   "alert:read": ["ADMIN", "HEALTH_STAFF", "CENTER_MANAGER", "GUARDIAN"],
   "alert:review": ["ADMIN", "HEALTH_STAFF", "CENTER_MANAGER"],

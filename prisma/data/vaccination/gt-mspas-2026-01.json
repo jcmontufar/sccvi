@@ -1,0 +1,223 @@
+{
+  "version": {
+    "code": "GT-MSPAS-2026-01-12",
+    "name": "Esquema rutinario de vacunación infantil de Guatemala 2026",
+    "authority": "Ministerio de Salud Pública y Asistencia Social de Guatemala (MSPAS)",
+    "publishedAt": "2026-01-12",
+    "effectiveFrom": "2026-01-12",
+    "sourceUrl": "https://ddrisstotonicapan.gob.gt/2026/01/12/esquema-de-vacunacion-del-ministerio-de-salud-publica-y-asistencia-social-en-guatemala-mspas/",
+    "sourceSha256": "abd1ac769ba8ae0ed174ef16df3b0f688425aca69a053a34b174e92b044d4afa"
+  },
+  "vaccines": [
+    { "code": "BCG", "name": "BCG", "aliases": ["Vacuna BCG"] },
+    {
+      "code": "BOPV",
+      "name": "Poliomielitis oral bivalente (OPVb)",
+      "aliases": ["Polio OPV", "OPVb"]
+    },
+    {
+      "code": "DPT",
+      "name": "Difteria, pertussis y tétanos (DPT)",
+      "aliases": ["DPT"]
+    },
+    {
+      "code": "HEPATITIS_B",
+      "name": "Hepatitis B",
+      "aliases": ["Vacuna contra hepatitis B"]
+    },
+    {
+      "code": "HEXAVALENT",
+      "name": "Hexavalente",
+      "aliases": ["Vacuna hexavalente"]
+    },
+    {
+      "code": "HPV",
+      "name": "Virus del papiloma humano (VPH)",
+      "aliases": ["VPH", "HPV"]
+    },
+    {
+      "code": "INFLUENZA",
+      "name": "Influenza estacional",
+      "aliases": ["Influenza"]
+    },
+    {
+      "code": "MMR",
+      "name": "Sarampión, paperas y rubéola (SPR)",
+      "aliases": ["SPR", "SRP"]
+    },
+    {
+      "code": "PNEUMOCOCCAL",
+      "name": "Neumococo",
+      "aliases": ["Vacuna neumocócica"]
+    },
+    {
+      "code": "ROTAVIRUS",
+      "name": "Rotavirus",
+      "aliases": ["Vacuna contra rotavirus"]
+    },
+    { "code": "TD", "name": "Tétanos y difteria (Td)", "aliases": ["Td"] },
+    {
+      "code": "VARICELLA",
+      "name": "Varicela",
+      "aliases": ["Vacuna contra varicela"]
+    }
+  ],
+  "doses": [
+    {
+      "code": "HEPATITIS_B_BIRTH",
+      "vaccineCode": "HEPATITIS_B",
+      "doseNumber": 1,
+      "doseName": "Dosis al nacer",
+      "recommendedAgeDays": 0,
+      "maximumAgeDays": 0,
+      "timingNote": "En las primeras 24 horas de vida; SCCVI usa la fecha calendario de nacimiento porque no registra la hora de nacimiento."
+    },
+    {
+      "code": "BCG_BIRTH",
+      "vaccineCode": "BCG",
+      "doseNumber": 1,
+      "doseName": "Dosis al nacer",
+      "recommendedAgeDays": 0,
+      "maximumAgeMonths": 12,
+      "maximumAgeExclusive": true,
+      "timingNote": "Antes de cumplir un año."
+    },
+    {
+      "code": "ROTAVIRUS_1",
+      "vaccineCode": "ROTAVIRUS",
+      "doseNumber": 1,
+      "doseName": "Primera dosis",
+      "recommendedAgeMonths": 2
+    },
+    {
+      "code": "PNEUMOCOCCAL_1",
+      "vaccineCode": "PNEUMOCOCCAL",
+      "doseNumber": 1,
+      "doseName": "Primera dosis",
+      "recommendedAgeMonths": 2
+    },
+    {
+      "code": "HEXAVALENT_1",
+      "vaccineCode": "HEXAVALENT",
+      "doseNumber": 1,
+      "doseName": "Primera dosis",
+      "recommendedAgeMonths": 2
+    },
+    {
+      "code": "ROTAVIRUS_2",
+      "vaccineCode": "ROTAVIRUS",
+      "doseNumber": 2,
+      "doseName": "Segunda dosis",
+      "recommendedAgeMonths": 4
+    },
+    {
+      "code": "PNEUMOCOCCAL_2",
+      "vaccineCode": "PNEUMOCOCCAL",
+      "doseNumber": 2,
+      "doseName": "Segunda dosis",
+      "recommendedAgeMonths": 4
+    },
+    {
+      "code": "HEXAVALENT_2",
+      "vaccineCode": "HEXAVALENT",
+      "doseNumber": 2,
+      "doseName": "Segunda dosis",
+      "recommendedAgeMonths": 4
+    },
+    {
+      "code": "INFLUENZA_1",
+      "vaccineCode": "INFLUENZA",
+      "doseNumber": 1,
+      "doseName": "Primera dosis",
+      "recommendedAgeMonths": 6
+    },
+    {
+      "code": "HEXAVALENT_3",
+      "vaccineCode": "HEXAVALENT",
+      "doseNumber": 3,
+      "doseName": "Tercera dosis",
+      "recommendedAgeMonths": 6
+    },
+    {
+      "code": "MMR_1",
+      "vaccineCode": "MMR",
+      "doseNumber": 1,
+      "doseName": "Primera dosis",
+      "recommendedAgeMonths": 12
+    },
+    {
+      "code": "PNEUMOCOCCAL_BOOSTER",
+      "vaccineCode": "PNEUMOCOCCAL",
+      "doseNumber": 3,
+      "doseName": "Refuerzo",
+      "recommendedAgeMonths": 12
+    },
+    {
+      "code": "INFLUENZA_2",
+      "vaccineCode": "INFLUENZA",
+      "doseNumber": 2,
+      "doseName": "Segunda dosis",
+      "recommendedAgeMonths": 12
+    },
+    {
+      "code": "VARICELLA_1",
+      "vaccineCode": "VARICELLA",
+      "doseNumber": 1,
+      "doseName": "Primera dosis",
+      "recommendedAgeMonths": 15
+    },
+    {
+      "code": "MMR_2",
+      "vaccineCode": "MMR",
+      "doseNumber": 2,
+      "doseName": "Segunda dosis",
+      "recommendedAgeMonths": 18
+    },
+    {
+      "code": "HEXAVALENT_BOOSTER",
+      "vaccineCode": "HEXAVALENT",
+      "doseNumber": 4,
+      "doseName": "Refuerzo",
+      "recommendedAgeMonths": 18
+    },
+    {
+      "code": "DPT_BOOSTER_2",
+      "vaccineCode": "DPT",
+      "doseNumber": 2,
+      "doseName": "Segundo refuerzo",
+      "recommendedAgeMonths": 48
+    },
+    {
+      "code": "BOPV_BOOSTER_2",
+      "vaccineCode": "BOPV",
+      "doseNumber": 2,
+      "doseName": "Segundo refuerzo",
+      "recommendedAgeMonths": 48
+    },
+    {
+      "code": "VARICELLA_BOOSTER",
+      "vaccineCode": "VARICELLA",
+      "doseNumber": 2,
+      "doseName": "Refuerzo",
+      "recommendedAgeMonths": 48
+    },
+    {
+      "code": "HPV_1",
+      "vaccineCode": "HPV",
+      "doseNumber": 1,
+      "doseName": "Dosis única",
+      "minimumAgeMonths": 108,
+      "recommendedAgeMonths": 108,
+      "maximumAgeMonths": 204,
+      "maximumAgeExclusive": true,
+      "timingNote": "Ventana documentada de 9 a 16 años."
+    },
+    {
+      "code": "TD_BOOSTER",
+      "vaccineCode": "TD",
+      "doseNumber": 1,
+      "doseName": "Refuerzo a los 10 años",
+      "recommendedAgeMonths": 120
+    }
+  ]
+}

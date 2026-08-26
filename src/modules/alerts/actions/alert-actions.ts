@@ -9,6 +9,7 @@ import {
   reviewAlert,
 } from "@/modules/alerts/services/alert-service";
 import { generateMissedFollowUpAlerts } from "@/modules/alerts/services/missed-follow-up-service";
+import { generateVaccinationAlerts } from "@/modules/alerts/services/vaccination-alert-service";
 
 async function transition(id: string, action: "review" | "resolve") {
   try {
@@ -37,6 +38,21 @@ export async function refreshMissedFollowUpsAction(
   void _formData;
   try {
     await generateMissedFollowUpAlerts(await requireApplicationUser());
+    revalidatePath("/app/alertas");
+  } catch (error) {
+    return { error: getSafeErrorMessage(error) };
+  }
+  return {};
+}
+
+export async function refreshVaccinationAlertsAction(
+  _state: RefreshFollowUpsState,
+  _formData: FormData,
+) {
+  void _state;
+  void _formData;
+  try {
+    await generateVaccinationAlerts(await requireApplicationUser());
     revalidatePath("/app/alertas");
   } catch (error) {
     return { error: getSafeErrorMessage(error) };

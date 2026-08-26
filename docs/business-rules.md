@@ -221,6 +221,10 @@ The system must not invent an official vaccination schedule.
 
 The schedule source and version should be documented.
 
+ADR-006 approves `GT-MSPAS-2026-01-12` for routine childhood monitoring.
+Temporary outbreak/campaign rules are not routine schedule rows. A future
+schedule version must not rewrite factual historical vaccination events.
+
 ---
 
 ## BR-022 — Vaccination Record
@@ -257,6 +261,21 @@ Initial relevant states may include:
 - APPLIED
 - PENDING
 - OVERDUE
+
+Status derivation must also establish that the scheduled dose is applicable to
+the child under the selected schedule version. A current version must not be
+applied retrospectively to an opportunity that ended before that version became
+effective.
+
+For `GT-MSPAS-2026-01-12`, an unrecorded hexavalent series is assessed only when
+the child's first routine hexavalent opportunity at 2 months falls on or after
+the version's `effectiveFrom`. Earlier cohorts remain unreconciled because the
+authoritative transition source permits completion of previously started
+pentavalent/polio schedules but does not define equivalence or catch-up logic.
+Those inapplicable current-version rows are omitted rather than classified as
+`OVERDUE`, and therefore cannot create vaccination alerts. Factual historical
+`Vaccination` records remain preserved and may still be represented as
+`APPLIED`.
 
 ---
 

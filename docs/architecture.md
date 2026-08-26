@@ -525,6 +525,11 @@ Alert Service
 
 Vaccination status should be derived where practical.
 
+ADR-006 adds a versioned routine schedule artifact and importer. The status
+engine selects the active version for the Guatemala business date and derives
+`APPLIED`, `PENDING` or `OVERDUE`. Factual vaccination rows remain linked to
+their original schedule version, and campaign rules are not schedule rows.
+
 ---
 
 ## 18. Alert Architecture

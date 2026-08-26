@@ -24,7 +24,8 @@ export default async function VaccinesPage({
         <div>
           <h1 className="text-3xl font-semibold">Catálogo de vacunas</h1>
           <p className="mt-2 text-muted-foreground">
-            Metadatos administrativos. No incluye dosis ni calendario oficial.
+            Catálogo administrativo reconciliado con el esquema oficial. Las
+            dosis se consultan desde el perfil de cada niño.
           </p>
         </div>
         {canManage ? (

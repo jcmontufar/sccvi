@@ -1,14 +1,12 @@
 import Link from "next/link";
 
-const futureSections = ["Vacunación"];
-
 export function ChildNavigation({
   childId,
   active,
   canManageDigitalCard = false,
 }: {
   childId: string;
-  active: "summary" | "growth" | "card";
+  active: "summary" | "growth" | "vaccination" | "card";
   canManageDigitalCard?: boolean;
 }) {
   const links = [
@@ -17,6 +15,11 @@ export function ChildNavigation({
       href: `/app/ninos/${childId}/crecimiento`,
       label: "Crecimiento",
       key: "growth",
+    },
+    {
+      href: `/app/ninos/${childId}/vacunacion`,
+      label: "Vacunación",
+      key: "vaccination",
     },
     {
       href: `/app/ninos/${childId}/tarjeta`,
@@ -45,15 +48,6 @@ export function ChildNavigation({
         >
           {item.label}
         </Link>
-      ))}
-      {futureSections.map((label) => (
-        <span
-          aria-disabled="true"
-          className="whitespace-nowrap rounded-lg px-3 py-2 text-sm text-muted-foreground"
-          key={label}
-        >
-          {label} · Próximamente
-        </span>
       ))}
     </nav>
   );

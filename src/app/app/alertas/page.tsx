@@ -4,6 +4,7 @@ import { Button } from "@/components/ui/button";
 import { can } from "@/modules/auth/authorization";
 import { requireApplicationUser } from "@/modules/auth/session";
 import { RefreshFollowUpsButton } from "@/modules/alerts/components/refresh-follow-ups-button";
+import { RefreshVaccinationAlertsButton } from "@/modules/alerts/components/refresh-vaccination-alerts-button";
 import { listAlerts } from "@/modules/alerts/services/alert-service";
 
 const labels = {
@@ -35,7 +36,12 @@ export default async function AlertsPage({
             médicos.
           </p>
         </div>
-        {can(user, "alert:review") ? <RefreshFollowUpsButton /> : null}
+        {can(user, "alert:review") ? (
+          <div className="flex flex-wrap gap-2">
+            <RefreshFollowUpsButton />
+            <RefreshVaccinationAlertsButton />
+          </div>
+        ) : null}
       </header>
       <form className="grid gap-3 rounded-xl border bg-card p-4 sm:grid-cols-2">
         <label className="text-sm font-medium">
