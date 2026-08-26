@@ -4,6 +4,7 @@ import { getPrisma } from "@/lib/prisma";
 import { authorize } from "@/modules/auth/authorization";
 import type { ApplicationUser } from "@/modules/auth/types";
 import { reportFilterSchema } from "@/modules/reports/schemas/report-schema";
+import { listChildVaccinationStatuses } from "@/modules/vaccination/services/vaccination-service";
 
 export type ReportRow = {
   fecha: string;
@@ -85,6 +86,70 @@ export async function getReport(user: ApplicationUser, input: unknown) {
         registro: record.child.fullName,
         detalle: `${record.weightKg.toString()} kg · ${record.heightCm.toString()} cm`,
       })),
+    };
+  }
+
+  if (filters.type === "vaccinations") {
+    const records = await getPrisma().vaccination.findMany({
+      where: {
+        applicationDate: range,
+        child: { community: { healthCenterId: centerId } },
+      },
+      include: {
+        vaccineSchedule: { include: { vaccine: true, version: true } },
+        child: {
+          include: {
+            community: {
+              include: { healthCenter: { select: { name: true } } },
+            },
+          },
+        },
+      },
+      orderBy: { applicationDate: "desc" },
+      take: 1000,
+    });
+    return {
+      title: "Reporte de vacunas aplicadas",
+      rows: records.map((record): ReportRow => ({
+        fecha: record.applicationDate.toISOString().slice(0, 10),
+        centro: record.child.community.healthCenter.name,
+        comunidad: record.child.community.name,
+        registro: record.child.fullName,
+        detalle: `${record.vaccineSchedule.vaccine.name} · ${record.vaccineSchedule.doseName ?? `Dosis ${record.vaccineSchedule.doseNumber}`} · ${record.vaccineSchedule.version?.code ?? record.vaccineSchedule.scheduleVersion}`,
+      })),
+    };
+  }
+
+  if (filters.type === "incomplete-vaccination") {
+    const children = await getPrisma().child.findMany({
+      where: { isActive: true, community: { healthCenterId: centerId } },
+      select: { id: true },
+      take: 1000,
+    });
+    const rows: ReportRow[] = [];
+    for (const child of children) {
+      const result = await listChildVaccinationStatuses(user, child.id);
+      for (const dose of result.doses.filter(
+        (item) => item.status === "OVERDUE",
+      )) {
+        rows.push({
+          fecha: dose.scheduledDate,
+          centro: result.child.community.healthCenter.name,
+          comunidad: result.child.community.name,
+          registro: result.child.fullName,
+          detalle: `${dose.vaccineName} · ${dose.doseName} · Atrasada`,
+        });
+      }
+    }
+    return {
+      title: "Reporte de dosis atrasadas",
+      rows: rows
+        .filter(
+          (row) =>
+            (!filters.from || row.fecha >= filters.from) &&
+            (!filters.to || row.fecha <= filters.to),
+        )
+        .sort((left, right) => left.fecha.localeCompare(right.fecha)),
     };
   }
 

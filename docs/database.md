@@ -48,6 +48,7 @@ Represents a health center using SCCVI.
 Fields:
 
 - id: UUID, primary key
+- officialCode: string, optional, unique for reconciled authoritative identity
 - name: string, required
 - code: string, optional, unique when present
 - address: string, optional
@@ -429,10 +430,18 @@ Fields:
 
 - id: UUID, primary key
 - vaccineId: UUID, required
+- scheduleVersionId: UUID, optional for legacy rows and required for approved imports
+- doseCode: stable string, optional for legacy rows
+- doseName: string, optional for legacy rows
+- timingNote: source-supported timing text, optional
 - doseNumber: integer, required
+- recommendedAgeMonths: integer, optional
 - recommendedAgeDays: integer, optional
+- minimumAgeMonths: integer, optional
 - minimumAgeDays: integer, optional
+- maximumAgeMonths: integer, optional
 - maximumAgeDays: integer, optional
+- maximumAgeExclusive: boolean, default false
 - minimumIntervalDays: integer, optional
 - scheduleName: string, required
 - scheduleVersion: string, required
@@ -457,6 +466,15 @@ Important:
 Schedule data must come from an approved source.
 
 Do not populate official-looking vaccination data using assumptions.
+
+## 13.1 VaccineScheduleVersion
+
+Represents explicit schedule provenance and applicability.
+
+Fields include code, name, authority, publication date, effective interval,
+source URL, source SHA-256 and active state. Imported current rows reference this
+entity. Nullable linkage on pre-existing schedule rows avoids a destructive
+migration; application status logic accepts only approved versioned rows.
 
 ---
 
@@ -488,6 +506,8 @@ Vaccination
 N → 1 User
 
 The vaccination record represents historical factual information.
+
+One child may have at most one factual record for the same scheduled dose.
 
 ---
 

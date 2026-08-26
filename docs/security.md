@@ -82,8 +82,10 @@ interface or written to audit metadata.
 ## BATCH-04 Authorization Boundaries
 
 Vaccine catalog mutation is restricted to `ADMIN`; health staff and center managers may
-consult catalog metadata. No vaccine schedule, dose timing, or vaccination-status rule is
-created by this catalog workflow.
+consult catalog metadata. The versioned schedule importer is an operational database task,
+not a browser mutation. Vaccination history is readable only through authorized child scope;
+only `ADMIN` and assigned-center `HEALTH_STAFF` may register a factual dose. Child, schedule
+and duplicate checks execute server-side, and each registration creates an audit record.
 
 Alerts are loaded through child and health-center scope. Guardians can read alerts only for
 explicitly associated children and cannot review or resolve them. Operational roles follow
@@ -98,8 +100,9 @@ medical/provider dependencies are approved.
 
 Dashboard and report queries apply the same server-side center scope as their source
 modules. Guardians do not receive operational reports. Reports include only community,
-factual growth-measurement, and generic alert data; schedule-derived coverage and incomplete
-vaccination reports remain excluded.
+factual growth-measurement, factual vaccination, overdue-dose and generic alert data.
+Schedule-derived percentage coverage remains excluded because no denominator methodology is
+approved.
 
 ## QR Credential Security
 
@@ -128,6 +131,6 @@ The notification service defines a provider-independent email contract and persi
 `PENDING`, `SENT`, and `FAILED` states. Resend is the approved initial adapter. Only an
 adapter-confirmed success can become `SENT`; missing configuration or provider failure becomes
 `FAILED` with a safe message. API keys remain server-only environment values. Operational alert
-email currently applies only to missed growth follow-up, respects explicit guardian `EMAIL`
-preference, and is deduplicated by alert, guardian and channel. Campaign creation still does not
-claim message delivery.
+email applies to missed growth follow-up and schedule-derived overdue vaccination alerts,
+respects explicit guardian `EMAIL` preference, and is deduplicated by alert, guardian and
+channel. Campaign creation still does not claim message delivery.

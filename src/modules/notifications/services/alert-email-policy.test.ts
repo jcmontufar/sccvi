@@ -24,9 +24,14 @@ describe("operational alert email policy", () => {
     ]);
   });
 
-  it("does not email unapproved clinical alert categories", () => {
+  it("emails approved vaccination follow-up alerts", () => {
+    expect(eligibleAlertEmailGuardians("VACCINATION", guardians)).toEqual([
+      guardians[0],
+    ]);
+  });
+
+  it("does not email unapproved growth alert categories", () => {
     expect(eligibleAlertEmailGuardians("GROWTH", guardians)).toEqual([]);
-    expect(eligibleAlertEmailGuardians("VACCINATION", guardians)).toEqual([]);
   });
 
   it("deduplicates the same alert recipient", () => {

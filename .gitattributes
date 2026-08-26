@@ -1,2 +1,3 @@
 * text=auto eol=lf
 prisma/data/who-2006/*.csv text eol=lf
+prisma/data/vaccination/*.json text eol=lf

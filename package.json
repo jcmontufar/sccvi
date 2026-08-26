@@ -14,6 +14,8 @@
     "prisma:validate": "prisma validate",
     "who:validate": "tsx scripts/import-who-growth.ts --validate-only",
     "who:import": "tsx scripts/import-who-growth.ts",
+    "vaccination:validate": "tsx scripts/import-vaccination-schedule.ts --validate-only",
+    "vaccination:import": "tsx scripts/import-vaccination-schedule.ts",
     "test": "vitest run",
     "typecheck": "node -e \"require('node:fs').rmSync('.next/dev', { recursive: true, force: true })\" && next typegen && tsc --noEmit",
     "start": "next start"

@@ -15,6 +15,8 @@ export type ApplicationErrorCode =
   | "GROWTH_STANDARD_NOT_FOUND"
   | "VACCINE_NOT_FOUND"
   | "VACCINE_DUPLICATE"
+  | "VACCINE_SCHEDULE_NOT_FOUND"
+  | "VACCINATION_DUPLICATE"
   | "ALERT_NOT_FOUND"
   | "INVALID_ALERT_TRANSITION"
   | "CAMPAIGN_NOT_FOUND"
@@ -44,6 +46,8 @@ const publicMessages: Record<ApplicationErrorCode, string> = {
     "No se encontró la referencia de crecimiento requerida.",
   VACCINE_NOT_FOUND: "No se encontró la vacuna solicitada.",
   VACCINE_DUPLICATE: "Ya existe una vacuna con ese nombre.",
+  VACCINE_SCHEDULE_NOT_FOUND: "No se encontró la dosis programada.",
+  VACCINATION_DUPLICATE: "Esta dosis ya fue registrada para el niño.",
   ALERT_NOT_FOUND: "No se encontró la alerta solicitada.",
   INVALID_ALERT_TRANSITION: "El cambio de estado de la alerta no es válido.",
   CAMPAIGN_NOT_FOUND: "No se encontró la campaña solicitada.",

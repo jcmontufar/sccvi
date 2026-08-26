@@ -19,8 +19,8 @@ export default async function ReportsPage({
       <header>
         <h1 className="text-3xl font-semibold">Reportes</h1>
         <p className="mt-2 text-muted-foreground">
-          Información operacional autorizada. No incluye cobertura ni
-          cumplimiento de vacunación.
+          Información operacional autorizada. La cobertura porcentual permanece
+          fuera de alcance hasta aprobar una metodología de denominador.
         </p>
       </header>
       <form className="grid gap-3 rounded-xl border bg-card p-4 sm:grid-cols-3">
@@ -33,6 +33,8 @@ export default async function ReportsPage({
           >
             <option value="communities">Comunidades</option>
             <option value="growth">Crecimiento factual</option>
+            <option value="vaccinations">Vacunas aplicadas</option>
+            <option value="incomplete-vaccination">Dosis atrasadas</option>
             <option value="alerts">Alertas</option>
           </select>
         </label>

@@ -17,6 +17,8 @@ export default async function ApplicationHomePage() {
     ["Tutores activos", metrics.guardians],
     ["Mediciones registradas", metrics.growthRecords],
     ["Alertas abiertas", metrics.openAlerts],
+    ["Dosis pendientes", metrics.pendingVaccinations],
+    ["Dosis atrasadas", metrics.overdueVaccinations],
   ];
 
   return (
@@ -29,7 +31,7 @@ export default async function ApplicationHomePage() {
         Perfil: {roleLabels[user.role]}. Selecciona una opción del menú para
         continuar.
       </p>
-      <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-5">
+      <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4 xl:grid-cols-7">
         {cards
           .filter(
             ([label]) =>
@@ -46,8 +48,9 @@ export default async function ApplicationHomePage() {
           ))}
       </div>
       <p className="rounded-xl border p-4 text-sm text-muted-foreground">
-        Las métricas de cobertura, dosis pendientes y cumplimiento de vacunación
-        se omiten hasta contar con un calendario oficial aprobado.
+        Las dosis pendientes y atrasadas son conteos de seguimiento derivados
+        del esquema vigente. No se muestra cobertura porcentual porque aún no
+        existe una metodología de denominador aprobada.
       </p>
     </section>
   );

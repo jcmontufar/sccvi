@@ -221,6 +221,10 @@ The system must not invent an official vaccination schedule.
 
 The schedule source and version should be documented.
 
+ADR-006 approves `GT-MSPAS-2026-01-12` for routine childhood monitoring.
+Temporary outbreak/campaign rules are not routine schedule rows. A future
+schedule version must not rewrite factual historical vaccination events.
+
 ---
 
 ## BR-022 — Vaccination Record

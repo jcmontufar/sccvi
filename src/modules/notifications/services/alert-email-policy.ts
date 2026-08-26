@@ -9,7 +9,7 @@ export function eligibleAlertEmailGuardians(
   alertType: "GROWTH" | "VACCINATION" | "MISSED_FOLLOW_UP",
   guardians: readonly GuardianRecipient[],
 ) {
-  if (alertType !== "MISSED_FOLLOW_UP") return [];
+  if (!["MISSED_FOLLOW_UP", "VACCINATION"].includes(alertType)) return [];
   const seen = new Set<string>();
   return guardians.filter((guardian) => {
     if (

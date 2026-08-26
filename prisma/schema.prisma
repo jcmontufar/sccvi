@@ -266,33 +266,63 @@ model GrowthFollowUp {
 }
 
 model Vaccine {
-  id          String            @id @default(uuid()) @db.Uuid
-  name        String            @unique
-  description String?           @db.Text
-  isActive    Boolean           @default(true)
-  createdAt   DateTime          @default(now()) @db.Timestamptz(3)
-  updatedAt   DateTime          @updatedAt @db.Timestamptz(3)
-  schedules   VaccineSchedule[]
+  id           String            @id @default(uuid()) @db.Uuid
+  officialCode String?           @unique
+  name         String            @unique
+  description  String?           @db.Text
+  isActive     Boolean           @default(true)
+  createdAt    DateTime          @default(now()) @db.Timestamptz(3)
+  updatedAt    DateTime          @updatedAt @db.Timestamptz(3)
+  schedules    VaccineSchedule[]
+}
+
+model VaccineScheduleVersion {
+  id            String            @id @default(uuid()) @db.Uuid
+  code          String            @unique
+  name          String
+  authority     String
+  publishedAt   DateTime          @db.Date
+  effectiveFrom DateTime          @db.Date
+  effectiveTo   DateTime?         @db.Date
+  sourceUrl     String
+  sourceSha256  String?
+  isActive      Boolean           @default(true)
+  createdAt     DateTime          @default(now()) @db.Timestamptz(3)
+  updatedAt     DateTime          @updatedAt @db.Timestamptz(3)
+  schedules     VaccineSchedule[]
+
+  @@index([effectiveFrom, effectiveTo])
 }
 
 model VaccineSchedule {
-  id                  String        @id @default(uuid()) @db.Uuid
-  vaccineId           String        @db.Uuid
-  doseNumber          Int
-  recommendedAgeDays  Int?
-  minimumAgeDays      Int?
-  maximumAgeDays      Int?
-  minimumIntervalDays Int?
-  scheduleName        String
-  scheduleVersion     String
-  isActive            Boolean       @default(true)
-  createdAt           DateTime      @default(now()) @db.Timestamptz(3)
-  updatedAt           DateTime      @updatedAt @db.Timestamptz(3)
-  vaccine             Vaccine       @relation(fields: [vaccineId], references: [id], onDelete: Restrict)
-  vaccinations        Vaccination[]
+  id                   String                  @id @default(uuid()) @db.Uuid
+  vaccineId            String                  @db.Uuid
+  scheduleVersionId    String?                 @db.Uuid
+  doseCode             String?
+  doseName             String?
+  timingNote           String?                 @db.Text
+  doseNumber           Int
+  recommendedAgeMonths Int?
+  recommendedAgeDays   Int?
+  minimumAgeMonths     Int?
+  minimumAgeDays       Int?
+  maximumAgeMonths     Int?
+  maximumAgeDays       Int?
+  maximumAgeExclusive  Boolean                 @default(false)
+  minimumIntervalDays  Int?
+  scheduleName         String
+  scheduleVersion      String
+  isActive             Boolean                 @default(true)
+  createdAt            DateTime                @default(now()) @db.Timestamptz(3)
+  updatedAt            DateTime                @updatedAt @db.Timestamptz(3)
+  vaccine              Vaccine                 @relation(fields: [vaccineId], references: [id], onDelete: Restrict)
+  version              VaccineScheduleVersion? @relation(fields: [scheduleVersionId], references: [id], onDelete: Restrict)
+  vaccinations         Vaccination[]
 
   @@unique([vaccineId, doseNumber, scheduleVersion])
+  @@unique([scheduleVersionId, doseCode])
   @@index([vaccineId])
+  @@index([scheduleVersionId])
 }
 
 model Vaccination {
@@ -309,6 +339,7 @@ model Vaccination {
   vaccineSchedule      VaccineSchedule @relation(fields: [vaccineScheduleId], references: [id], onDelete: Restrict)
   administeredBy       User            @relation("VaccinationAdministeredBy", fields: [administeredByUserId], references: [id], onDelete: Restrict)
 
+  @@unique([childId, vaccineScheduleId])
   @@index([childId])
   @@index([applicationDate])
   @@index([vaccineScheduleId])
