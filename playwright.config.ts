@@ -8,6 +8,7 @@ export default defineConfig({
   testDir: "./tests/e2e",
   globalSetup: "./tests/e2e/global-setup.ts",
   fullyParallel: false,
+  workers: 1,
   forbidOnly: true,
   retries: process.env.CI ? 2 : 0,
   reporter: [["list"]],

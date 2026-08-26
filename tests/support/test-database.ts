@@ -1,4 +1,4 @@
-import { Pool } from "pg";
+import { Pool, type PoolClient } from "pg";
 
 import {
   requireIsolatedTestDatabase,
@@ -56,4 +56,69 @@ export async function cleanupCoreRegistryFixture(names: {
     client.release();
     await pool.end();
   }
+}
+
+async function withVerifiedCleanup(
+  cleanup: (client: PoolClient) => Promise<void>,
+) {
+  const pool = new Pool({ connectionString: requireIsolatedTestDatabase() });
+  const client = await pool.connect();
+  try {
+    await verifyIsolatedTestDatabase(client);
+    await client.query("BEGIN");
+    await cleanup(client);
+    await client.query("COMMIT");
+  } catch (error) {
+    await client.query("ROLLBACK");
+    throw error;
+  } finally {
+    client.release();
+    await pool.end();
+  }
+}
+
+export async function cleanupGrowthFixture(fixture: {
+  childId: string;
+  notes: string;
+}) {
+  await withVerifiedCleanup(async (client) => {
+    const records = await client.query<{ id: string }>(
+      'SELECT "id" FROM "GrowthRecord" WHERE "childId" = $1 AND "notes" = $2',
+      [fixture.childId, fixture.notes],
+    );
+    const ids = records.rows.map(({ id }) => id);
+    await client.query(
+      'DELETE FROM "AuditLog" WHERE "entityType" = \'GrowthRecord\' AND "entityId" = ANY($1::text[])',
+      [ids],
+    );
+    await client.query(
+      'DELETE FROM "GrowthAssessment" WHERE "growthRecordId" = ANY($1::uuid[])',
+      [ids],
+    );
+    await client.query(
+      'DELETE FROM "GrowthRecord" WHERE "id" = ANY($1::uuid[])',
+      [ids],
+    );
+  });
+}
+
+export async function cleanupVaccinationFixture(fixture: {
+  childId: string;
+  notes: string;
+}) {
+  await withVerifiedCleanup(async (client) => {
+    const vaccinations = await client.query<{ id: string }>(
+      'SELECT "id" FROM "Vaccination" WHERE "childId" = $1 AND "notes" = $2',
+      [fixture.childId, fixture.notes],
+    );
+    const ids = vaccinations.rows.map(({ id }) => id);
+    await client.query(
+      'DELETE FROM "AuditLog" WHERE "entityType" = \'Vaccination\' AND "entityId" = ANY($1::text[])',
+      [ids],
+    );
+    await client.query(
+      'DELETE FROM "Vaccination" WHERE "id" = ANY($1::uuid[])',
+      [ids],
+    );
+  });
 }
