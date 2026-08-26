@@ -1,14 +1,14 @@
 import { defineConfig, devices } from "@playwright/test";
 
-import { requireE2EEnvironment } from "./tests/support/test-environment";
-
-await requireE2EEnvironment();
+import "./tests/support/load-test-environment";
 
 const baseURL = process.env.E2E_BASE_URL ?? "http://127.0.0.1:3000";
 
 export default defineConfig({
   testDir: "./tests/e2e",
+  globalSetup: "./tests/e2e/global-setup.ts",
   fullyParallel: false,
+  workers: 1,
   forbidOnly: true,
   retries: process.env.CI ? 2 : 0,
   reporter: [["list"]],

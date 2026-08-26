@@ -35,7 +35,11 @@ test("registro crítico: comunidad, tutor y niño", async ({ page }) => {
   await page.getByLabel("Comunidad").selectOption(guardianCommunityValue!);
   await page.getByLabel("Nombre completo").fill(guardian);
   await page.getByRole("button", { name: "Registrar tutor" }).click();
-  await expect(page.getByText("Tutor registrado correctamente.")).toBeVisible();
+  await expect(page).toHaveURL(/\/app\/tutores\/[0-9a-f-]+\?creado=1$/);
+  await expect(page.getByRole("heading", { name: guardian })).toBeVisible();
+  await expect(
+    page.getByText("La información se guardó correctamente."),
+  ).toBeVisible();
 
   await page.goto("/app/ninos/nuevo");
   const childCommunityValue = await page
@@ -48,12 +52,20 @@ test("registro crítico: comunidad, tutor y niño", async ({ page }) => {
   await page.getByLabel("Fecha de nacimiento").fill("2025-12-15");
   await page.getByLabel("Sexo registrado").selectOption("MALE");
   await page.getByRole("button", { name: "Registrar niño" }).click();
-  await expect(page.getByText("Niño registrado correctamente.")).toBeVisible();
+  await expect(page).toHaveURL(/\/app\/ninos\/[0-9a-f-]+\?creado=1$/);
+  await expect(page.getByRole("heading", { name: child })).toBeVisible();
+  await expect(
+    page.getByText("La información se guardó correctamente."),
+  ).toBeVisible();
 });
 
 test("rechaza una comunidad sin nombre", async ({ page }) => {
   await login(page);
   await page.goto("/app/comunidades/nueva");
+  const name = page.getByLabel("Nombre");
   await page.getByRole("button", { name: "Crear comunidad" }).click();
-  await expect(page.getByLabel("Nombre")).toBeFocused();
+  await expect(page).toHaveURL(/\/app\/comunidades\/nueva$/);
+  expect(
+    await name.evaluate((input: HTMLInputElement) => input.validity.valid),
+  ).toBe(false);
 });
