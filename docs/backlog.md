@@ -1242,7 +1242,7 @@ Acceptance Criteria:
 
 ### TASK-054 — Email Provider Integration
 
-Status: DONE
+Status: IN_REVIEW
 Priority: P1  
 Dependencies: TASK-052, TASK-053
 
@@ -1972,7 +1972,7 @@ Acceptance Criteria:
 
 ### TASK-087 — E2E CI Strategy
 
-Status: IN_REVIEW
+Status: DONE
 Priority: P2  
 Dependencies: TASK-073, TASK-086
 
