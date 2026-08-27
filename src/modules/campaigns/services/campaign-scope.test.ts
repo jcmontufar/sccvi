@@ -18,10 +18,16 @@ describe("campaign center scope", () => {
     expect(
       can(manager, "campaign:create", { healthCenterId: "center-a" }),
     ).toBe(true);
+    expect(can(manager, "campaign:send", { healthCenterId: "center-a" })).toBe(
+      true,
+    );
   });
 
   it("denies cross-center campaign access", () => {
     expect(can(manager, "campaign:read", { healthCenterId: "center-b" })).toBe(
+      false,
+    );
+    expect(can(manager, "campaign:send", { healthCenterId: "center-b" })).toBe(
       false,
     );
   });

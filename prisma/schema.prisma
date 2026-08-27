@@ -395,6 +395,7 @@ model Notification {
   campaignRecipient   CampaignRecipient?  @relation(fields: [campaignRecipientId], references: [id], onDelete: SetNull)
 
   @@unique([alertId, guardianId, channel])
+  @@unique([campaignRecipientId, channel])
   @@index([guardianId])
   @@index([alertId])
   @@index([campaignRecipientId])

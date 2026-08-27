@@ -9,8 +9,14 @@ import {
 
 export function CampaignForm({
   communities,
+  vaccinationSchedule,
 }: {
   communities: { id: string; name: string }[];
+  vaccinationSchedule: {
+    code: string;
+    name: string;
+    doses: { code: string; label: string }[];
+  } | null;
 }) {
   const [state, action, pending] = useActionState<CampaignFormState, FormData>(
     createCampaignAction,
@@ -78,9 +84,51 @@ export function CampaignForm({
           />
         </label>
       </fieldset>
+      {vaccinationSchedule ? (
+        <fieldset className="grid gap-4 rounded-lg border p-4 sm:grid-cols-2">
+          <legend className="px-2 font-medium">
+            Vacunación por dosis exacta
+          </legend>
+          <input
+            name="scheduleVersionCode"
+            type="hidden"
+            value={vaccinationSchedule.code}
+          />
+          <p className="sm:col-span-2 text-sm text-muted-foreground">
+            Versión: {vaccinationSchedule.name} ({vaccinationSchedule.code}).
+            Deja ambos campos vacíos para no filtrar por vacunación.
+          </p>
+          <label className="text-sm">
+            Dosis
+            <select
+              className="mt-2 h-10 w-full rounded-lg border bg-background px-3"
+              name="doseCode"
+            >
+              <option value="">Sin filtro de vacunación</option>
+              {vaccinationSchedule.doses.map((dose) => (
+                <option key={dose.code} value={dose.code}>
+                  {dose.label}
+                </option>
+              ))}
+            </select>
+          </label>
+          <label className="text-sm">
+            Estado de esa dosis
+            <select
+              className="mt-2 h-10 w-full rounded-lg border bg-background px-3"
+              name="doseStatus"
+            >
+              <option value="">Sin estado</option>
+              <option value="APPLIED">Aplicada</option>
+              <option value="PENDING">Pendiente</option>
+              <option value="OVERDUE">Atrasada</option>
+            </select>
+          </label>
+        </fieldset>
+      ) : null}
       <p className="text-sm text-muted-foreground">
-        La campaña se guarda como borrador. No se enviarán mensajes hasta
-        configurar un proveedor de correo.
+        La campaña se guarda como borrador y su vista previa queda como una
+        instantánea. El envío se inicia después desde el detalle.
       </p>
       {state.error ? (
         <p className="text-sm text-destructive">{state.error}</p>

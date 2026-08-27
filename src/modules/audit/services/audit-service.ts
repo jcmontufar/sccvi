@@ -13,10 +13,20 @@ export type AuditAction =
   | "ALERT_REVIEWED"
   | "ALERT_RESOLVED"
   | "QR_GENERATED"
-  | "QR_REVOKED";
+  | "QR_REVOKED"
+  | "CAMPAIGN_CREATED"
+  | "CAMPAIGN_SEND_STARTED"
+  | "CAMPAIGN_COMPLETED"
+  | "CAMPAIGN_FAILED";
 
 export type AuditEntityType =
-  "User" | "Child" | "GrowthRecord" | "Vaccination" | "Alert" | "QRToken";
+  | "User"
+  | "Child"
+  | "GrowthRecord"
+  | "Vaccination"
+  | "Alert"
+  | "QRToken"
+  | "Campaign";
 
 type AuditMetadataValue =
   | string
@@ -39,7 +49,7 @@ export type AuditEvent = {
 type AuditClient = Pick<Prisma.TransactionClient, "auditLog">;
 
 const sensitiveKey =
-  /password|passphrase|pin|token|secret|api[-_]?key|authorization|cookie|credential/i;
+  /password|passphrase|pin|token|secret|api[-_]?key|authorization|cookie|credential|email|destination|message|subject/i;
 
 function sanitizeValue(
   value: AuditMetadataValue,

@@ -387,6 +387,23 @@ Campaign recipients may be selected according to approved criteria such as:
 - Child age
 - Vaccination status
 
+Vaccination segmentation must identify one approved schedule version, one
+exact dose code and one derived dose state. A guardian qualifies when at least
+one active authorized child matches that exact applicable dose through the
+central vaccination-status engine. SCCVI must not aggregate multiple dose
+states into an invented global child or guardian vaccination state.
+
+Age segmentation uses the `America/Guatemala` business date.
+
+Resolved recipients form a persisted snapshot when the draft is created. Send
+must not silently replace that snapshot by recalculating clinical segmentation.
+Immediately before delivery, SCCVI revalidates only that the guardian remains
+active, has an email address, permits `EMAIL` and remains in authorized center
+scope. An ineligible recipient is `SKIPPED`.
+
+One notification per campaign recipient and channel is allowed. Only provider
+confirmation produces `SENT`; provider failure produces `FAILED`.
+
 ---
 
 ## BR-037 — QR Association

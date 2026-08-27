@@ -619,6 +619,19 @@ Provider
 ↓
 Track Results
 
+The implemented workflow persists recipients as a creation-time snapshot.
+Vaccination targeting is dose-specific (`scheduleVersionCode`, `doseCode`,
+`doseStatus`) and delegates status calculation to the central vaccination
+engine; it never creates a global vaccination state. Age bounds use the
+Guatemala business date.
+
+Sending atomically claims a `DRAFT` campaign as `PROCESSING`, revalidates only
+contact/center eligibility, and records recipients as `SENT`, `FAILED` or
+`SKIPPED`. The campaign becomes `COMPLETED` when no provider delivery failed
+and `FAILED` otherwise. Notification uniqueness prevents duplicate delivery
+for the same recipient and channel. Creation, send start and aggregate outcome
+are audited without message or contact content.
+
 Initial segmentation may include:
 
 - Community

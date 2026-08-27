@@ -122,3 +122,33 @@ export async function cleanupVaccinationFixture(fixture: {
     );
   });
 }
+
+export async function cleanupCampaignFixture(name: string) {
+  await withVerifiedCleanup(async (client) => {
+    const campaigns = await client.query<{ id: string }>(
+      'SELECT "id" FROM "Campaign" WHERE "name" = $1',
+      [name],
+    );
+    const campaignIds = campaigns.rows.map(({ id }) => id);
+    const recipients = await client.query<{ id: string }>(
+      'SELECT "id" FROM "CampaignRecipient" WHERE "campaignId" = ANY($1::uuid[])',
+      [campaignIds],
+    );
+    const recipientIds = recipients.rows.map(({ id }) => id);
+    await client.query(
+      'DELETE FROM "Notification" WHERE "campaignRecipientId" = ANY($1::uuid[])',
+      [recipientIds],
+    );
+    await client.query(
+      'DELETE FROM "CampaignRecipient" WHERE "id" = ANY($1::uuid[])',
+      [recipientIds],
+    );
+    await client.query(
+      'DELETE FROM "AuditLog" WHERE "entityType" = \'Campaign\' AND "entityId" = ANY($1::text[])',
+      [campaignIds],
+    );
+    await client.query('DELETE FROM "Campaign" WHERE "id" = ANY($1::uuid[])', [
+      campaignIds,
+    ]);
+  });
+}

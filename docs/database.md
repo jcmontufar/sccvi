@@ -688,6 +688,13 @@ Recommended unique constraint:
 
 campaignId + guardianId
 
+Campaign notification delivery is additionally unique by:
+
+campaignRecipientId + channel
+
+The nullable composite key permits non-campaign notifications while preventing
+duplicate delivery records for one persisted campaign recipient and channel.
+
 ---
 
 # 19. QRToken
@@ -835,6 +842,9 @@ type + sourceType + sourceId
 
 Notification:
 alertId + guardianId + channel
+
+Notification:
+campaignRecipientId + channel
 
 Additional constraints may be introduced when justified.
 
@@ -994,10 +1004,10 @@ interface.
 
 ---
 
-# 31. Physical Schema Review — BATCH-08
+# 31. Physical Schema Review — BATCH-09
 
-Reviewed against `prisma/schema.prisma` and all four versioned migrations on
-2026-08-26. The physical schema contains 20 models: the registry hierarchy,
+Reviewed against `prisma/schema.prisma` and the five versioned migrations
+through BATCH-09. The physical schema contains 20 models: the registry hierarchy,
 explicit guardian-child relation, factual/derived growth models, follow-up,
 versioned vaccination models, alerts, notifications, campaigns, QR credentials
 and audit logs described above.
@@ -1014,4 +1024,6 @@ Implementation-specific confirmations:
 - Schedule provenance is normalized through `VaccineScheduleVersion`; legacy
   schedule linkage remains nullable to avoid destructive migration.
 - Persistent QR attempt fields support multi-instance throttling.
-- No migration is modified by this review and no schema change is required.
+- Campaign notification idempotency is enforced by recipient/channel composite
+  uniqueness. The BATCH-09 migration is additive and does not rewrite delivery
+  history.

@@ -3,6 +3,14 @@ import { Button } from "@/components/ui/button";
 import { requireApplicationUser } from "@/modules/auth/session";
 import { listCampaigns } from "@/modules/campaigns/services/campaign-service";
 
+const campaignStatusLabels = {
+  DRAFT: "Borrador",
+  SCHEDULED: "Programada",
+  PROCESSING: "En proceso",
+  COMPLETED: "Completada",
+  FAILED: "Fallida",
+} as const;
+
 export default async function CampaignsPage() {
   const campaigns = await listCampaigns(await requireApplicationUser());
   return (
@@ -11,7 +19,7 @@ export default async function CampaignsPage() {
         <div>
           <h1 className="text-3xl font-semibold">Campañas</h1>
           <p className="mt-2 text-muted-foreground">
-            Borradores y destinatarios. El envío real aún no está habilitado.
+            Borradores, destinatarios y resultados de entrega por correo.
           </p>
         </div>
         <Button render={<Link href="/app/campanas/nueva" />}>
@@ -27,7 +35,8 @@ export default async function CampaignsPage() {
             <div>
               <h2 className="font-semibold">{campaign.name}</h2>
               <p className="text-sm text-muted-foreground">
-                {campaign._count.recipients} destinatarios · Borrador
+                {campaign._count.recipients} destinatarios ·{" "}
+                {campaignStatusLabels[campaign.status]}
               </p>
             </div>
             <Button
