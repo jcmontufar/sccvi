@@ -49,6 +49,18 @@ describe("audit service", () => {
     expect(JSON.stringify(metadata)).not.toContain("not-retained");
   });
 
+  it("removes campaign contact and message content from metadata", () => {
+    expect(
+      sanitizeAuditMetadata({
+        recipientCount: 2,
+        doseCode: "BCG-BIRTH",
+        emailAddress: "not-retained",
+        subject: "not-retained",
+        messageBody: "not-retained",
+      }),
+    ).toEqual({ recipientCount: 2, doseCode: "BCG-BIRTH" });
+  });
+
   it("propagates persistence failure for transactional rollback", async () => {
     const failure = new Error("audit unavailable");
     const create = vi.fn().mockRejectedValue(failure);

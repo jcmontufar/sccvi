@@ -1311,13 +1311,15 @@ Acceptance Criteria:
 
 ### TASK-057 — Campaign Segmentation
 
-Status: IN_PROGRESS
+Status: DONE
 Priority: P2  
 Dependencies: TASK-056
 
-BATCH-06 scope: community and age segmentation remain operational.
-Vaccination-status targeting remains incomplete because the backlog does not
-define how multiple dose-level states aggregate to one child or guardian.
+BATCH-09 completes community, Guatemala-business-date age and exact vaccination
+dose targeting. Vaccination targeting stores schedule version code, dose code
+and the selected `APPLIED`, `PENDING` or `OVERDUE` state. A guardian matches
+when at least one active authorized child has that exact applicable dose state;
+no global child/guardian vaccination state is inferred.
 
 Initial criteria:
 
@@ -1334,12 +1336,15 @@ Acceptance Criteria:
 
 ### TASK-058 — Campaign User Interface
 
-Status: IN_PROGRESS
+Status: DONE
 Priority: P2  
 Dependencies: TASK-056, TASK-057
 
-BATCH-06 scope: campaign creation and recipient preview remain operational;
-vaccination-status configuration and actual delivery remain incomplete.
+BATCH-09 completes Spanish creation, segmentation, persisted recipient preview,
+delivery initiation and aggregate/recipient result review. Delivery revalidates
+contact eligibility without replacing the recipient snapshot, uses the
+provider-independent email boundary and records only provider-confirmed
+success as sent.
 
 Requirements:
 
@@ -1590,7 +1595,9 @@ Acceptance Criteria:
 Remaining gap: child, growth, vaccination, alert and QR critical events use the
 central transactional service. User administration and relevant authentication
 event workflows are not implemented, so their listed audit events do not yet
-exist.
+exist. BATCH-09 also audits campaign creation, send start and aggregate
+completion/failure without contact addresses, message contents or medical
+details; TASK-069 remains `IN_PROGRESS`.
 
 ---
 
@@ -1978,8 +1985,9 @@ Acceptance Criteria:
 - Critical E2E tests can execute predictably
 
 Remaining review: the fail-closed serialized workflow is versioned, but GitHub
-environment `sccvi-test`, its protection policy and required secrets must be
-configured externally and the workflow must complete once in GitHub Actions.
+environment `sccvi-test` is operational. BATCH-09 synchronizes the previously
+flaky Growth Server Action explicitly; TASK-087 remains `IN_REVIEW` until the
+updated isolated workflow completes remotely without retry/flaky behavior.
 
 ---
 

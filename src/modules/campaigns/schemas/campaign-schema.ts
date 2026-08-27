@@ -25,6 +25,12 @@ export const campaignInputSchema = z
     ]),
     minimumAgeYears: z.coerce.number().int().min(0).max(17).optional(),
     maximumAgeYears: z.coerce.number().int().min(0).max(17).optional(),
+    scheduleVersionCode: z.string().trim().max(80).optional(),
+    doseCode: z.string().trim().max(120).optional(),
+    doseStatus: z
+      .union([z.literal(""), z.enum(["APPLIED", "PENDING", "OVERDUE"])])
+      .optional()
+      .transform((value) => value || undefined),
   })
   .refine(
     ({ minimumAgeYears, maximumAgeYears }) =>
@@ -35,10 +41,25 @@ export const campaignInputSchema = z
       message: "La edad mínima no puede superar la edad máxima.",
       path: ["minimumAgeYears"],
     },
+  )
+  .refine(
+    ({ scheduleVersionCode, doseCode, doseStatus }) => {
+      return (
+        (!doseCode && !doseStatus) ||
+        Boolean(scheduleVersionCode && doseCode && doseStatus)
+      );
+    },
+    {
+      message: "Selecciona una versión, dosis y estado de vacunación válidos.",
+      path: ["doseStatus"],
+    },
   );
 
 export type CampaignSegmentation = {
   communityId?: string;
   minimumAgeYears?: number;
   maximumAgeYears?: number;
+  scheduleVersionCode?: string;
+  doseCode?: string;
+  doseStatus?: "APPLIED" | "PENDING" | "OVERDUE";
 };

@@ -23,9 +23,15 @@ test("registra una medición histórica y muestra evaluación OMS", async ({
   await page.getByLabel("Talla (cm)").fill("70.20");
   await page.getByLabel("Método de talla").selectOption("RECUMBENT_LENGTH");
   await page.getByLabel("Notas").fill(notes);
-  await page.getByRole("button", { name: "Registrar medición" }).click();
+  await Promise.all([
+    page.waitForResponse((response) => response.request().method() === "POST", {
+      timeout: 15_000,
+    }),
+    page.getByRole("button", { name: "Registrar medición" }).click(),
+  ]);
   await expect(page).toHaveURL(
     new RegExp(`/app/ninos/${childId}/crecimiento\\?registrada=1$`),
+    { timeout: 15_000 },
   );
   await expect(
     page.getByText("La medición se guardó correctamente."),

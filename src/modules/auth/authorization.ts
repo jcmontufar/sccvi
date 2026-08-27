@@ -40,6 +40,7 @@ export type AuthorizedAction =
   | "campaign:list"
   | "campaign:read"
   | "campaign:create"
+  | "campaign:send"
   | "qr:manage"
   | "dashboard:read"
   | "report:read";
@@ -88,6 +89,7 @@ const allowedRoles: Record<AuthorizedAction, readonly ApplicationRole[]> = {
   "campaign:list": ["ADMIN", "CENTER_MANAGER"],
   "campaign:read": ["ADMIN", "CENTER_MANAGER"],
   "campaign:create": ["ADMIN", "CENTER_MANAGER"],
+  "campaign:send": ["ADMIN", "CENTER_MANAGER"],
   "qr:manage": ["ADMIN", "HEALTH_STAFF"],
   "dashboard:read": ["ADMIN", "HEALTH_STAFF", "CENTER_MANAGER", "GUARDIAN"],
   "report:read": ["ADMIN", "HEALTH_STAFF", "CENTER_MANAGER"],

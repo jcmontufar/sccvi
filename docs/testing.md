@@ -85,6 +85,13 @@ successful live E2E run.
   regression.
 - QR: invalid, valid, revoked, expired, correct PIN and persistent lockout,
   using fixtures created and removed by verified test setup.
+- Campaigns: create a draft, preserve the recipient snapshot, initiate delivery
+  and display the persisted provider-unavailable failure on desktop and Pixel
+  7. The fictional guardian uses `example.invalid`; no external email is sent.
+
+Growth E2E waits for the exact Server Action POST before checking the durable
+redirect, avoiding the prior remote timing race without sleeps or extra retry
+configuration.
 
 Screenshots are retained only on failure. Visible assertions use Spanish UI
 content. Test data is fictional and is not suitable for clinical use.
