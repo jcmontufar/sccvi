@@ -6,6 +6,7 @@ import { getPrisma } from "@/lib/prisma";
 import { activeStateSchema } from "@/lib/validation/common-schema";
 import { authorize } from "@/modules/auth/authorization";
 import type { ApplicationUser } from "@/modules/auth/types";
+import { recordAuditEvent } from "@/modules/audit/services/audit-service";
 import {
   vaccineIdSchema,
   vaccineInputSchema,
@@ -50,8 +51,17 @@ export async function getVaccine(user: ApplicationUser, id: string) {
 export async function createVaccine(user: ApplicationUser, input: unknown) {
   authorize(user, "vaccine:create");
   try {
-    return await getPrisma().vaccine.create({
-      data: vaccineInputSchema.parse(input),
+    return await getPrisma().$transaction(async (transaction) => {
+      const vaccine = await transaction.vaccine.create({
+        data: vaccineInputSchema.parse(input),
+      });
+      await recordAuditEvent(transaction, {
+        userId: user.id,
+        action: "VACCINE_CREATED",
+        entityType: "Vaccine",
+        entityId: vaccine.id,
+      });
+      return vaccine;
     });
   } catch (error) {
     duplicateError(error);
@@ -64,11 +74,26 @@ export async function updateVaccine(
   input: unknown,
 ) {
   authorize(user, "vaccine:update");
-  await getVaccine(user, id);
+  const existing = await getVaccine(user, id);
+  const data = vaccineInputSchema.parse(input);
+  const changedFields = [
+    existing.name !== data.name ? "name" : null,
+    existing.description !== data.description ? "description" : null,
+  ].filter((value): value is string => Boolean(value));
   try {
-    return await getPrisma().vaccine.update({
-      where: { id: vaccineIdSchema.parse(id) },
-      data: vaccineInputSchema.parse(input),
+    return await getPrisma().$transaction(async (transaction) => {
+      const vaccine = await transaction.vaccine.update({
+        where: { id: vaccineIdSchema.parse(id) },
+        data,
+      });
+      await recordAuditEvent(transaction, {
+        userId: user.id,
+        action: "VACCINE_UPDATED",
+        entityType: "Vaccine",
+        entityId: vaccine.id,
+        metadata: { changedFields },
+      });
+      return vaccine;
     });
   } catch (error) {
     duplicateError(error);
@@ -83,8 +108,18 @@ export async function setVaccineActive(
   const activeState = activeStateSchema.parse(isActive);
   authorize(user, "vaccine:deactivate");
   await getVaccine(user, id);
-  return getPrisma().vaccine.update({
-    where: { id: vaccineIdSchema.parse(id) },
-    data: { isActive: activeState },
+  return getPrisma().$transaction(async (transaction) => {
+    const vaccine = await transaction.vaccine.update({
+      where: { id: vaccineIdSchema.parse(id) },
+      data: { isActive: activeState },
+    });
+    await recordAuditEvent(transaction, {
+      userId: user.id,
+      action: "VACCINE_STATUS_CHANGED",
+      entityType: "Vaccine",
+      entityId: vaccine.id,
+      metadata: { isActive: activeState },
+    });
+    return vaccine;
   });
 }

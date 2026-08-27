@@ -724,6 +724,12 @@ in SCCVI.
 
 Reports must not become an authorization bypass.
 
+The incomplete-vaccination report bulk-loads the applicable schedule version,
+active schedules, authorized children and their factual vaccination records.
+It then applies the same pure per-dose evaluator used by the child profile. This
+avoids sequential per-child database evaluation without duplicating clinical
+rules or changing historical cohort applicability.
+
 ---
 
 ## 24. Audit Architecture
@@ -748,6 +754,12 @@ types and removes credential-like metadata keys recursively. Critical events
 are written in the same Prisma transaction as the domain mutation. Audit
 persistence therefore fails closed: a write failure rolls back the associated
 critical operation rather than leaving an unaudited change.
+
+Guardian mutations, child-guardian association, vaccine catalog mutations,
+health-center mutations and community mutations follow this transactional
+pattern. Their metadata contains only entity identifiers, changed-field names
+and non-sensitive state changes; contact values and clinical content are not
+recorded.
 
 ---
 

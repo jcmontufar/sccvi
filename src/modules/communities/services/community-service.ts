@@ -31,9 +31,18 @@ export interface CommunityRepository {
   list(
     filters: CommunitySearch & { allowedHealthCenterId?: string },
   ): Promise<CommunityRecord[]>;
-  create(input: CommunityInput): Promise<CommunityRecord>;
-  update(id: string, input: CommunityInput): Promise<CommunityRecord>;
-  setActive(id: string, isActive: boolean): Promise<CommunityRecord>;
+  create(input: CommunityInput, auditUserId: string): Promise<CommunityRecord>;
+  update(
+    id: string,
+    input: CommunityInput,
+    auditUserId: string,
+    changedFields: string[],
+  ): Promise<CommunityRecord>;
+  setActive(
+    id: string,
+    isActive: boolean,
+    auditUserId: string,
+  ): Promise<CommunityRecord>;
 }
 
 export class CommunityService {
@@ -77,7 +86,7 @@ export class CommunityService {
     if (await this.repository.findDuplicate(data.healthCenterId, data.name)) {
       throw new ApplicationError("COMMUNITY_DUPLICATE");
     }
-    return this.repository.create(data);
+    return this.repository.create(data, user.id);
   }
 
   async update(user: ApplicationUser, id: string, input: unknown) {
@@ -100,7 +109,14 @@ export class CommunityService {
     ) {
       throw new ApplicationError("COMMUNITY_DUPLICATE");
     }
-    return this.repository.update(communityId, data);
+    const changedFields = [
+      existing.name !== data.name ? "name" : null,
+      existing.location !== data.location ? "location" : null,
+      existing.estimatedFamilies !== data.estimatedFamilies
+        ? "estimatedFamilies"
+        : null,
+    ].filter((value): value is string => Boolean(value));
+    return this.repository.update(communityId, data, user.id, changedFields);
   }
 
   async setActive(user: ApplicationUser, id: string, isActive: boolean) {
@@ -111,6 +127,6 @@ export class CommunityService {
     authorize(user, "community:deactivate", {
       healthCenterId: existing.healthCenterId,
     });
-    return this.repository.setActive(communityId, activeState);
+    return this.repository.setActive(communityId, activeState, user.id);
   }
 }

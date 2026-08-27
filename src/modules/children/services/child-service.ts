@@ -229,8 +229,18 @@ export async function associateGuardian(
     childHealthCenterId: child.community.healthCenterId,
     guardianHealthCenterId: guardian.community.healthCenterId,
   });
-  return getPrisma().childGuardian.create({
-    data: { childId: child.id, ...data },
-    select: { id: true },
+  return getPrisma().$transaction(async (transaction) => {
+    const association = await transaction.childGuardian.create({
+      data: { childId: child.id, ...data },
+      select: { id: true },
+    });
+    await recordAuditEvent(transaction, {
+      userId: user.id,
+      action: "CHILD_GUARDIAN_ASSOCIATED",
+      entityType: "ChildGuardian",
+      entityId: association.id,
+      metadata: { childId: child.id, guardianId: guardian.id },
+    });
+    return association;
   });
 }

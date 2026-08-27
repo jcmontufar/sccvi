@@ -17,7 +17,19 @@ export type AuditAction =
   | "CAMPAIGN_CREATED"
   | "CAMPAIGN_SEND_STARTED"
   | "CAMPAIGN_COMPLETED"
-  | "CAMPAIGN_FAILED";
+  | "CAMPAIGN_FAILED"
+  | "GUARDIAN_CREATED"
+  | "GUARDIAN_UPDATED"
+  | "GUARDIAN_STATUS_CHANGED"
+  | "CHILD_GUARDIAN_ASSOCIATED"
+  | "VACCINE_CREATED"
+  | "VACCINE_UPDATED"
+  | "VACCINE_STATUS_CHANGED"
+  | "HEALTH_CENTER_UPDATED"
+  | "HEALTH_CENTER_STATUS_CHANGED"
+  | "COMMUNITY_CREATED"
+  | "COMMUNITY_UPDATED"
+  | "COMMUNITY_STATUS_CHANGED";
 
 export type AuditEntityType =
   | "User"
@@ -26,7 +38,12 @@ export type AuditEntityType =
   | "Vaccination"
   | "Alert"
   | "QRToken"
-  | "Campaign";
+  | "Campaign"
+  | "Guardian"
+  | "ChildGuardian"
+  | "Vaccine"
+  | "HealthCenter"
+  | "Community";
 
 type AuditMetadataValue =
   | string
