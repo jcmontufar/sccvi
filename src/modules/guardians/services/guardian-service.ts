@@ -5,6 +5,7 @@ import { getPrisma } from "@/lib/prisma";
 import { activeStateSchema } from "@/lib/validation/common-schema";
 import { authorize } from "@/modules/auth/authorization";
 import type { ApplicationUser } from "@/modules/auth/types";
+import { recordAuditEvent } from "@/modules/audit/services/audit-service";
 import {
   guardianIdSchema,
   guardianInputSchema,
@@ -120,7 +121,20 @@ export async function createGuardian(user: ApplicationUser, input: unknown) {
     "guardian:create",
   );
   await validateOptionalUser(data.userId, community.healthCenterId);
-  return getPrisma().guardian.create({ data, select: guardianSelect });
+  return getPrisma().$transaction(async (transaction) => {
+    const guardian = await transaction.guardian.create({
+      data,
+      select: guardianSelect,
+    });
+    await recordAuditEvent(transaction, {
+      userId: user.id,
+      action: "GUARDIAN_CREATED",
+      entityType: "Guardian",
+      entityId: guardian.id,
+      metadata: { communityId: guardian.communityId },
+    });
+    return guardian;
+  });
 }
 
 export async function updateGuardian(
@@ -139,10 +153,31 @@ export async function updateGuardian(
     "guardian:update",
   );
   await validateOptionalUser(data.userId, community.healthCenterId);
-  return getPrisma().guardian.update({
-    where: { id: guardian.id },
-    data,
-    select: guardianSelect,
+  const changedFields = [
+    guardian.communityId !== data.communityId ? "communityId" : null,
+    guardian.fullName !== data.fullName ? "fullName" : null,
+    guardian.identification !== data.identification ? "identification" : null,
+    guardian.phone !== data.phone ? "phone" : null,
+    guardian.email !== data.email ? "email" : null,
+    guardian.preferredNotificationChannel !== data.preferredNotificationChannel
+      ? "preferredNotificationChannel"
+      : null,
+    guardian.userId !== data.userId ? "userId" : null,
+  ].filter((value): value is string => Boolean(value));
+  return getPrisma().$transaction(async (transaction) => {
+    const updated = await transaction.guardian.update({
+      where: { id: guardian.id },
+      data,
+      select: guardianSelect,
+    });
+    await recordAuditEvent(transaction, {
+      userId: user.id,
+      action: "GUARDIAN_UPDATED",
+      entityType: "Guardian",
+      entityId: guardian.id,
+      metadata: { changedFields },
+    });
+    return updated;
   });
 }
 
@@ -156,9 +191,19 @@ export async function setGuardianActive(
   authorize(user, "guardian:deactivate", {
     healthCenterId: guardian.community.healthCenterId,
   });
-  return getPrisma().guardian.update({
-    where: { id: guardian.id },
-    data: { isActive: activeState },
-    select: guardianSelect,
+  return getPrisma().$transaction(async (transaction) => {
+    const updated = await transaction.guardian.update({
+      where: { id: guardian.id },
+      data: { isActive: activeState },
+      select: guardianSelect,
+    });
+    await recordAuditEvent(transaction, {
+      userId: user.id,
+      action: "GUARDIAN_STATUS_CHANGED",
+      entityType: "Guardian",
+      entityId: guardian.id,
+      metadata: { isActive: activeState },
+    });
+    return updated;
   });
 }

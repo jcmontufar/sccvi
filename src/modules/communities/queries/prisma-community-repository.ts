@@ -1,6 +1,7 @@
 import "server-only";
 
 import { getPrisma } from "@/lib/prisma";
+import { recordAuditEvent } from "@/modules/audit/services/audit-service";
 import {
   CommunityService,
   type CommunityRepository,
@@ -60,24 +61,54 @@ export const prismaCommunityRepository: CommunityRepository = {
       take: 100,
     });
   },
-  create(input) {
-    return getPrisma().community.create({
-      data: input,
-      select: communitySelect,
+  create(input, auditUserId) {
+    return getPrisma().$transaction(async (transaction) => {
+      const community = await transaction.community.create({
+        data: input,
+        select: communitySelect,
+      });
+      await recordAuditEvent(transaction, {
+        userId: auditUserId,
+        action: "COMMUNITY_CREATED",
+        entityType: "Community",
+        entityId: community.id,
+        metadata: { healthCenterId: community.healthCenterId },
+      });
+      return community;
     });
   },
-  update(id, input) {
-    return getPrisma().community.update({
-      where: { id },
-      data: input,
-      select: communitySelect,
+  update(id, input, auditUserId, changedFields) {
+    return getPrisma().$transaction(async (transaction) => {
+      const community = await transaction.community.update({
+        where: { id },
+        data: input,
+        select: communitySelect,
+      });
+      await recordAuditEvent(transaction, {
+        userId: auditUserId,
+        action: "COMMUNITY_UPDATED",
+        entityType: "Community",
+        entityId: community.id,
+        metadata: { changedFields },
+      });
+      return community;
     });
   },
-  setActive(id, isActive) {
-    return getPrisma().community.update({
-      where: { id },
-      data: { isActive },
-      select: communitySelect,
+  setActive(id, isActive, auditUserId) {
+    return getPrisma().$transaction(async (transaction) => {
+      const community = await transaction.community.update({
+        where: { id },
+        data: { isActive },
+        select: communitySelect,
+      });
+      await recordAuditEvent(transaction, {
+        userId: auditUserId,
+        action: "COMMUNITY_STATUS_CHANGED",
+        entityType: "Community",
+        entityId: community.id,
+        metadata: { isActive },
+      });
+      return community;
     });
   },
 };

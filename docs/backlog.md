@@ -1500,8 +1500,12 @@ Status: IN_PROGRESS
 Priority: P2  
 Dependencies: Relevant domain modules
 
-BATCH-06 adds authorized factual vaccination and overdue-dose reports. Coverage
-percentage remains incomplete because no denominator methodology is approved.
+BATCH-06 adds authorized factual vaccination and overdue-dose reports. BATCH-10
+replaces sequential per-child vaccination evaluation in the overdue report with
+bulk authorized loading while preserving the central status evaluator and
+historical applicability rules. Coverage percentage remains incomplete because
+no denominator methodology is approved; TASK-065 therefore remains
+`IN_PROGRESS`.
 
 Requirements:
 
@@ -1592,12 +1596,12 @@ Acceptance Criteria:
 - Important operations create useful audit records
 - Trivial UI events are not excessively logged
 
-Remaining gap: child, growth, vaccination, alert and QR critical events use the
-central transactional service. User administration and relevant authentication
-event workflows are not implemented, so their listed audit events do not yet
-exist. BATCH-09 also audits campaign creation, send start and aggregate
-completion/failure without contact addresses, message contents or medical
-details; TASK-069 remains `IN_PROGRESS`.
+Child, growth, vaccination, alert, QR and campaign critical events use the
+central transactional service. BATCH-10 adds guardian, child-guardian, vaccine
+catalog, health-center and community mutation events with identifier/state-only
+metadata and rollback on audit failure. User administration and relevant
+authentication event workflows are not implemented, so their listed audit
+events do not yet exist; TASK-069 remains `IN_PROGRESS`.
 
 ---
 

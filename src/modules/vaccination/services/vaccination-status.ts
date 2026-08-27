@@ -26,6 +26,22 @@ export type DoseApplicability = {
   seriesStartTiming?: ScheduleTiming;
 };
 
+export type VaccinationScheduleEvaluationDose = ScheduleTiming & {
+  id: string;
+  doseCode: string | null;
+  doseName: string | null;
+  doseNumber: number;
+  timingNote: string | null;
+  vaccineName: string;
+  vaccineOfficialCode: string | null;
+};
+
+export type RecordedVaccination = {
+  id: string;
+  vaccineScheduleId: string;
+  applicationDate: string;
+};
+
 function agePosition(dateOfBirth: string, evaluationDate: string) {
   const age = calculateExactAge(dateOfBirth, evaluationDate);
   return { months: age.years * 12 + age.months, days: age.days };
@@ -167,4 +183,56 @@ export function evaluateVaccinationDose(
     evaluationDate,
     applicability.schedule,
   );
+}
+
+export function evaluateVaccinationScheduleForChild(input: {
+  dateOfBirth: string;
+  evaluationDate: string;
+  version: ScheduleVersionApplicability;
+  schedules: readonly VaccinationScheduleEvaluationDose[];
+  vaccinations: readonly RecordedVaccination[];
+}) {
+  const vaccinationsBySchedule = new Map(
+    input.vaccinations.map((vaccination) => [
+      vaccination.vaccineScheduleId,
+      vaccination,
+    ]),
+  );
+  const hexavalentSeriesStart = input.schedules.find(
+    (schedule) =>
+      schedule.vaccineOfficialCode === "HEXAVALENT" &&
+      schedule.doseNumber === 1,
+  );
+
+  return input.schedules.flatMap((schedule) => {
+    const vaccination = vaccinationsBySchedule.get(schedule.id);
+    const status = evaluateVaccinationDose(
+      {
+        dateOfBirth: input.dateOfBirth,
+        schedule,
+        version: input.version,
+        seriesStartTiming:
+          schedule.vaccineOfficialCode === "HEXAVALENT"
+            ? hexavalentSeriesStart
+            : undefined,
+      },
+      input.evaluationDate,
+      vaccination?.applicationDate,
+    );
+    return status
+      ? [
+          {
+            id: schedule.id,
+            doseCode: schedule.doseCode ?? schedule.id,
+            doseName: schedule.doseName ?? `Dosis ${schedule.doseNumber}`,
+            vaccineName: schedule.vaccineName,
+            scheduledDate: getScheduledDate(input.dateOfBirth, schedule),
+            timingNote: schedule.timingNote,
+            status,
+            vaccinationId: vaccination?.id ?? null,
+            applicationDate: vaccination?.applicationDate ?? null,
+          },
+        ]
+      : [];
+  });
 }

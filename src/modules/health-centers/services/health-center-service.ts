@@ -5,6 +5,7 @@ import { getPrisma } from "@/lib/prisma";
 import { activeStateSchema } from "@/lib/validation/common-schema";
 import { authorize } from "@/modules/auth/authorization";
 import type { ApplicationUser } from "@/modules/auth/types";
+import { recordAuditEvent } from "@/modules/audit/services/audit-service";
 import {
   healthCenterIdSchema,
   updateHealthCenterSchema,
@@ -54,14 +55,31 @@ export async function updateHealthCenter(
 
   const existing = await getPrisma().healthCenter.findUnique({
     where: { id: healthCenterId },
-    select: { id: true },
+    select: healthCenterSelect,
   });
   if (!existing) throw new ApplicationError("HEALTH_CENTER_NOT_FOUND");
 
-  return getPrisma().healthCenter.update({
-    where: { id: healthCenterId },
-    data,
-    select: healthCenterSelect,
+  const changedFields = [
+    existing.name !== data.name ? "name" : null,
+    existing.code !== data.code ? "code" : null,
+    existing.address !== data.address ? "address" : null,
+    existing.phone !== data.phone ? "phone" : null,
+    existing.email !== data.email ? "email" : null,
+  ].filter((value): value is string => Boolean(value));
+  return getPrisma().$transaction(async (transaction) => {
+    const healthCenter = await transaction.healthCenter.update({
+      where: { id: healthCenterId },
+      data,
+      select: healthCenterSelect,
+    });
+    await recordAuditEvent(transaction, {
+      userId: user.id,
+      action: "HEALTH_CENTER_UPDATED",
+      entityType: "HealthCenter",
+      entityId: healthCenter.id,
+      metadata: { changedFields },
+    });
+    return healthCenter;
   });
 }
 
@@ -73,9 +91,19 @@ export async function setHealthCenterActive(
   const healthCenterId = healthCenterIdSchema.parse(id);
   const activeState = activeStateSchema.parse(isActive);
   authorize(user, "health-center:change-status", { healthCenterId });
-  return getPrisma().healthCenter.update({
-    where: { id: healthCenterId },
-    data: { isActive: activeState },
-    select: healthCenterSelect,
+  return getPrisma().$transaction(async (transaction) => {
+    const healthCenter = await transaction.healthCenter.update({
+      where: { id: healthCenterId },
+      data: { isActive: activeState },
+      select: healthCenterSelect,
+    });
+    await recordAuditEvent(transaction, {
+      userId: user.id,
+      action: "HEALTH_CENTER_STATUS_CHANGED",
+      entityType: "HealthCenter",
+      entityId: healthCenter.id,
+      metadata: { isActive: activeState },
+    });
+    return healthCenter;
   });
 }

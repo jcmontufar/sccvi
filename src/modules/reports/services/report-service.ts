@@ -4,7 +4,7 @@ import { getPrisma } from "@/lib/prisma";
 import { authorize } from "@/modules/auth/authorization";
 import type { ApplicationUser } from "@/modules/auth/types";
 import { reportFilterSchema } from "@/modules/reports/schemas/report-schema";
-import { listChildVaccinationStatuses } from "@/modules/vaccination/services/vaccination-service";
+import { listAuthorizedChildrenVaccinationStatuses } from "@/modules/vaccination/services/vaccination-service";
 
 export type ReportRow = {
   fecha: string;
@@ -121,14 +121,9 @@ export async function getReport(user: ApplicationUser, input: unknown) {
   }
 
   if (filters.type === "incomplete-vaccination") {
-    const children = await getPrisma().child.findMany({
-      where: { isActive: true, community: { healthCenterId: centerId } },
-      select: { id: true },
-      take: 1000,
-    });
+    const children = await listAuthorizedChildrenVaccinationStatuses(user);
     const rows: ReportRow[] = [];
-    for (const child of children) {
-      const result = await listChildVaccinationStatuses(user, child.id);
+    for (const result of children) {
       for (const dose of result.doses.filter(
         (item) => item.status === "OVERDUE",
       )) {

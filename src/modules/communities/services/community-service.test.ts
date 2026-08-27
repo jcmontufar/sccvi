@@ -60,12 +60,15 @@ describe("CommunityService", () => {
       location: "",
       estimatedFamilies: "80",
     });
-    expect(repo.create).toHaveBeenCalledWith({
-      healthCenterId: centerA,
-      name: "El Rosario",
-      location: null,
-      estimatedFamilies: 80,
-    });
+    expect(repo.create).toHaveBeenCalledWith(
+      {
+        healthCenterId: centerA,
+        name: "El Rosario",
+        location: null,
+        estimatedFamilies: 80,
+      },
+      manager.id,
+    );
   });
 
   it("prevents duplicate communities in the same center", async () => {
@@ -106,7 +109,7 @@ describe("CommunityService", () => {
 
   it("deactivates instead of deleting", async () => {
     await service.setActive(manager, communityId, false);
-    expect(repo.setActive).toHaveBeenCalledWith(communityId, false);
+    expect(repo.setActive).toHaveBeenCalledWith(communityId, false, manager.id);
   });
 
   it("rejects invalid family estimates", async () => {

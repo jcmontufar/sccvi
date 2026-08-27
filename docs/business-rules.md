@@ -510,6 +510,10 @@ Secrets must use environment variables or approved secret-management mechanisms.
 
 Important domain and security events should maintain traceability.
 
+Implemented guardian, child-guardian association, vaccine catalog,
+health-center and community mutations are critical events. Their audit record
+must be committed in the same transaction as the mutation.
+
 Relevant events may include:
 
 - User creation
@@ -588,6 +592,10 @@ They must not be silently removed merely because related entities are deactivate
 Reports must respect user authorization.
 
 A user must not gain access to protected information through report functionality that they could not access elsewhere in the system.
+
+Incomplete-vaccination reporting must reuse the central per-dose vaccination
+status rules. Bulk query optimization must preserve schedule-version cohort
+applicability and must not introduce a global child status or coverage formula.
 
 ---
 

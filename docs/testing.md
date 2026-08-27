@@ -53,6 +53,13 @@ Tests use uniquely named fixtures and delete only their recorded identifiers.
 They never reset a schema or delete shared development data. Run them with
 `npm run test:integration`.
 
+BATCH-10 integration coverage verifies transactional audit persistence for
+guardian, child-guardian, vaccine catalog, health-center and community
+mutations. It also proves that an audit foreign-key failure rolls back its
+associated mutation. Unit coverage verifies that bulk vaccination status
+loading remains center-scoped and produces the same results as the central
+per-dose evaluator, including historical non-applicability.
+
 ## Playwright environment
 
 Playwright requires the database guard plus
