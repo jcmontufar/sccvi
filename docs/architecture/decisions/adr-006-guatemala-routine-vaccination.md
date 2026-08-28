@@ -142,6 +142,22 @@ This does not establish pentavalent/IPV equivalence, infer catch-up, or silently
 convert prior records. A future authoritative reconciliation policy may replace
 this rule prospectively without rewriting factual `Vaccination` rows.
 
+### Coverage consequence for Varicella
+
+`VARICELLA_1` is configured at 15 months with no separate minimum or maximum
+window. For a child born on 2024-03-15, that complete documented opportunity is
+2025-06-15, before `GT-MSPAS-2026-01-12` became effective. The current source
+does not define retrospective or catch-up applicability for that historical
+opportunity. SCCVI therefore omits the dose from that child's current-version
+evaluation and from the per-dose coverage denominator. If the community has no
+other eligible child, the correct coverage result is `0/0 · N/A`, not `0/1`.
+
+A child whose 15-month opportunity falls on or after 2026-01-12 is applicable:
+once the target date arrives, an unvaccinated child contributes `0/1 · 0 %`,
+and a child with a factual application contributes `1/1 · 100 %`. This rule is
+the same generic version-applicability behavior used for other non-series doses;
+it adds no catch-up or equivalence inference.
+
 Every vaccination remains linked to the exact schedule row and version used at
 registration. Import updates matching version/dose identities, marks removed
 rows inactive, and never deletes historical vaccination events.

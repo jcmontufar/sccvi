@@ -41,7 +41,11 @@ function dateRange(from: string, to: string) {
   };
 }
 
-export async function getReport(user: ApplicationUser, input: unknown) {
+export async function getReport(
+  user: ApplicationUser,
+  input: unknown,
+  currentInstant = new Date(),
+) {
   authorize(user, "report:read", { healthCenterId: user.healthCenterId });
   const filters = reportFilterSchema.parse(input);
   const centerId =
@@ -131,7 +135,10 @@ export async function getReport(user: ApplicationUser, input: unknown) {
   }
 
   if (filters.type === "incomplete-vaccination") {
-    const children = await listAuthorizedChildrenVaccinationStatuses(user);
+    const children = await listAuthorizedChildrenVaccinationStatuses(
+      user,
+      currentInstant,
+    );
     const rows: ReportRow[] = [];
     for (const result of children) {
       for (const dose of result.doses.filter((item) =>
@@ -217,7 +224,10 @@ export async function getReport(user: ApplicationUser, input: unknown) {
   }
 
   if (filters.type === "vaccination-coverage") {
-    const schedule = await listActiveVaccinationScheduleDoses(user);
+    const schedule = await listActiveVaccinationScheduleDoses(
+      user,
+      currentInstant,
+    );
     if (!filters.doseCode) {
       return {
         title: "Cobertura de vacunación por comunidad",
@@ -237,7 +247,10 @@ export async function getReport(user: ApplicationUser, input: unknown) {
         rows: [],
       };
     }
-    const children = await listAuthorizedChildrenVaccinationStatuses(user);
+    const children = await listAuthorizedChildrenVaccinationStatuses(
+      user,
+      currentInstant,
+    );
     const grouped = new Map<string, typeof children>();
     for (const child of children) {
       const key = `${child.child.community.healthCenter.name}\u0000${child.child.community.name}`;
