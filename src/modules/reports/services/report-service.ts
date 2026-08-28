@@ -5,6 +5,13 @@ import { authorize } from "@/modules/auth/authorization";
 import type { ApplicationUser } from "@/modules/auth/types";
 import { reportFilterSchema } from "@/modules/reports/schemas/report-schema";
 import { listAuthorizedChildrenVaccinationStatuses } from "@/modules/vaccination/services/vaccination-service";
+import { calculateExactAge } from "@/modules/growth/utils/exact-age";
+import {
+  calculateDoseCoverage,
+  growthAgeBand,
+  isIncompleteVaccinationDose,
+  matchesWeightPercentileReport,
+} from "@/modules/reports/services/report-rules";
 
 export type ReportRow = {
   fecha: string;
@@ -124,15 +131,15 @@ export async function getReport(user: ApplicationUser, input: unknown) {
     const children = await listAuthorizedChildrenVaccinationStatuses(user);
     const rows: ReportRow[] = [];
     for (const result of children) {
-      for (const dose of result.doses.filter(
-        (item) => item.status === "OVERDUE",
+      for (const dose of result.doses.filter((item) =>
+        isIncompleteVaccinationDose(item, result.evaluationDate),
       )) {
         rows.push({
           fecha: dose.scheduledDate,
           centro: result.child.community.healthCenter.name,
           comunidad: result.child.community.name,
           registro: result.child.fullName,
-          detalle: `${dose.vaccineName} · ${dose.doseName} · Atrasada`,
+          detalle: `${dose.vaccineName} · ${dose.doseName} · ${dose.status === "OVERDUE" ? "Atrasada" : "Pendiente desde su fecha programada"}`,
         });
       }
     }
@@ -145,6 +152,164 @@ export async function getReport(user: ApplicationUser, input: unknown) {
             (!filters.to || row.fecha <= filters.to),
         )
         .sort((left, right) => left.fecha.localeCompare(right.fecha)),
+    };
+  }
+
+  if (filters.type === "low-weight" || filters.type === "overweight") {
+    const percentileReportType = filters.type;
+    const records = await getPrisma().growthRecord.findMany({
+      where: {
+        child: { isActive: true, community: { healthCenterId: centerId } },
+      },
+      include: {
+        assessments: {
+          where: { indicator: "WEIGHT_FOR_AGE" },
+          orderBy: { calculatedAt: "desc" },
+          take: 1,
+        },
+        child: {
+          include: {
+            community: {
+              include: { healthCenter: { select: { name: true } } },
+            },
+          },
+        },
+      },
+      orderBy: [{ measurementDate: "desc" }, { createdAt: "desc" }],
+      take: 5000,
+    });
+    const latestByChild = new Map<string, (typeof records)[number]>();
+    for (const record of records) {
+      if (!latestByChild.has(record.childId))
+        latestByChild.set(record.childId, record);
+    }
+    const rows = [...latestByChild.values()].flatMap((record): ReportRow[] => {
+      const measurementDate = record.measurementDate.toISOString().slice(0, 10);
+      if (
+        (filters.from && measurementDate < filters.from) ||
+        (filters.to && measurementDate > filters.to)
+      )
+        return [];
+      const assessment = record.assessments[0];
+      if (!assessment?.percentile) return [];
+      const percentile = Number(assessment.percentile.toString());
+      if (!matchesWeightPercentileReport(percentile, percentileReportType))
+        return [];
+      const age = calculateExactAge(
+        record.child.dateOfBirth.toISOString().slice(0, 10),
+        record.measurementDate.toISOString().slice(0, 10),
+      );
+      return [
+        {
+          fecha: measurementDate,
+          centro: record.child.community.healthCenter.name,
+          comunidad: record.child.community.name,
+          registro: record.child.fullName,
+          detalle: `${age.years * 12 + age.months} meses · ${record.weightKg.toString()} kg · ${record.heightCm.toString()} cm · percentil ${percentile.toFixed(3)} · Requiere seguimiento`,
+        },
+      ];
+    });
+    return {
+      title:
+        filters.type === "low-weight"
+          ? "Niños con percentil de peso bajo"
+          : "Niños con percentil de peso alto",
+      rows,
+    };
+  }
+
+  if (filters.type === "vaccination-coverage") {
+    const children = await listAuthorizedChildrenVaccinationStatuses(user);
+    const grouped = new Map<string, typeof children>();
+    for (const child of children) {
+      const key = `${child.child.community.healthCenter.name}\u0000${child.child.community.name}`;
+      const group = grouped.get(key) ?? [];
+      group.push(child);
+      grouped.set(key, group);
+    }
+    const rows = [...grouped.entries()].map(([key, group]): ReportRow => {
+      const [center, community] = key.split("\u0000");
+      const evaluationDate = group[0]?.evaluationDate ?? "";
+      const coverage = calculateDoseCoverage(
+        group,
+        filters.doseCode,
+        evaluationDate,
+      );
+      return {
+        fecha: evaluationDate,
+        centro: center,
+        comunidad: community,
+        registro: filters.doseCode,
+        detalle: `${coverage.numerator}/${coverage.denominator} · ${coverage.percentage === null ? "N/A" : `${coverage.percentage.toFixed(1)} %`}`,
+      };
+    });
+    return {
+      title: `Cobertura por comunidad — dosis ${filters.doseCode}`,
+      rows,
+    };
+  }
+
+  if (filters.type === "average-growth") {
+    const records = await getPrisma().growthRecord.findMany({
+      where: {
+        measurementDate: range,
+        child: { isActive: true, community: { healthCenterId: centerId } },
+      },
+      include: {
+        child: {
+          include: {
+            community: {
+              include: { healthCenter: { select: { name: true } } },
+            },
+          },
+        },
+      },
+      orderBy: { measurementDate: "desc" },
+      take: 5000,
+    });
+    type GrowthGroup = {
+      center: string;
+      community: string;
+      band: string;
+      children: Set<string>;
+      count: number;
+      weight: number;
+      height: number;
+    };
+    const groups = new Map<string, GrowthGroup>();
+    for (const record of records) {
+      const age = calculateExactAge(
+        record.child.dateOfBirth.toISOString().slice(0, 10),
+        record.measurementDate.toISOString().slice(0, 10),
+      );
+      const band = growthAgeBand(age.years * 12 + age.months);
+      const center = record.child.community.healthCenter.name;
+      const community = record.child.community.name;
+      const key = `${center}\u0000${community}\u0000${band}`;
+      const group = groups.get(key) ?? {
+        center,
+        community,
+        band,
+        children: new Set<string>(),
+        count: 0,
+        weight: 0,
+        height: 0,
+      };
+      group.children.add(record.childId);
+      group.count += 1;
+      group.weight += Number(record.weightKg.toString());
+      group.height += Number(record.heightCm.toString());
+      groups.set(key, group);
+    }
+    return {
+      title: "Promedio de crecimiento por comunidad y grupo de edad",
+      rows: [...groups.values()].map((group): ReportRow => ({
+        fecha: filters.to || filters.from || "—",
+        centro: group.center,
+        comunidad: group.community,
+        registro: group.band,
+        detalle: `${group.children.size} niños · ${group.count} mediciones · peso promedio ${(group.weight / group.count).toFixed(2)} kg · talla promedio ${(group.height / group.count).toFixed(2)} cm`,
+      })),
     };
   }
 

@@ -116,17 +116,30 @@ comparison only, the official macro rule is applied:
 Legacy measurements keep a null method and must not receive a new height-for-age
 assessment until staff records the method through an audited correction.
 
-No clinical classification or growth-alert threshold is approved. SCCVI stores
-z-score, percentile, standard, and version, but leaves classification null and
-keeps TASK-048 blocked. The UI states that results support monitoring and are
-not diagnoses.
+SCCVI stores z-score, percentile, standard, and version and continues to leave
+clinical `classification` null. For operational monitoring, the approved
+project rule uses only the already-calculated `WEIGHT_FOR_AGE` percentile:
+
+- percentile below 5: preventive low-weight follow-up alert;
+- percentile above 95: preventive high-weight follow-up alert; and
+- the exact boundaries 5 and 95 do not alert.
+
+`HEIGHT_FOR_AGE` does not generate these alerts because the source requirement
+names low weight and overweight, not a separate height threshold. The messages
+require evaluation by health staff and explicitly state that they are not a
+diagnosis. No additional WHO classification was introduced.
 
 ## Follow-up decision
 
-A missed-follow-up candidate exists only when staff explicitly provides a next
-follow-up date while recording a growth measurement. The date must be after the
-source measurement. A later factual growth measurement for the same child
-qualifies as completion, including an early visit before the due date.
+The form suggests a next follow-up date from age at the factual measurement:
+monthly below 24 completed months and every three months from 24 through 59
+completed months. At 60 months no automatic suggestion is made. The suggestion
+uses date-only arithmetic and the child's birth date through the measurement
+date; staff may change or clear it. A missed-follow-up candidate exists only
+when staff retains or explicitly provides a next follow-up date. The date must
+be after the source measurement. A later factual growth measurement for the
+same child qualifies as completion, including an early visit before the due
+date.
 
 With no approved grace period, a still-incomplete follow-up becomes overdue on
 the first Guatemala business date after its due date. Due-today and completed
@@ -154,8 +167,9 @@ Official provider reference:
 
 ## Consequences
 
-- The vaccination schedule and all schedule-derived vaccination behavior remain
-  blocked.
-- TASK-048 remains blocked until SCCVI approves explicit growth alert thresholds
-  and wording.
-- Campaign delivery is not enabled by this decision.
+- WHO reference files, LMS methodology and persisted dataset version remain
+  unchanged by the operational percentile rules.
+- TASK-048 is enabled by the explicit percentile thresholds and conservative
+  non-diagnostic wording above.
+- Growth-alert email delivery is not enabled by this decision; the existing
+  notification policy remains unchanged.

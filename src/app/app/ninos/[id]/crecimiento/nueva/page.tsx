@@ -28,7 +28,10 @@ export default async function NewGrowthRecordPage({
           Registra los datos factuales observados durante el control.
         </p>
       </header>
-      <GrowthRecordForm childId={child.id} />
+      <GrowthRecordForm
+        childId={child.id}
+        dateOfBirth={child.dateOfBirth.toISOString().slice(0, 10)}
+      />
     </section>
   );
 }

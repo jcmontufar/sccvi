@@ -4,13 +4,19 @@ import { getReport } from "@/modules/reports/services/report-service";
 export default async function ReportsPage({
   searchParams,
 }: {
-  searchParams: Promise<{ type?: string; from?: string; to?: string }>;
+  searchParams: Promise<{
+    type?: string;
+    from?: string;
+    to?: string;
+    doseCode?: string;
+  }>;
 }) {
   const query = await searchParams;
   const filters = {
     type: query.type ?? "communities",
     from: query.from ?? "",
     to: query.to ?? "",
+    doseCode: query.doseCode ?? "",
   };
   const report = await getReport(await requireApplicationUser(), filters);
   const exportQuery = new URLSearchParams(filters).toString();
@@ -19,11 +25,11 @@ export default async function ReportsPage({
       <header>
         <h1 className="text-3xl font-semibold">Reportes</h1>
         <p className="mt-2 text-muted-foreground">
-          Información operacional autorizada. La cobertura porcentual permanece
-          fuera de alcance hasta aprobar una metodología de denominador.
+          Información operacional autorizada para seguimiento, sin emitir
+          diagnósticos.
         </p>
       </header>
-      <form className="grid gap-3 rounded-xl border bg-card p-4 sm:grid-cols-3">
+      <form className="grid gap-3 rounded-xl border bg-card p-4 sm:grid-cols-4">
         <label className="text-sm font-medium">
           Reporte
           <select
@@ -35,8 +41,25 @@ export default async function ReportsPage({
             <option value="growth">Crecimiento factual</option>
             <option value="vaccinations">Vacunas aplicadas</option>
             <option value="incomplete-vaccination">Dosis atrasadas</option>
+            <option value="low-weight">Percentil de peso bajo</option>
+            <option value="overweight">Percentil de peso alto</option>
+            <option value="vaccination-coverage">
+              Cobertura por dosis y comunidad
+            </option>
+            <option value="average-growth">
+              Promedio de crecimiento por comunidad
+            </option>
             <option value="alerts">Alertas</option>
           </select>
+        </label>
+        <label className="text-sm font-medium">
+          Código de dosis (para cobertura)
+          <input
+            className="mt-2 h-10 w-full rounded-lg border bg-background px-3"
+            defaultValue={filters.doseCode}
+            name="doseCode"
+            placeholder="Ej. BCG-1"
+          />
         </label>
         <label className="text-sm font-medium">
           Desde

@@ -454,6 +454,11 @@ The QR payload must not directly contain sensitive medical or personal child inf
 
 QR access must use an opaque token-based mechanism.
 
+After successful credential validation, the protected card displays the child
+identity fields already approved for the card, applied vaccination history and
+the five most recent factual growth measurements. It excludes guardians,
+contact data, notes, alerts, internal identifiers and diagnostic conclusions.
+
 ---
 
 ## 23. Dashboard
@@ -483,6 +488,12 @@ The system must support reports related to:
 - Communities
 - Vaccination coverage
 - Incomplete vaccination
+- Children with weight-for-age percentile below 5
+- Children with weight-for-age percentile above 95
+- Average growth grouped by community and age band
+
+Vaccination coverage is a per-dose community measure with an explicit eligible
+numerator and denominator; it is not a global child coverage classification.
 
 Reports may support filtering by relevant criteria.
 

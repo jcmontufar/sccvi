@@ -867,7 +867,8 @@ classification null because SCCVI has not approved classification thresholds.
 Remaining gap: official reference selection, LMS z-score, restricted extension,
 percentile and measurement-mode adjustment are implemented and tested.
 Classification remains incomplete until an approved clinical classification
-policy exists; TASK-048 remains blocked for the same decision.
+policy exists. TASK-048 is independent of that remaining gap because its
+explicit weight-for-age percentile thresholds are now approved and centralized.
 
 Acceptance Criteria:
 
@@ -1121,12 +1122,13 @@ Acceptance Criteria:
 
 ### TASK-048 — Growth Alert Rules
 
-Status: BLOCKED
+Status: DONE
 Priority: P0  
 Dependencies: TASK-036, TASK-047
 
-Blocked reason: SCCVI has not approved growth alert z-score thresholds,
-classification policy or alert wording. BATCH-05 does not invent them.
+BATCH-11 implements the explicitly required weight-for-age percentile rules
+below 5 and above 95 with exact boundaries excluded, preventive severity,
+dataset-traceable assessment sources and non-diagnostic Spanish wording.
 
 Requirements:
 
@@ -1496,16 +1498,16 @@ Acceptance Criteria:
 
 ### TASK-065 — Reports Query Layer
 
-Status: IN_PROGRESS
+Status: DONE
 Priority: P2  
 Dependencies: Relevant domain modules
 
 BATCH-06 adds authorized factual vaccination and overdue-dose reports. BATCH-10
-replaces sequential per-child vaccination evaluation in the overdue report with
-bulk authorized loading while preserving the central status evaluator and
-historical applicability rules. Coverage percentage remains incomplete because
-no denominator methodology is approved; TASK-065 therefore remains
-`IN_PROGRESS`.
+replaces sequential per-child vaccination evaluation with bulk authorized
+loading. BATCH-11 completes low/high weight-percentile monitoring reports,
+incomplete vaccination excluding future doses, per-dose community coverage with
+an explicit numerator/denominator, and age-banded average growth by community.
+Existing PDF and Excel exports apply to all report types.
 
 Requirements:
 

@@ -5,6 +5,7 @@ import { getPrisma } from "@/lib/prisma";
 import { authorize } from "@/modules/auth/authorization";
 import type { ApplicationUser } from "@/modules/auth/types";
 import { recordAuditEvent } from "@/modules/audit/services/audit-service";
+import { syncGrowthPercentileAlerts } from "@/modules/alerts/services/growth-alert-service";
 import {
   childAccessResource,
   getChild,
@@ -188,7 +189,12 @@ export async function createGrowthRecord(
         },
       });
     }
-    await calculateAndPersistGrowthAssessments(transaction, child, record);
+    const assessments = await calculateAndPersistGrowthAssessments(
+      transaction,
+      child,
+      record,
+    );
+    await syncGrowthPercentileAlerts(transaction, child.id, assessments);
     await recordAuditEvent(transaction, {
       userId: user.id,
       action: "GROWTH_RECORD_CREATED",
@@ -273,7 +279,12 @@ export async function correctGrowthRecord(
         completedByGrowthRecordId: corrected.id,
       },
     });
-    await calculateAndPersistGrowthAssessments(transaction, child, corrected);
+    const assessments = await calculateAndPersistGrowthAssessments(
+      transaction,
+      child,
+      corrected,
+    );
+    await syncGrowthPercentileAlerts(transaction, child.id, assessments);
     await recordAuditEvent(transaction, {
       userId: user.id,
       action: "GROWTH_RECORD_CORRECTED",

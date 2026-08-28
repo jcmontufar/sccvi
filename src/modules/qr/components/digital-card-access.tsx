@@ -9,13 +9,49 @@ import {
 
 function Card({ child }: { child: NonNullable<DigitalCardState["child"]> }) {
   return (
-    <article className="space-y-3 rounded-xl border bg-card p-6">
+    <article className="space-y-6 rounded-xl border bg-card p-6">
       <h2 className="text-2xl font-semibold">{child.fullName}</h2>
       <p>Fecha de nacimiento: {child.dateOfBirth}</p>
       <p>Sexo registrado: {child.sex === "MALE" ? "Masculino" : "Femenino"}</p>
+      <section>
+        <h3 className="font-semibold">Vacunas aplicadas</h3>
+        {child.vaccinations.length ? (
+          <ul className="mt-2 space-y-1 text-sm">
+            {child.vaccinations.map((vaccination) => (
+              <li
+                key={`${vaccination.vaccine}-${vaccination.dose}-${vaccination.applicationDate}`}
+              >
+                {vaccination.vaccine} · {vaccination.dose} ·{" "}
+                {vaccination.applicationDate}
+              </li>
+            ))}
+          </ul>
+        ) : (
+          <p className="mt-2 text-sm text-muted-foreground">
+            No hay vacunas aplicadas registradas.
+          </p>
+        )}
+      </section>
+      <section>
+        <h3 className="font-semibold">Últimos controles de crecimiento</h3>
+        {child.growthRecords.length ? (
+          <ul className="mt-2 space-y-1 text-sm">
+            {child.growthRecords.map((record, index) => (
+              <li key={`${record.measurementDate}-${index}`}>
+                {record.measurementDate} · {record.weightKg} kg ·{" "}
+                {record.heightCm} cm
+              </li>
+            ))}
+          </ul>
+        ) : (
+          <p className="mt-2 text-sm text-muted-foreground">
+            No hay controles de crecimiento registrados.
+          </p>
+        )}
+      </section>
       <p className="text-sm text-muted-foreground">
-        Esta tarjeta confirma datos básicos. No muestra historial médico,
-        mediciones ni vacunas.
+        Este es un registro digital de SCCVI para seguimiento. No constituye un
+        diagnóstico médico.
       </p>
     </article>
   );

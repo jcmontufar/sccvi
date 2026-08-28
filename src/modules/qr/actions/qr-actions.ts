@@ -69,13 +69,7 @@ export async function accessDigitalCardAction(
       rawToken,
       String(formData.get("pin") ?? ""),
     );
-    return {
-      child: {
-        fullName: child.fullName,
-        dateOfBirth: child.dateOfBirth.toISOString().slice(0, 10),
-        sex: child.sex,
-      },
-    };
+    return { child };
   } catch (error) {
     return { error: getSafeErrorMessage(error) };
   }
@@ -83,5 +77,5 @@ export async function accessDigitalCardAction(
 
 export type DigitalCardState = {
   error?: string;
-  child?: { fullName: string; dateOfBirth: string; sex: "MALE" | "FEMALE" };
+  child?: import("@/modules/qr/services/digital-card").DigitalCardData;
 };
