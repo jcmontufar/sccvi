@@ -1,5 +1,6 @@
 import { requireApplicationUser } from "@/modules/auth/session";
 import { getReport } from "@/modules/reports/services/report-service";
+import { listActiveVaccinationScheduleDoses } from "@/modules/vaccination/services/vaccination-service";
 
 export default async function ReportsPage({
   searchParams,
@@ -18,7 +19,12 @@ export default async function ReportsPage({
     to: query.to ?? "",
     doseCode: query.doseCode ?? "",
   };
-  const report = await getReport(await requireApplicationUser(), filters);
+  const user = await requireApplicationUser();
+  const isCoverageReport = filters.type === "vaccination-coverage";
+  const schedule = isCoverageReport
+    ? await listActiveVaccinationScheduleDoses(user)
+    : null;
+  const report = await getReport(user, filters);
   const exportQuery = new URLSearchParams(filters).toString();
   return (
     <section className="space-y-6">
@@ -52,15 +58,23 @@ export default async function ReportsPage({
             <option value="alerts">Alertas</option>
           </select>
         </label>
-        <label className="text-sm font-medium">
-          Código de dosis (para cobertura)
-          <input
-            className="mt-2 h-10 w-full rounded-lg border bg-background px-3"
-            defaultValue={filters.doseCode}
-            name="doseCode"
-            placeholder="Ej. BCG-1"
-          />
-        </label>
+        {schedule ? (
+          <label className="text-sm font-medium">
+            Dosis del esquema vigente
+            <select
+              className="mt-2 h-10 w-full rounded-lg border bg-background px-3"
+              defaultValue={filters.doseCode}
+              name="doseCode"
+            >
+              <option value="">Selecciona una dosis</option>
+              {schedule.doses.map((dose) => (
+                <option key={dose.doseCode} value={dose.doseCode}>
+                  {dose.label}
+                </option>
+              ))}
+            </select>
+          </label>
+        ) : null}
         <label className="text-sm font-medium">
           Desde
           <input
@@ -86,6 +100,11 @@ export default async function ReportsPage({
           Generar reporte
         </button>
       </form>
+      {"notice" in report ? (
+        <p className="rounded-lg border bg-muted/40 p-4 text-sm">
+          {report.notice}
+        </p>
+      ) : null}
       <div className="flex gap-3">
         <a
           className="rounded-lg border px-4 py-2 text-sm"

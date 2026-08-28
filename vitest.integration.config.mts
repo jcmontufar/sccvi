@@ -12,6 +12,8 @@ export default defineConfig({
     environment: "node",
     include: ["tests/integration/**/*.test.ts"],
     setupFiles: ["tests/integration/setup.ts"],
+    fileParallelism: false,
+    maxWorkers: 1,
     sequence: { concurrent: false },
   },
 });

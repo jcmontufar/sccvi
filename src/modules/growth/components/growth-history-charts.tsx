@@ -19,6 +19,8 @@ type GrowthPoint = {
   whoHeightMedianCm: number | null;
 };
 
+export const GROWTH_CHART_REFERENCE_LABEL = "Referencia OMS";
+
 function MeasurementChart({
   data,
   dataKey,
@@ -53,7 +55,10 @@ function MeasurementChart({
               label={{ value: unit, angle: -90, position: "insideLeft" }}
             />
             <Tooltip
-              formatter={(value) => [`${String(value)} ${unit}`, title]}
+              formatter={(value, name) => [
+                `${String(value)} ${unit}`,
+                String(name),
+              ]}
               labelFormatter={(_, payload) => payload[0]?.payload.date ?? ""}
             />
             <Line
@@ -69,7 +74,7 @@ function MeasurementChart({
               connectNulls={false}
               dataKey={referenceKey}
               dot={false}
-              name="Mediana OMS 2006"
+              name={GROWTH_CHART_REFERENCE_LABEL}
               stroke="var(--muted-foreground)"
               strokeDasharray="6 4"
               strokeWidth={2}

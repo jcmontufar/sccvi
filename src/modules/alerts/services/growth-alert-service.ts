@@ -25,15 +25,6 @@ export async function syncGrowthPercentileAlerts(
         : Number(assessment.percentile.toString()),
     );
     if (!rule) {
-      await transaction.alert.updateMany({
-        where: {
-          type: "GROWTH",
-          sourceType: GROWTH_PERCENTILE_ALERT_SOURCE,
-          sourceId: assessment.id,
-          status: { not: "RESOLVED" },
-        },
-        data: { status: "RESOLVED", resolvedAt: new Date() },
-      });
       continue;
     }
     results.push(
@@ -48,11 +39,6 @@ export async function syncGrowthPercentileAlerts(
         update: {
           title: rule.title,
           message: rule.message,
-          status: "OPEN",
-          reviewedAt: null,
-          reviewedByUserId: null,
-          resolvedAt: null,
-          resolvedByUserId: null,
         },
         create: {
           childId,
