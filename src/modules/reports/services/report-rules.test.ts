@@ -9,6 +9,7 @@ import {
 
 describe("report rules", () => {
   it("reuses strict percentile boundaries", () => {
+    expect(matchesWeightPercentileReport(0.878, "low-weight")).toBe(true);
     expect(matchesWeightPercentileReport(4.9, "low-weight")).toBe(true);
     expect(matchesWeightPercentileReport(5, "low-weight")).toBe(false);
     expect(matchesWeightPercentileReport(95, "overweight")).toBe(false);

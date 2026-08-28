@@ -6,6 +6,7 @@ vi.mock("server-only", () => ({}));
 
 import { PrismaClient } from "@/generated/prisma/client";
 import { syncGrowthPercentileAlerts } from "@/modules/alerts/services/growth-alert-service";
+import { getAlert } from "@/modules/alerts/services/alert-service";
 import { accessDigitalCard } from "@/modules/qr/services/qr-service";
 import { generateOpaqueToken } from "@/modules/qr/services/qr-crypto";
 import {
@@ -245,6 +246,25 @@ describe("critical persistence workflows", () => {
       },
     });
     expect(resolved.status).toBe("RESOLVED");
+
+    const growthAlert = await getAlert(
+      {
+        id: fixture.user.id,
+        authUserId: fixture.user.authUserId,
+        healthCenterId: fixture.center.id,
+        fullName: fixture.user.fullName,
+        email: fixture.user.email,
+        role: fixture.user.role,
+        isActive: true,
+      },
+      fixture.growthAlert.id,
+    );
+    expect(growthAlert.growthContext).toEqual({
+      measurementDate: "2025-02-01",
+      ageMonths: 1,
+      weightKg: "4.5",
+      percentile: 4.9,
+    });
 
     const card = await accessDigitalCard(rawQrToken);
     expect(card.vaccinations).toEqual([

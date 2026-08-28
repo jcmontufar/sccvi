@@ -90,6 +90,12 @@ Every growth measurement must be associated with:
 
 Required measurement values must follow the approved growth workflow.
 
+SCCVI currently validates that weight and height are finite positive factual
+values. No authoritative plausibility range is approved for blocking or warning
+on extreme entries. Percentile alert thresholds must not be repurposed as
+data-entry limits; a future plausibility warning requires a separately approved,
+versioned rule.
+
 ---
 
 ## BR-011 — Measurement Date

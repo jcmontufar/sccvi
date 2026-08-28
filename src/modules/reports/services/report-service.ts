@@ -4,7 +4,10 @@ import { getPrisma } from "@/lib/prisma";
 import { authorize } from "@/modules/auth/authorization";
 import type { ApplicationUser } from "@/modules/auth/types";
 import { reportFilterSchema } from "@/modules/reports/schemas/report-schema";
-import { listAuthorizedChildrenVaccinationStatuses } from "@/modules/vaccination/services/vaccination-service";
+import {
+  listActiveVaccinationScheduleDoses,
+  listAuthorizedChildrenVaccinationStatuses,
+} from "@/modules/vaccination/services/vaccination-service";
 import { calculateExactAge } from "@/modules/growth/utils/exact-age";
 import {
   calculateDoseCoverage,
@@ -178,12 +181,7 @@ export async function getReport(user: ApplicationUser, input: unknown) {
       orderBy: [{ measurementDate: "desc" }, { createdAt: "desc" }],
       take: 5000,
     });
-    const latestByChild = new Map<string, (typeof records)[number]>();
-    for (const record of records) {
-      if (!latestByChild.has(record.childId))
-        latestByChild.set(record.childId, record);
-    }
-    const rows = [...latestByChild.values()].flatMap((record): ReportRow[] => {
+    const rows = records.flatMap((record): ReportRow[] => {
       const measurementDate = record.measurementDate.toISOString().slice(0, 10);
       if (
         (filters.from && measurementDate < filters.from) ||
@@ -219,6 +217,26 @@ export async function getReport(user: ApplicationUser, input: unknown) {
   }
 
   if (filters.type === "vaccination-coverage") {
+    const schedule = await listActiveVaccinationScheduleDoses(user);
+    if (!filters.doseCode) {
+      return {
+        title: "Cobertura de vacunación por comunidad",
+        notice:
+          "Selecciona una dosis del esquema vigente para calcular la cobertura.",
+        rows: [],
+      };
+    }
+    const selectedDose = schedule.doses.find(
+      (dose) => dose.doseCode === filters.doseCode,
+    );
+    if (!selectedDose) {
+      return {
+        title: "Cobertura de vacunación por comunidad",
+        notice:
+          "La dosis seleccionada no pertenece al esquema de vacunación vigente.",
+        rows: [],
+      };
+    }
     const children = await listAuthorizedChildrenVaccinationStatuses(user);
     const grouped = new Map<string, typeof children>();
     for (const child of children) {
@@ -239,12 +257,12 @@ export async function getReport(user: ApplicationUser, input: unknown) {
         fecha: evaluationDate,
         centro: center,
         comunidad: community,
-        registro: filters.doseCode,
+        registro: selectedDose.label,
         detalle: `${coverage.numerator}/${coverage.denominator} · ${coverage.percentage === null ? "N/A" : `${coverage.percentage.toFixed(1)} %`}`,
       };
     });
     return {
-      title: `Cobertura por comunidad — dosis ${filters.doseCode}`,
+      title: `Cobertura por comunidad — ${selectedDose.label}`,
       rows,
     };
   }

@@ -19,10 +19,6 @@ export const reportFilterSchema = z
   })
   .refine(({ from, to }) => !from || !to || from <= to, {
     message: "La fecha inicial no puede ser posterior a la fecha final.",
-  })
-  .refine(({ type, doseCode }) => type !== "vaccination-coverage" || doseCode, {
-    message: "Selecciona una dosis para calcular la cobertura.",
-    path: ["doseCode"],
   });
 
 export type ReportType = z.infer<typeof reportFilterSchema>["type"];

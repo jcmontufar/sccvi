@@ -14,6 +14,7 @@ const prisma = {
 vi.mock("@/lib/prisma", () => ({ getPrisma: () => prisma }));
 
 let listAuthorizedChildrenVaccinationStatuses: typeof import("@/modules/vaccination/services/vaccination-service").listAuthorizedChildrenVaccinationStatuses;
+let listActiveVaccinationScheduleDoses: typeof import("@/modules/vaccination/services/vaccination-service").listActiveVaccinationScheduleDoses;
 
 const staff: ApplicationUser = {
   id: "staff-a",
@@ -49,6 +50,8 @@ const schedule = {
 beforeAll(async () => {
   ({ listAuthorizedChildrenVaccinationStatuses } =
     await import("@/modules/vaccination/services/vaccination-service"));
+  ({ listActiveVaccinationScheduleDoses } =
+    await import("@/modules/vaccination/services/vaccination-service"));
 });
 
 beforeEach(() => {
@@ -79,6 +82,26 @@ beforeEach(() => {
 });
 
 describe("bulk vaccination status query", () => {
+  it("lists human-readable doses only from the active applicable version", async () => {
+    const result = await listActiveVaccinationScheduleDoses(
+      staff,
+      new Date("2026-08-27T12:00:00Z"),
+    );
+    expect(result).toEqual({
+      versionCode: version.code,
+      doses: [{ doseCode: "HEX-1", label: "Hexavalente — Primera dosis" }],
+    });
+    expect(prisma.vaccineSchedule.findMany).toHaveBeenCalledWith(
+      expect.objectContaining({
+        where: {
+          scheduleVersionId: version.id,
+          isActive: true,
+          doseCode: { not: null },
+        },
+      }),
+    );
+  });
+
   it("bulk-loads one scoped cohort and preserves central evaluator semantics", async () => {
     const results = await listAuthorizedChildrenVaccinationStatuses(
       staff,

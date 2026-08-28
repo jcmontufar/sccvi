@@ -82,6 +82,46 @@ async function getApplicableVersion(evaluationDate: string) {
   return version;
 }
 
+export async function listActiveVaccinationScheduleDoses(
+  user: ApplicationUser,
+  currentInstant = new Date(),
+) {
+  authorize(user, "vaccination:list");
+  const evaluationDate = getVaccinationEvaluationDate(currentInstant);
+  const version = await getApplicableVersion(evaluationDate);
+  const schedules = await getPrisma().vaccineSchedule.findMany({
+    where: {
+      scheduleVersionId: version.id,
+      isActive: true,
+      doseCode: { not: null },
+    },
+    select: {
+      doseCode: true,
+      doseName: true,
+      doseNumber: true,
+      vaccine: { select: { name: true } },
+    },
+    orderBy: [
+      { recommendedAgeMonths: "asc" },
+      { recommendedAgeDays: "asc" },
+      { vaccine: { name: "asc" } },
+    ],
+  });
+  return {
+    versionCode: version.code,
+    doses: schedules.flatMap((schedule) =>
+      schedule.doseCode
+        ? [
+            {
+              doseCode: schedule.doseCode,
+              label: `${schedule.vaccine.name} — ${schedule.doseName ?? `Dosis ${schedule.doseNumber}`}`,
+            },
+          ]
+        : [],
+    ),
+  };
+}
+
 export async function listChildVaccinationStatuses(
   user: ApplicationUser,
   childId: string,

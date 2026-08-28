@@ -129,6 +129,11 @@ names low weight and overweight, not a separate height threshold. The messages
 require evaluation by health staff and explicitly state that they are not a
 diagnosis. No additional WHO classification was introduced.
 
+The WHO percentile thresholds are not measurement plausibility limits. SCCVI
+does not currently reject or warn on extreme positive weight/height values
+because no authoritative, versioned plausibility rule has been approved. This
+remains explicitly deferred rather than inventing clinical ranges.
+
 ## Follow-up decision
 
 The form suggests a next follow-up date from age at the factual measurement:

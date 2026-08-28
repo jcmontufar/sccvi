@@ -15,6 +15,9 @@ import {
   alertSearchSchema,
 } from "@/modules/alerts/schemas/alert-schema";
 import { assertAlertTransition } from "@/modules/alerts/services/alert-lifecycle";
+import { GROWTH_PERCENTILE_ALERT_SOURCE } from "@/modules/alerts/services/growth-alert-service";
+import { calculateExactAge } from "@/modules/growth/utils/exact-age";
+import { evaluateWeightForAgeAlert } from "@/modules/growth/services/growth-alert-rule";
 
 const alertInclude = {
   child: {
@@ -72,7 +75,51 @@ export async function getAlert(user: ApplicationUser, id: string) {
   const alert = await findAlert(alertIdSchema.parse(id));
   if (!alert) throw new ApplicationError("ALERT_NOT_FOUND");
   authorize(user, "alert:read", alertResource(alert));
-  return alert;
+  if (
+    alert.type !== "GROWTH" ||
+    alert.sourceType !== GROWTH_PERCENTILE_ALERT_SOURCE ||
+    !alert.sourceId
+  ) {
+    return { ...alert, growthContext: null };
+  }
+  const assessment = await getPrisma().growthAssessment.findFirst({
+    where: {
+      id: alert.sourceId,
+      indicator: "WEIGHT_FOR_AGE",
+      growthRecord: { childId: alert.childId },
+    },
+    select: {
+      percentile: true,
+      growthRecord: {
+        select: {
+          measurementDate: true,
+          weightKg: true,
+          child: { select: { dateOfBirth: true } },
+        },
+      },
+    },
+  });
+  if (!assessment?.percentile) return { ...alert, growthContext: null };
+  const percentile = Number(assessment.percentile.toString());
+  if (!evaluateWeightForAgeAlert("WEIGHT_FOR_AGE", percentile)) {
+    return { ...alert, growthContext: null };
+  }
+  const measurementDate = assessment.growthRecord.measurementDate
+    .toISOString()
+    .slice(0, 10);
+  const age = calculateExactAge(
+    assessment.growthRecord.child.dateOfBirth.toISOString().slice(0, 10),
+    measurementDate,
+  );
+  return {
+    ...alert,
+    growthContext: {
+      measurementDate,
+      ageMonths: age.years * 12 + age.months,
+      weightKg: assessment.growthRecord.weightKg.toString(),
+      percentile,
+    },
+  };
 }
 
 export async function createAlert(user: ApplicationUser, input: unknown) {
