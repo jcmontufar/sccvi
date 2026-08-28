@@ -206,16 +206,18 @@ export function evaluateVaccinationScheduleForChild(input: {
 
   return input.schedules.flatMap((schedule) => {
     const vaccination = vaccinationsBySchedule.get(schedule.id);
+    const applicability = {
+      dateOfBirth: input.dateOfBirth,
+      schedule,
+      version: input.version,
+      seriesStartTiming:
+        schedule.vaccineOfficialCode === "HEXAVALENT"
+          ? hexavalentSeriesStart
+          : undefined,
+    };
+    const applicable = isDoseApplicableToVersion(applicability);
     const status = evaluateVaccinationDose(
-      {
-        dateOfBirth: input.dateOfBirth,
-        schedule,
-        version: input.version,
-        seriesStartTiming:
-          schedule.vaccineOfficialCode === "HEXAVALENT"
-            ? hexavalentSeriesStart
-            : undefined,
-      },
+      applicability,
       input.evaluationDate,
       vaccination?.applicationDate,
     );
@@ -229,6 +231,7 @@ export function evaluateVaccinationScheduleForChild(input: {
             scheduledDate: getScheduledDate(input.dateOfBirth, schedule),
             timingNote: schedule.timingNote,
             status,
+            applicable,
             vaccinationId: vaccination?.id ?? null,
             applicationDate: vaccination?.applicationDate ?? null,
           },

@@ -14,6 +14,7 @@ export async function GET(request: Request) {
       type,
       from: query.get("from") ?? "",
       to: query.get("to") ?? "",
+      doseCode: query.get("doseCode") ?? "",
     });
     const body = await createPdfReport(report.title, report.rows);
     return new Response(Buffer.from(body), {

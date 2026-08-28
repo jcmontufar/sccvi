@@ -11,22 +11,12 @@ export default async function PublicDigitalCardPage({
   params: Promise<{ token: string }>;
 }) {
   const { token } = await params;
-  let initialChild:
-    | {
-        fullName: string;
-        dateOfBirth: string;
-        sex: "MALE" | "FEMALE";
-      }
-    | undefined;
+  let initialChild: Awaited<ReturnType<typeof accessDigitalCard>> | undefined;
   let initialError: string | undefined;
   let pinRequired = false;
   try {
     const child = await accessDigitalCard(token);
-    initialChild = {
-      fullName: child.fullName,
-      dateOfBirth: child.dateOfBirth.toISOString().slice(0, 10),
-      sex: child.sex,
-    };
+    initialChild = child;
   } catch (error) {
     pinRequired =
       error instanceof ApplicationError && error.code === "QR_PIN_REQUIRED";

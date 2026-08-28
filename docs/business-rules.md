@@ -446,6 +446,14 @@ An expired credential must not provide access when expiration is enabled.
 
 If a QR credential has PIN protection enabled, successful PIN verification is required before displaying the protected digital card information.
 
+## BR-042A — Protected Digital Card Content
+
+Only after credential, revocation, expiration, PIN and throttling checks pass,
+the public card may show the child's name, birth date, sex, applied vaccination
+history and the five most recent factual growth measurements. It must not show
+guardian/contact data, notes, alerts, internal identifiers, audit data or
+diagnostic conclusions.
+
 PIN values must never be stored in plaintext.
 
 ---
@@ -595,7 +603,20 @@ A user must not gain access to protected information through report functionalit
 
 Incomplete-vaccination reporting must reuse the central per-dose vaccination
 status rules. Bulk query optimization must preserve schedule-version cohort
-applicability and must not introduce a global child status or coverage formula.
+applicability and must not introduce a global child status. A child is included
+when at least one applicable, non-applied dose has reached its scheduled date;
+future and historically inapplicable doses are excluded.
+
+Vaccination coverage is calculated only for a selected active schedule-version
+dose and community: eligible active children with that exact applicable dose
+factually applied divided by eligible active children for whom that dose is
+applicable and has reached its scheduled date. Results show numerator and
+denominator; a zero denominator is `N/A`.
+
+The project's reporting “region” is Community within an authorized HealthCenter
+because no Region entity exists. Average growth is grouped by community and the
+age bands 0–11, 12–23, 24–35, 36–47 and 48–60 months; all ages must not be
+combined into a single average.
 
 ---
 
@@ -725,8 +746,12 @@ The data model should preserve the ability to support multiple health centers wi
 
 ## BR-065 — Explicit Growth Follow-Up
 
-A missed growth follow-up may be generated only from a next follow-up date
-explicitly scheduled by authorized staff. A later growth measurement for the
+A new growth form suggests monthly follow-up below 24 completed months and
+quarterly follow-up from 24 through 59 completed months, based on birth date to
+measurement date. The suggestion uses Guatemala date-only semantics and may be
+changed or cleared by staff. A missed growth follow-up may be generated only
+from a next follow-up date retained or explicitly scheduled by authorized
+staff. A later growth measurement for the
 same child completes that follow-up, including a measurement performed before
 the due date. Without an approved grace period, an incomplete follow-up becomes
 overdue on the first America/Guatemala business date after its due date.

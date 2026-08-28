@@ -88,6 +88,18 @@ export async function cleanupGrowthFixture(fixture: {
     );
     const ids = records.rows.map(({ id }) => id);
     await client.query(
+      'DELETE FROM "Alert" WHERE "type" = \'MISSED_FOLLOW_UP\' AND "sourceId" IN (SELECT "id"::text FROM "GrowthFollowUp" WHERE "sourceGrowthRecordId" = ANY($1::uuid[]) OR "completedByGrowthRecordId" = ANY($1::uuid[]))',
+      [ids],
+    );
+    await client.query(
+      'DELETE FROM "GrowthFollowUp" WHERE "sourceGrowthRecordId" = ANY($1::uuid[]) OR "completedByGrowthRecordId" = ANY($1::uuid[])',
+      [ids],
+    );
+    await client.query(
+      'DELETE FROM "Alert" WHERE "type" = \'GROWTH\' AND "sourceId" IN (SELECT "id"::text FROM "GrowthAssessment" WHERE "growthRecordId" = ANY($1::uuid[]))',
+      [ids],
+    );
+    await client.query(
       'DELETE FROM "AuditLog" WHERE "entityType" = \'GrowthRecord\' AND "entityId" = ANY($1::text[])',
       [ids],
     );

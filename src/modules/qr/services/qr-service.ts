@@ -27,6 +27,10 @@ import {
   nextFailedPinAttemptState,
   resetPinAttemptState,
 } from "@/modules/qr/services/qr-pin-throttle";
+import {
+  DIGITAL_CARD_GROWTH_RECORD_LIMIT,
+  toDigitalCardData,
+} from "@/modules/qr/services/digital-card";
 
 export async function listChildCredentials(
   user: ApplicationUser,
@@ -144,6 +148,28 @@ export async function accessDigitalCard(
             dateOfBirth: true,
             sex: true,
             isActive: true,
+            vaccinations: {
+              select: {
+                applicationDate: true,
+                vaccineSchedule: {
+                  select: {
+                    doseName: true,
+                    doseNumber: true,
+                    vaccine: { select: { name: true } },
+                  },
+                },
+              },
+              orderBy: { applicationDate: "desc" },
+            },
+            growthRecords: {
+              select: {
+                measurementDate: true,
+                weightKg: true,
+                heightCm: true,
+              },
+              orderBy: [{ measurementDate: "desc" }, { createdAt: "desc" }],
+              take: DIGITAL_CARD_GROWTH_RECORD_LIMIT,
+            },
           },
         },
       },
@@ -158,7 +184,10 @@ export async function accessDigitalCard(
         where: { id: credential.id },
         data: { lastUsedAt: currentInstant },
       });
-      return { status: "granted" as const, child: credential.child };
+      return {
+        status: "granted" as const,
+        child: toDigitalCardData(credential.child),
+      };
     }
     if (!pinValue) throw new ApplicationError("QR_PIN_REQUIRED");
     if (isPinAttemptLocked(credential, currentInstant)) {
@@ -181,7 +210,10 @@ export async function accessDigitalCard(
       where: { id: credential.id },
       data: { ...resetPinAttemptState(), lastUsedAt: currentInstant },
     });
-    return { status: "granted" as const, child: credential.child };
+    return {
+      status: "granted" as const,
+      child: toDigitalCardData(credential.child),
+    };
   });
   if (result.status === "denied") {
     throw new ApplicationError("QR_ACCESS_DENIED");

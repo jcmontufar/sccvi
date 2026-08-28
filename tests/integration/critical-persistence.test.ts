@@ -1,8 +1,13 @@
 import { createHash, randomUUID } from "node:crypto";
 import { PrismaPg } from "@prisma/adapter-pg";
-import { afterAll, describe, expect, it } from "vitest";
+import { afterAll, describe, expect, it, vi } from "vitest";
+
+vi.mock("server-only", () => ({}));
 
 import { PrismaClient } from "@/generated/prisma/client";
+import { syncGrowthPercentileAlerts } from "@/modules/alerts/services/growth-alert-service";
+import { accessDigitalCard } from "@/modules/qr/services/qr-service";
+import { generateOpaqueToken } from "@/modules/qr/services/qr-crypto";
 import {
   requireIsolatedTestDatabase,
   verifyIsolatedTestDatabase,
@@ -13,6 +18,7 @@ const prisma = new PrismaClient({
 });
 const suffix = randomUUID();
 const ids: Record<string, string> = {};
+const rawQrToken = generateOpaqueToken();
 
 afterAll(async () => {
   await verifyIsolatedTestDatabase();
@@ -20,6 +26,8 @@ afterAll(async () => {
     if (ids.qr) await transaction.qRToken.deleteMany({ where: { id: ids.qr } });
     if (ids.alert)
       await transaction.alert.deleteMany({ where: { id: ids.alert } });
+    if (ids.growthAlert)
+      await transaction.alert.deleteMany({ where: { id: ids.growthAlert } });
     if (ids.vaccination)
       await transaction.vaccination.deleteMany({
         where: { id: ids.vaccination },
@@ -113,6 +121,7 @@ describe("critical persistence workflows", () => {
           standardName: "SCCVI_TEST_FIXTURE",
           standardVersion: "NON_CLINICAL",
           calculatedAt: new Date("2025-02-01T00:00:00Z"),
+          percentile: "4.900",
         },
       });
       const vaccine = await transaction.vaccine.create({
@@ -164,9 +173,14 @@ describe("critical persistence workflows", () => {
         data: {
           childId: child.id,
           createdByUserId: user.id,
-          tokenHash: createHash("sha256").update(suffix).digest("hex"),
+          tokenHash: createHash("sha256").update(rawQrToken).digest("hex"),
         },
       });
+      const [growthAlert] = await syncGrowthPercentileAlerts(
+        transaction,
+        child.id,
+        [assessment],
+      );
       return {
         center,
         community,
@@ -182,6 +196,7 @@ describe("critical persistence workflows", () => {
         vaccination,
         alert,
         qr,
+        growthAlert,
       };
     });
     Object.assign(
@@ -208,9 +223,18 @@ describe("critical persistence workflows", () => {
         { assessments: [{ standardName: "SCCVI_TEST_FIXTURE" }] },
       ],
       vaccinations: [{ id: fixture.vaccination.id }],
-      alerts: [{ status: "OPEN" }],
       qrTokens: [{ id: fixture.qr.id }],
     });
+    expect(loaded?.alerts).toEqual(
+      expect.arrayContaining([
+        expect.objectContaining({ id: fixture.alert.id, status: "OPEN" }),
+        expect.objectContaining({
+          id: fixture.growthAlert.id,
+          type: "GROWTH",
+          severity: "PREVENTIVE",
+        }),
+      ]),
+    );
 
     const resolved = await prisma.alert.update({
       where: { id: fixture.alert.id },
@@ -221,5 +245,23 @@ describe("critical persistence workflows", () => {
       },
     });
     expect(resolved.status).toBe("RESOLVED");
+
+    const card = await accessDigitalCard(rawQrToken);
+    expect(card.vaccinations).toEqual([
+      expect.objectContaining({
+        vaccine: fixture.vaccine.name,
+        applicationDate: "2025-02-01",
+      }),
+    ]);
+    expect(card.growthRecords).toEqual([
+      expect.objectContaining({
+        measurementDate: "2025-02-01",
+        weightKg: "4.5",
+        heightCm: "54",
+      }),
+    ]);
+    expect(JSON.stringify(card)).not.toMatch(
+      /guardian|notes|childId|tokenHash/i,
+    );
   });
 });

@@ -25,7 +25,13 @@ test("acepta una credencial válida", async ({ page }) => {
   );
   await page.goto(`/tarjeta/${fixture("E2E_VALID_QR_TOKEN")}`);
   await expect(
-    page.getByText("Esta tarjeta confirma datos básicos."),
+    page.getByRole("heading", { name: "Vacunas aplicadas" }),
+  ).toBeVisible();
+  await expect(
+    page.getByRole("heading", { name: "Últimos controles de crecimiento" }),
+  ).toBeVisible();
+  await expect(
+    page.getByText(/no constituye un diagnóstico médico/i),
   ).toBeVisible();
 });
 
@@ -68,6 +74,9 @@ test("PIN correcto permite acceso", async ({ page }) => {
   await page.getByLabel("PIN").fill(fixture("E2E_QR_PIN")!);
   await page.getByRole("button", { name: "Ver tarjeta" }).click();
   await expect(
-    page.getByText("Esta tarjeta confirma datos básicos."),
+    page.getByRole("heading", { name: "Vacunas aplicadas" }),
+  ).toBeVisible();
+  await expect(
+    page.getByRole("heading", { name: "Últimos controles de crecimiento" }),
   ).toBeVisible();
 });
