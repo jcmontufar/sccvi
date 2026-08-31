@@ -47,6 +47,18 @@ The safe order is:
    It uses `prisma migrate deploy`, then re-verifies identity, migration status,
    RLS and browser-role privilege revocation.
 
+For the first deployment only, provisioning leaves the approved staging marker
+table and its automatically owned indexes in `public`. Prisma otherwise reports
+P3005 because that schema is not literally empty. The deploy wrapper inventories
+the schema and permits this initialization path only when there is no Prisma
+history, exactly one staging identity table is present, every public index
+belongs to that table, and there are no other public relations, routines,
+domains or enums. It verifies the identity, temporarily moves the intact marker
+to a fixed guard schema, runs the real migrations with `prisma migrate deploy`,
+and restores and hardens the marker in a `finally` path. An existing Prisma
+history uses the normal idempotent deployment path. Any other non-empty state or
+leftover guard schema fails closed for manual review.
+
 The clean staging database had five repository migrations pending before
 BATCH-12. This branch adds one additive security migration, so the first reviewed
 deployment applies six migrations in repository order.
