@@ -104,7 +104,7 @@ async function main() {
         healthCenterId: healthCenter.id,
         fullName: "Usuario ficticio CI efímero",
         email: process.env.E2E_USER_EMAIL!,
-        role: "HEALTH_STAFF",
+        role: "ADMIN",
         isActive: true,
       },
       create: {
@@ -112,7 +112,7 @@ async function main() {
         healthCenterId: healthCenter.id,
         fullName: "Usuario ficticio CI efímero",
         email: process.env.E2E_USER_EMAIL!,
-        role: "HEALTH_STAFF",
+        role: "ADMIN",
       },
     });
     const childId = process.env.E2E_EXISTING_CHILD_ID!;

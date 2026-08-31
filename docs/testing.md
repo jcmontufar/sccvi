@@ -62,7 +62,9 @@ verifies the `ISOLATED_TEST` marker before any reference import, fixture write,
 test or cleanup. This order leaves Prisma a genuinely empty application schema
 while the strict loopback/GitHub Actions preflight protects migration setup.
 The approved reference artifacts and minimal fictional E2E data are written
-only after the persisted identity succeeds.
+only after the persisted identity succeeds. The job-only fictional user has
+the application `ADMIN` role because the unchanged community and campaign E2E
+coverage exercises administrator-only routes.
 All database URLs are required to be the same loopback PostgreSQL URL in this
 explicit CI mode, and the Supabase API must also be loopback-only. The runner
 destroys the containers and their data when the job ends. No development,
