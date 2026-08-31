@@ -9,19 +9,20 @@
 
 ## Integration environment guard
 
-Integration tests read `.env.test.local`, which is ignored by Git. URL
+Local integration tests read `.env.test.local`, which is ignored by Git. URL
 inequality and `SCCVI_TEST_DATABASE_CONFIRMED=isolated-fictional-test-data-only`
 are preliminary checks only. Before any test mutation, SCCVI connects to the
 target and requires a persisted database identity whose UUID matches
-`TEST_DATABASE_ID`. Missing, unreadable, development, production and mismatched
-markers all fail closed. This detects the same logical Supabase database even
-when it is reached through a different direct, session-pooler or
+`TEST_DATABASE_ID`. Missing, unreadable, development, staging, production and
+mismatched markers all fail closed. This detects the same logical Supabase
+database even when it is reached through a different direct, session-pooler or
 transaction-pooler URL.
 
 ## Creating the isolated database identity
 
-Create a PostgreSQL database or Supabase project used exclusively for SCCVI
-automated tests. Do not run these statements on development or production.
+For local testing, create a PostgreSQL database or Supabase project used
+exclusively for SCCVI automated tests. Do not run these statements on
+development, staging or production.
 Connect directly to that isolated target, generate a unique UUID, and execute:
 
 ```sql
@@ -53,6 +54,17 @@ Tests use uniquely named fixtures and delete only their recorded identifiers.
 They never reset a schema or delete shared development data. Run them with
 `npm run test:integration`.
 
+GitHub Actions does not use that long-lived local target. Each isolated-test
+job starts a fresh local Supabase Docker stack on the runner, including
+PostgreSQL and Auth. Setup generates a per-job identity UUID, creates the
+`ISOLATED_TEST` marker before migrations or fixture writes, positively verifies
+it, applies repository migrations with `prisma migrate deploy`, imports the
+approved reference artifacts and provisions only minimal fictional E2E data.
+All database URLs are required to be the same loopback PostgreSQL URL in this
+explicit CI mode, and the Supabase API must also be loopback-only. The runner
+destroys the containers and their data when the job ends. No development,
+staging or hosted test credentials are accepted as fallback.
+
 BATCH-10 integration coverage verifies transactional audit persistence for
 guardian, child-guardian, vaccine catalog, health-center and community
 mutations. It also proves that an audit foreign-key failure rolls back its
@@ -62,7 +74,7 @@ per-dose evaluator, including historical non-applicability.
 
 ## Playwright environment
 
-Playwright requires the database guard plus
+Local Playwright requires the database guard plus
 `E2E_TARGET_CONFIRMED=isolated-test-application-only`, a dedicated test
 Supabase URL and anonymous key, a fictional test user, and an authorized
 fictional child fixture. The exact variable names are listed in `.env.example`.
@@ -79,7 +91,7 @@ configuration explicitly. It must not reuse an already-running development
 server. Set `E2E_EXTERNAL_SERVER` only for a separately confirmed isolated test
 deployment. Run with `npm run test:e2e`.
 
-If the dedicated database, auth user or fixtures are unavailable, the command
+If the local dedicated database, auth user or fixtures are unavailable, the command
 fails closed with `LIVE TEST EXECUTION BLOCKED`; this must not be reported as a
 successful live E2E run.
 

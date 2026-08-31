@@ -6,6 +6,7 @@ import { resolve } from "node:path";
 import { PrismaPg } from "@prisma/adapter-pg";
 
 import { PrismaClient } from "../src/generated/prisma/client";
+import { verifyCiEphemeralDatabaseOperation } from "../src/lib/testing/ci-ephemeral-database-operation";
 import {
   parseWhoReferenceCsv,
   sha256,
@@ -50,7 +51,25 @@ async function main() {
     adapter: new PrismaPg({ connectionString: databaseUrl }),
   });
   try {
+    await verifyCiEphemeralDatabaseOperation(
+      {
+        query: async <Row>(sql: string) => ({
+          rows: await prisma.$queryRawUnsafe<Row[]>(sql),
+        }),
+      },
+      process.env,
+      databaseUrl,
+    );
     await prisma.$transaction(async (transaction) => {
+      await verifyCiEphemeralDatabaseOperation(
+        {
+          query: async <Row>(sql: string) => ({
+            rows: await transaction.$queryRawUnsafe<Row[]>(sql),
+          }),
+        },
+        process.env,
+        databaseUrl,
+      );
       await transaction.growthReference.deleteMany({
         where: {
           standardName: "WHO Child Growth Standards",
