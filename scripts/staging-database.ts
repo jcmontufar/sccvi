@@ -11,6 +11,12 @@ import {
   requireExplicitStagingConfirmation,
   validateStagingEnvironment,
 } from "../src/lib/staging/staging-environment";
+import {
+  classifyStagingSchemaInventory,
+  stagingIdentityTable,
+  stagingMigrationGuardSchema,
+  type PublicRelation,
+} from "../src/lib/staging/staging-prisma-initialization";
 
 config({ path: ".env.staging.local", quiet: true });
 
@@ -142,6 +148,116 @@ async function verifyIdentity() {
   );
 }
 
+async function inspectStagingSchema() {
+  const metadata = await pool.query<{
+    hasPrismaHistory: boolean;
+    guardSchemaExists: boolean;
+    publicRoutineCount: number;
+    publicUserDefinedTypeCount: number;
+  }>(`
+    SELECT
+      to_regclass('public._prisma_migrations') IS NOT NULL AS "hasPrismaHistory",
+      to_regnamespace('${stagingMigrationGuardSchema}') IS NOT NULL AS "guardSchemaExists",
+      (SELECT COUNT(*)::int
+       FROM pg_proc AS routines
+       JOIN pg_namespace AS namespaces ON namespaces.oid = routines.pronamespace
+       WHERE namespaces.nspname = 'public') AS "publicRoutineCount",
+      (SELECT COUNT(*)::int
+       FROM pg_type AS types
+       JOIN pg_namespace AS namespaces ON namespaces.oid = types.typnamespace
+       WHERE namespaces.nspname = 'public'
+         AND types.typtype IN ('d', 'e')) AS "publicUserDefinedTypeCount"
+  `);
+  const relations = await pool.query<PublicRelation>(`
+    SELECT
+      relations.relname AS "name",
+      relations.relkind::text AS "kind",
+      indexed_tables.relname AS "indexTable"
+    FROM pg_class AS relations
+    JOIN pg_namespace AS namespaces ON namespaces.oid = relations.relnamespace
+    LEFT JOIN pg_index AS indexes ON indexes.indexrelid = relations.oid
+    LEFT JOIN pg_class AS indexed_tables ON indexed_tables.oid = indexes.indrelid
+    WHERE namespaces.nspname = 'public'
+      AND relations.relkind IN ('r', 'p', 'v', 'm', 'S', 'f', 'i')
+    ORDER BY relations.relname
+  `);
+  const row = metadata.rows[0];
+  if (!row) {
+    throw new Error("STAGING MIGRATION BLOCKED: schema inventory failed.");
+  }
+  return classifyStagingSchemaInventory({
+    ...row,
+    publicRelations: relations.rows,
+  });
+}
+
+async function moveIdentityOutOfPublicSchema() {
+  await pool.query("BEGIN");
+  try {
+    await pool.query(`CREATE SCHEMA ${stagingMigrationGuardSchema}`);
+    await pool.query(
+      `ALTER TABLE public.${stagingIdentityTable} SET SCHEMA ${stagingMigrationGuardSchema}`,
+    );
+    await pool.query("COMMIT");
+  } catch (error) {
+    await pool.query("ROLLBACK");
+    throw error;
+  }
+}
+
+async function restoreAndHardenIdentity() {
+  const marker = await pool.query<{ environment: string; identity: string }>(`
+    SELECT "environment", "identity"::text AS "identity"
+    FROM ${stagingMigrationGuardSchema}.${stagingIdentityTable}
+    WHERE "singleton" = TRUE
+    LIMIT 2
+  `);
+  if (
+    marker.rows.length !== 1 ||
+    marker.rows[0]?.environment !== "STAGING" ||
+    marker.rows[0].identity.toLowerCase() !==
+      environment.STAGING_DATABASE_ID.toLowerCase()
+  ) {
+    throw new Error(
+      "STAGING MIGRATION BLOCKED: guarded staging identity changed during initialization.",
+    );
+  }
+
+  await pool.query("BEGIN");
+  try {
+    await pool.query(
+      `ALTER TABLE ${stagingMigrationGuardSchema}.${stagingIdentityTable} SET SCHEMA public`,
+    );
+    await pool.query(
+      `ALTER TABLE public.${stagingIdentityTable} ENABLE ROW LEVEL SECURITY`,
+    );
+    await pool.query(
+      `REVOKE ALL PRIVILEGES ON TABLE public.${stagingIdentityTable} FROM anon, authenticated`,
+    );
+    await pool.query(`DROP SCHEMA ${stagingMigrationGuardSchema}`);
+    await pool.query("COMMIT");
+  } catch (error) {
+    await pool.query("ROLLBACK");
+    throw error;
+  }
+}
+
+async function deployMigrations() {
+  const state = await inspectStagingSchema();
+  if (state === "MIGRATED") {
+    await runCommand("npx", ["prisma", "migrate", "deploy"]);
+    return;
+  }
+
+  await verifyIdentity();
+  await moveIdentityOutOfPublicSchema();
+  try {
+    await runCommand("npx", ["prisma", "migrate", "deploy"]);
+  } finally {
+    await restoreAndHardenIdentity();
+  }
+}
+
 async function main() {
   await verifyIdentity();
   console.info("Staging identity verified.");
@@ -163,7 +279,7 @@ async function main() {
     "apply-reviewed-migrations-to-staging",
   );
   await verifyIdentity();
-  await runCommand("npx", ["prisma", "migrate", "deploy"]);
+  await deployMigrations();
   await verifyIdentity();
   await runMigrationStatus(false);
   await verifyMigrationHistory();
