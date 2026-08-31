@@ -102,3 +102,14 @@ configuration.
 
 Screenshots are retained only on failure. Visible assertions use Spanish UI
 content. Test data is fictional and is not suitable for clinical use.
+
+## Staging smoke boundary
+
+Staging uses `playwright.staging.config.ts` and `tests/staging-smoke`; it does not
+reuse isolated E2E global setup, fixtures or cleanup. The suite has one worker,
+no retries, screenshots, traces or videos, and performs no SCCVI create, update
+or delete operation. Global setup verifies the persisted STAGING identity and
+the exact WHO/MSPAS counts through read-only SQL. Browser checks cover HTTPS,
+anonymous route protection, controlled login, authenticated shell and safe
+module/report/invalid-QR reads. The controlled bootstrap child has no guardian,
+contact details or clinical records.

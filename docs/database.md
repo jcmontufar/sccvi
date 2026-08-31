@@ -1004,6 +1004,23 @@ interface.
 
 ---
 
+# 32. Staging migration and Data API hardening — BATCH-12
+
+The migration `20260831090000_harden_supabase_data_api_access` enables RLS on all
+20 SCCVI application tables and revokes all table privileges from Supabase
+browser roles `anon` and `authenticated`. Prisma remains the server-only
+persistence boundary. The migration does not create or change an environment
+identity marker; it only hardens the staging marker table if the owner-created
+table already exists.
+
+Staging schema deployment is permitted only through `prisma migrate deploy`
+after strict configuration and persisted STAGING identity verification. The
+orchestrator rejects failed or unknown migration history and repeats identity,
+migration status and RLS/privilege verification afterward. Development/reset or
+automatic down migrations are prohibited.
+
+---
+
 # 31. Physical Schema Review — BATCH-09
 
 Reviewed against `prisma/schema.prisma` and the five versioned migrations

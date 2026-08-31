@@ -1,0 +1,195 @@
+name: Deploy isolated staging
+
+on:
+  workflow_dispatch:
+    inputs:
+      commit_sha:
+        description: Full commit SHA already present on main
+        required: true
+        type: string
+      reference_data_action:
+        description: Verify existing reference data or perform the approved import
+        required: true
+        default: verify
+        type: choice
+        options: [verify, import]
+      bootstrap_action:
+        description: Verify bootstrap or perform the approved minimal bootstrap
+        required: true
+        default: verify
+        type: choice
+        options: [verify, apply]
+
+permissions:
+  contents: read
+
+concurrency:
+  group: sccvi-staging-deployment
+  cancel-in-progress: false
+
+jobs:
+  quality:
+    runs-on: ubuntu-latest
+    timeout-minutes: 25
+    env:
+      DEPLOY_SHA: ${{ inputs.commit_sha }}
+      NEXT_PUBLIC_SUPABASE_URL: https://example.invalid
+      NEXT_PUBLIC_SUPABASE_ANON_KEY: ci-public-placeholder
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+          ref: ${{ inputs.commit_sha }}
+      - name: Require a full commit SHA already on main
+        shell: bash
+        run: |
+          if [[ ! "$DEPLOY_SHA" =~ ^[0-9a-f]{40}$ ]]; then
+            echo "Deployment blocked: commit_sha must be a full lowercase SHA."
+            exit 1
+          fi
+          git fetch origin main
+          git merge-base --is-ancestor "$DEPLOY_SHA" origin/main || {
+            echo "Deployment blocked: selected commit is not present on main."
+            exit 1
+          }
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+      - run: npm ci
+      - run: npm run lint
+      - run: npm run format:check
+      - run: npm run typecheck
+      - run: npm test
+      - run: npm run build
+      - run: npm run prisma:validate
+      - run: npm run openapi:validate
+
+  isolated-tests:
+    needs: quality
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    environment: sccvi-test
+    env:
+      TEST_DATABASE_URL: ${{ secrets.TEST_DATABASE_URL }}
+      TEST_DATABASE_ID: ${{ secrets.TEST_DATABASE_ID }}
+      SCCVI_TEST_DATABASE_CONFIRMED: isolated-fictional-test-data-only
+      E2E_TARGET_CONFIRMED: isolated-test-application-only
+      E2E_USER_EMAIL: ${{ secrets.E2E_USER_EMAIL }}
+      E2E_USER_PASSWORD: ${{ secrets.E2E_USER_PASSWORD }}
+      E2E_SUPABASE_URL: ${{ secrets.E2E_SUPABASE_URL }}
+      E2E_SUPABASE_ANON_KEY: ${{ secrets.E2E_SUPABASE_ANON_KEY }}
+      E2E_EXISTING_CHILD_ID: ${{ secrets.E2E_EXISTING_CHILD_ID }}
+      E2E_HISTORICAL_CHILD_ID: ${{ secrets.E2E_HISTORICAL_CHILD_ID }}
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: ${{ inputs.commit_sha }}
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+      - name: Fail closed when isolated-test secrets are unavailable
+        shell: bash
+        run: |
+          required=(TEST_DATABASE_URL TEST_DATABASE_ID E2E_USER_EMAIL E2E_USER_PASSWORD E2E_SUPABASE_URL E2E_SUPABASE_ANON_KEY E2E_EXISTING_CHILD_ID)
+          for name in "${required[@]}"; do
+            if [ -z "${!name}" ]; then
+              echo "Required isolated-test configuration is unavailable."
+              exit 1
+            fi
+          done
+      - run: npm ci
+      - run: npx playwright install --with-deps chromium
+      - run: npm run test:integration
+      - run: npm run test:e2e
+
+  deploy-staging:
+    needs: isolated-tests
+    runs-on: ubuntu-latest
+    timeout-minutes: 35
+    environment:
+      name: sccvi-staging
+      url: https://sccvi-staging.vercel.app
+    env:
+      SCCVI_DEPLOYMENT_ENV: STAGING
+      STAGING_DATABASE_ID: ${{ vars.STAGING_DATABASE_ID }}
+      APP_URL: https://sccvi-staging.vercel.app
+      DATABASE_URL: ${{ secrets.DATABASE_URL }}
+      DIRECT_URL: ${{ secrets.DIRECT_URL }}
+      NEXT_PUBLIC_SUPABASE_URL: ${{ vars.NEXT_PUBLIC_SUPABASE_URL }}
+      NEXT_PUBLIC_SUPABASE_ANON_KEY: ${{ vars.NEXT_PUBLIC_SUPABASE_ANON_KEY }}
+      EMAIL_PROVIDER: ${{ vars.EMAIL_PROVIDER }}
+      EMAIL_API_KEY: ${{ secrets.EMAIL_API_KEY }}
+      EMAIL_FROM: ${{ vars.EMAIL_FROM }}
+      STAGING_BOOTSTRAP_AUTH_USER_ID: ${{ vars.STAGING_BOOTSTRAP_AUTH_USER_ID }}
+      STAGING_BOOTSTRAP_USER_EMAIL: ${{ vars.STAGING_BOOTSTRAP_USER_EMAIL }}
+      STAGING_BOOTSTRAP_USER_FULL_NAME: ${{ vars.STAGING_BOOTSTRAP_USER_FULL_NAME }}
+      STAGING_SMOKE_CHILD_ID: ${{ vars.STAGING_SMOKE_CHILD_ID }}
+      STAGING_SMOKE_USER_EMAIL: ${{ secrets.STAGING_SMOKE_USER_EMAIL }}
+      STAGING_SMOKE_USER_PASSWORD: ${{ secrets.STAGING_SMOKE_USER_PASSWORD }}
+      VERCEL_ORG_ID: ${{ vars.VERCEL_ORG_ID }}
+      VERCEL_PROJECT_ID: ${{ vars.VERCEL_PROJECT_ID }}
+      VERCEL_TOKEN: ${{ secrets.VERCEL_TOKEN }}
+      VERCEL_AUTOMATION_BYPASS_SECRET: ${{ secrets.VERCEL_AUTOMATION_BYPASS_SECRET }}
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: ${{ inputs.commit_sha }}
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+      - run: npm ci
+      - name: Staging preflight without writes
+        run: npm run staging:db:preflight
+      - name: Apply reviewed migrations
+        env:
+          SCCVI_STAGING_MIGRATION_CONFIRMED: apply-reviewed-migrations-to-staging
+        run: npm run staging:db:deploy
+      - name: Verify or import approved WHO/MSPAS reference data
+        env:
+          SCCVI_STAGING_REFERENCE_DATA_CONFIRMED: ${{ inputs.reference_data_action == 'import' && 'import-approved-reference-data-to-staging' || '' }}
+        run: npm run staging:reference:${{ inputs.reference_data_action }}
+      - name: Verify or apply minimal fictional bootstrap
+        env:
+          SCCVI_STAGING_BOOTSTRAP_CONFIRMED: ${{ inputs.bootstrap_action == 'apply' && 'create-minimal-fictional-staging-bootstrap' || '' }}
+        run: npm run staging:bootstrap:${{ inputs.bootstrap_action }}
+      - name: Pull staging-project runtime configuration
+        run: npx --yes vercel@59.10.0 pull --yes --environment=production --token="$VERCEL_TOKEN"
+      - name: Reject administrative secrets in Vercel runtime
+        shell: bash
+        run: |
+          runtime_file=.vercel/.env.production.local
+          if [ ! -f "$runtime_file" ]; then
+            echo "Deployment blocked: Vercel runtime configuration was not pulled."
+            exit 1
+          fi
+          if grep -Eq '^(DIRECT_URL|SUPABASE_SERVICE_ROLE_KEY|SUPABASE_SECRET_KEY|TEST_DATABASE_URL|STAGING_SMOKE_USER_PASSWORD|VERCEL_TOKEN)=' "$runtime_file"; then
+            echo "Deployment blocked: administrative or smoke secret is configured in Vercel runtime."
+            exit 1
+          fi
+          if ! grep -Eq '^SCCVI_DEPLOYMENT_ENV="?STAGING"?$' "$runtime_file"; then
+            echo "Deployment blocked: Vercel runtime is not explicitly marked STAGING."
+            exit 1
+          fi
+      - name: Build candidate
+        run: npx --yes vercel@59.10.0 build --prod --token="$VERCEL_TOKEN"
+      - name: Deploy candidate without stable-hostname promotion
+        id: candidate
+        shell: bash
+        run: |
+          candidate_url=$(npx --yes vercel@59.10.0 deploy --prebuilt --prod --skip-domain --token="$VERCEL_TOKEN")
+          if [[ ! "$candidate_url" =~ ^https:// ]]; then
+            echo "Candidate deployment did not return an HTTPS URL."
+            exit 1
+          fi
+          echo "url=$candidate_url" >> "$GITHUB_OUTPUT"
+      - name: Read-only candidate smoke tests
+        env:
+          STAGING_BASE_URL: ${{ steps.candidate.outputs.url }}
+        run: npm run test:staging-smoke
+      - name: Promote verified candidate to stable staging hostname
+        run: npx --yes vercel@59.10.0 promote "${{ steps.candidate.outputs.url }}" --token="$VERCEL_TOKEN"
+      - name: Verify stable hostname after promotion
+        run: npx --yes vercel@59.10.0 curl / --deployment https://sccvi-staging.vercel.app --token="$VERCEL_TOKEN"

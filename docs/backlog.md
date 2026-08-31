@@ -2001,7 +2001,7 @@ successfully without retry/flaky behavior.
 
 ### TASK-088 — Staging Environment
 
-Status: TODO
+Status: IN_REVIEW
 Priority: P1  
 Dependencies: Core MVP stable
 
@@ -2017,6 +2017,14 @@ Acceptance Criteria:
 - Staging deploy succeeds
 - Production data not used
 - Smoke tests pass
+
+BATCH-12 implementation adds strict staging validation, persisted identity
+verification, versioned RLS/Data API hardening, `migrate deploy` orchestration,
+transactional WHO/MSPAS import verification, minimal idempotent bootstrap,
+read-only staging smoke coverage and a protected candidate-to-promotion
+workflow. The task remains IN_REVIEW until the owner approves and executes the
+first external migration/import/bootstrap/deployment and records passing smoke
+evidence. This does not complete TASK-089 or any production task.
 
 ---
 

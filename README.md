@@ -126,9 +126,12 @@ build, Prisma and OpenAPI validation. A separate serialized job can run
 integration and E2E suites using only secrets from the protected `sccvi-test`
 GitHub environment. See [docs/ci.md](docs/ci.md).
 
-SCCVI has not selected a production hosting provider and these workflows do not
-deploy staging or production. Future deployment must use isolated credentials,
-the approved migration process, HTTPS and the outstanding production reviews.
+SCCVI has a dedicated isolated staging target at
+`https://sccvi-staging.vercel.app`. Deployment is manual and protected: only a
+commit already on `main` can pass quality, isolated tests, staging approval,
+identity-guarded migrations, reference verification, candidate smoke and stable
+promotion. See [the staging runbook](docs/staging.md). No production hosting
+decision or production deployment is implied.
 
 ## Security constraints
 

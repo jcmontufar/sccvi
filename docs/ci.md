@@ -41,6 +41,24 @@ stored in the repository.
 
 ## Deployment boundary
 
-These workflows validate code only. They do not deploy SCCVI, apply migrations,
-seed an environment or import WHO/vaccination reference data. Staging and
-production deployment remain separate backlog work.
+The quality and isolated-test workflows validate code only. They do not deploy
+SCCVI, apply migrations, seed an environment or import WHO/vaccination reference
+data.
+
+## Protected staging deployment
+
+`.github/workflows/staging.yml` is manual-only and targets the protected
+`sccvi-staging` GitHub Environment. It accepts only a full commit SHA already
+present on `main`, reruns quality and isolated tests, then waits for environment
+approval. A single concurrency group serializes deployments.
+
+The protected job performs fail-closed staging preflight, persisted database
+identity verification, reviewed `prisma migrate deploy`, explicit WHO/MSPAS
+verification or import, explicit minimal bootstrap verification or application,
+candidate deployment, read-only smoke tests and stable-hostname promotion. The
+candidate uses `--skip-domain`, so failed build or smoke leaves the prior stable
+deployment in place. Reference import and bootstrap default to read-only verify
+and require separate dispatch choices and confirmation strings before writing.
+
+The workflow never deploys production and never sends email. See
+`docs/staging.md` for environment variables, owner configuration and rollback.
