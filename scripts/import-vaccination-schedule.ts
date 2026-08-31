@@ -5,6 +5,7 @@ import { PrismaPg } from "@prisma/adapter-pg";
 import { config } from "dotenv";
 
 import { PrismaClient } from "../src/generated/prisma/client";
+import { verifyCiEphemeralDatabaseOperation } from "../src/lib/testing/ci-ephemeral-database-operation";
 import {
   guatemalaScheduleArtifact,
   parseGuatemalaScheduleArtifact,
@@ -55,7 +56,25 @@ async function main() {
     adapter: new PrismaPg({ connectionString: databaseUrl }),
   });
   try {
+    await verifyCiEphemeralDatabaseOperation(
+      {
+        query: async <Row>(sql: string) => ({
+          rows: await prisma.$queryRawUnsafe<Row[]>(sql),
+        }),
+      },
+      process.env,
+      databaseUrl,
+    );
     await prisma.$transaction(async (transaction) => {
+      await verifyCiEphemeralDatabaseOperation(
+        {
+          query: async <Row>(sql: string) => ({
+            rows: await transaction.$queryRawUnsafe<Row[]>(sql),
+          }),
+        },
+        process.env,
+        databaseUrl,
+      );
       const version = await transaction.vaccineScheduleVersion.upsert({
         where: { code: artifact.version.code },
         update: {

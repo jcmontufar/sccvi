@@ -13,34 +13,49 @@ or production. It requires no repository secrets.
 ## Isolated integration and E2E workflow
 
 `.github/workflows/isolated-e2e.yml` runs only for same-repository pull
-requests, pushes to `main` and manual dispatches. Fork pull requests do not
-receive secrets and therefore do not run this job. A repository environment
-named `sccvi-test` must define these secrets:
+requests, pushes to `main` and manual dispatches. Fork pull requests remain
+excluded. It requires Docker on the GitHub-hosted runner but no long-lived
+database, Supabase or application secrets.
 
-- `TEST_DATABASE_URL`
-- `TEST_DATABASE_ID`
-- `E2E_USER_EMAIL`
-- `E2E_USER_PASSWORD`
-- `E2E_SUPABASE_URL`
-- `E2E_SUPABASE_ANON_KEY`
-- `E2E_EXISTING_CHILD_ID`
+The shared setup action starts a job-only local Supabase stack, obtains its
+loopback PostgreSQL and Auth endpoints without logging them, and generates a
+fresh test identity and password. After strict GitHub Actions and loopback
+preflight, it runs Prisma validation/generation and applies all repository
+migrations with `prisma migrate deploy` to the empty application schema. It
+then explicitly creates and verifies the persisted `ISOLATED_TEST` marker
+before importing the approved reference artifacts through identity-guarded
+importers or provisioning a minimal fictional Auth/application fixture. The
+job installs Chromium and runs integration followed by the complete E2E suite.
 
-Do not use development or production values. The database must contain the
-persisted `ISOLATED_TEST` marker described in `docs/testing.md`, and its UUID
-must match `TEST_DATABASE_ID`. Confirmation strings are not sufficient without
-that persisted identity check.
-
-The job fails closed if a secret is absent, installs Chromium, and runs
-integration followed by E2E. A concurrency group prevents two workflow runs
-from mutating the shared isolated fixture simultaneously. Cleanup is targeted
-and re-verifies database identity before deletion.
-
-GitHub environment protection rules and secrets must be configured by a
-repository administrator before this workflow can pass. No secret values are
-stored in the repository.
+Explicit CI confirmations, GitHub Actions context, equal database URLs and
+loopback-only PostgreSQL/Auth endpoints are all required. Any missing or
+invalid value fails closed. Development and staging identities are explicitly
+rejected, and neither environment is a fallback. Cleanup remains targeted and
+re-verifies the persisted identity immediately before deletion. GitHub removes
+the containers and data with the runner, so the former long-lived `sccvi-test`
+GitHub Environment and its Supabase connection secrets are no longer required.
+Local isolated testing remains supported as documented in `docs/testing.md`.
 
 ## Deployment boundary
 
-These workflows validate code only. They do not deploy SCCVI, apply migrations,
-seed an environment or import WHO/vaccination reference data. Staging and
-production deployment remain separate backlog work.
+The quality and isolated-test workflows validate code only. They do not deploy
+SCCVI, apply migrations, seed an environment or import WHO/vaccination reference
+data.
+
+## Protected staging deployment
+
+`.github/workflows/staging.yml` is manual-only and targets the protected
+`sccvi-staging` GitHub Environment. It accepts only a full commit SHA already
+present on `main`, reruns quality and isolated tests, then waits for environment
+approval. A single concurrency group serializes deployments.
+
+The protected job performs fail-closed staging preflight, persisted database
+identity verification, reviewed `prisma migrate deploy`, explicit WHO/MSPAS
+verification or import, explicit minimal bootstrap verification or application,
+candidate deployment, read-only smoke tests and stable-hostname promotion. The
+candidate uses `--skip-domain`, so failed build or smoke leaves the prior stable
+deployment in place. Reference import and bootstrap default to read-only verify
+and require separate dispatch choices and confirmation strings before writing.
+
+The workflow never deploys production and never sends email. See
+`docs/staging.md` for environment variables, owner configuration and rollback.

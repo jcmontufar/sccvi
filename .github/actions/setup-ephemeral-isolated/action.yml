@@ -1,0 +1,75 @@
+name: Prepare ephemeral SCCVI isolated test stack
+description: Starts job-only Supabase containers and prepares identity-guarded SCCVI test data
+
+runs:
+  using: composite
+  steps:
+    - name: Set explicit ephemeral-test confirmations and fictional identifiers
+      shell: bash
+      run: |
+        e2e_password="$(node -e 'process.stdout.write(require("node:crypto").randomBytes(24).toString("base64url"))')"
+        echo "::add-mask::$e2e_password"
+        echo "SCCVI_TEST_DATABASE_MODE=CI_EPHEMERAL" >> "$GITHUB_ENV"
+        echo "SCCVI_CI_EPHEMERAL_DATABASE_CONFIRMED=github-actions-job-container-only" >> "$GITHUB_ENV"
+        echo "SCCVI_TEST_DATABASE_CONFIRMED=isolated-fictional-test-data-only" >> "$GITHUB_ENV"
+        echo "E2E_TARGET_CONFIRMED=isolated-test-application-only" >> "$GITHUB_ENV"
+        echo "E2E_USER_EMAIL=ci-isolated-user@example.invalid" >> "$GITHUB_ENV"
+        echo "E2E_EXISTING_CHILD_ID=30000000-0000-4000-8000-000000000001" >> "$GITHUB_ENV"
+        echo "TEST_DATABASE_ID=$(node -e 'process.stdout.write(require("node:crypto").randomUUID())')" >> "$GITHUB_ENV"
+        echo "E2E_USER_PASSWORD=$e2e_password" >> "$GITHUB_ENV"
+    - uses: supabase/setup-cli@v2
+      with:
+        version: 2.84.2
+    - name: Start job-only local Supabase containers
+      shell: bash
+      run: |
+        supabase init >/dev/null
+        if ! supabase start >"$RUNNER_TEMP/supabase-start.log" 2>&1; then
+          echo "Ephemeral Supabase test stack failed to start."
+          exit 1
+        fi
+    - name: Export ephemeral database and Auth endpoints without logging values
+      shell: bash
+      run: |
+        supabase status -o env \
+          --override-name db.url=TEST_DATABASE_URL \
+          --override-name api.url=E2E_SUPABASE_URL \
+          --override-name auth.anon_key=E2E_SUPABASE_ANON_KEY \
+          --override-name auth.service_role_key=E2E_SUPABASE_SERVICE_ROLE_KEY \
+          > "$RUNNER_TEMP/sccvi-supabase.env"
+        while IFS='=' read -r name value; do
+          case "$name" in
+            TEST_DATABASE_URL|E2E_SUPABASE_URL|E2E_SUPABASE_ANON_KEY|E2E_SUPABASE_SERVICE_ROLE_KEY)
+              value="${value#\"}"
+              value="${value%\"}"
+              echo "::add-mask::$value"
+              echo "$name=$value" >> "$GITHUB_ENV"
+              ;;
+          esac
+        done < "$RUNNER_TEMP/sccvi-supabase.env"
+    - name: Bind all CI database access to the ephemeral PostgreSQL URL
+      shell: bash
+      run: |
+        if [ -z "$TEST_DATABASE_URL" ]; then
+          echo "Ephemeral TEST_DATABASE_URL was not exported."
+          exit 1
+        fi
+        echo "DATABASE_URL=$TEST_DATABASE_URL" >> "$GITHUB_ENV"
+        echo "DIRECT_URL=$TEST_DATABASE_URL" >> "$GITHUB_ENV"
+    - name: Validate and apply repository migrations to the ephemeral database
+      shell: bash
+      run: |
+        npm run prisma:validate
+        npm run prisma:generate
+        npx prisma migrate deploy
+    - name: Create and verify persisted ISOLATED_TEST identity
+      shell: bash
+      run: npm run ci:test-db:prepare
+    - name: Import approved reference data into the verified ephemeral database
+      shell: bash
+      run: |
+        npm run who:import
+        npm run vaccination:import
+    - name: Create ephemeral Auth user and minimal fictional E2E fixture
+      shell: bash
+      run: npm run ci:e2e:prepare

@@ -41,14 +41,22 @@ checked against that scope on the server to prevent IDOR.
 
 ## Row Level Security Boundary
 
-Row Level Security is enabled on the SCCVI application tables
-in the development Supabase database, with no application-table RLS policies defined.
-This denies direct anon/authenticated Data API table access by default.
+The versioned BATCH-12 security migration enables Row Level Security on all 20
+SCCVI application tables and revokes all table privileges from the Supabase
+`anon` and `authenticated` roles. No application-table RLS policies are defined,
+so browser/Data API access is denied by design in every migrated environment.
+Post-migration staging verification fails if a table is missing, RLS is disabled
+or either browser role has a table privilege.
 
 Normal application persistence uses Prisma through the server database connection. RLS is
 not treated as a replacement for SCCVI server authorization. A complete RLS policy design
 has not been invented in this batch and must be added only through an approved future task
 or architecture decision.
+
+Staging administrative tooling also verifies the persisted STAGING marker and
+rejects known development, isolated-test and production markers before every
+write. `DIRECT_URL`, service-role credentials, bootstrap values and smoke
+credentials are forbidden in Vercel runtime configuration.
 
 ## Guardian and Child Resource Access
 

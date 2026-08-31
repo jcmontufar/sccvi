@@ -891,6 +891,23 @@ across:
 
 without a clear purpose.
 
+---
+
+## 31. Isolated staging deployment
+
+Staging preserves the modular monolith: one dedicated Vercel project runs the
+Next.js application and one dedicated Supabase project provides PostgreSQL and
+Auth. Runtime Prisma uses the pooled `DATABASE_URL`; protected deployment tooling
+alone receives `DIRECT_URL`. No service-role credential is required by normal
+application runtime.
+
+The deployment path is GitHub manual dispatch for a commit already on `main`,
+quality checks, isolated tests, protected staging approval, identity-guarded
+`migrate deploy`, approved reference-data verification/import, minimal bootstrap,
+immutable candidate deployment, non-destructive smoke and stable-hostname
+promotion. This is a staging decision only and does not resolve production
+hosting TASK-089.
+
 Authorization behavior must remain understandable and testable.
 
 ---

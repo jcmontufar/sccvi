@@ -1,9 +1,19 @@
+import {
+  isCiEphemeralDatabaseEnvironment,
+  validateCiEphemeralDatabaseEnvironment,
+} from "./ci-ephemeral-database";
+
 const testConfirmation = "isolated-fictional-test-data-only";
 const uuidPattern =
   /^[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i;
 
 export const testDatabaseIdentityQuery = `
-  SELECT "environment", "identity"::text AS "identity"
+  SELECT
+    "environment",
+    "identity"::text AS "identity",
+    to_regclass('public.sccvi_development_database_identity')::text AS "developmentMarker",
+    to_regclass('public.sccvi_staging_database_identity')::text AS "stagingMarker",
+    to_regclass('public.sccvi_production_database_identity')::text AS "productionMarker"
   FROM public.sccvi_test_database_identity
   WHERE "singleton" = TRUE
   LIMIT 1
@@ -17,6 +27,9 @@ export interface TestDatabaseConfiguration {
 export interface TestDatabaseIdentityRow {
   environment: string;
   identity: string;
+  developmentMarker: string | null;
+  stagingMarker: string | null;
+  productionMarker: string | null;
 }
 
 interface QueryResult<Row> {
@@ -43,7 +56,9 @@ export function validateTestDatabaseEnvironment(
       "LIVE TEST EXECUTION BLOCKED: the isolated test database confirmation is missing.",
     );
   }
-  if (
+  if (isCiEphemeralDatabaseEnvironment(environment)) {
+    validateCiEphemeralDatabaseEnvironment(environment);
+  } else if (
     environment.NODE_ENV === "production" ||
     databaseUrl === environment.DATABASE_URL ||
     databaseUrl === environment.DIRECT_URL
@@ -82,7 +97,10 @@ export async function verifyPersistedTestDatabaseIdentity(
   if (
     result.rows.length !== 1 ||
     marker?.environment !== "ISOLATED_TEST" ||
-    marker.identity.toLowerCase() !== expectedIdentity.toLowerCase()
+    marker.identity.toLowerCase() !== expectedIdentity.toLowerCase() ||
+    marker.developmentMarker ||
+    marker.stagingMarker ||
+    marker.productionMarker
   ) {
     throw new Error(
       "LIVE TEST EXECUTION BLOCKED: the connected database is not the confirmed SCCVI isolated test database.",

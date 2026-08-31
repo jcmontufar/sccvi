@@ -11,6 +11,13 @@ const baseEnvironment = {
   TEST_DATABASE_ID: isolatedId,
   SCCVI_TEST_DATABASE_CONFIRMED: "isolated-fictional-test-data-only",
 };
+const matchingMarker = {
+  environment: "ISOLATED_TEST",
+  identity: isolatedId,
+  developmentMarker: null,
+  stagingMarker: null,
+  productionMarker: null,
+};
 
 describe("test database isolation", () => {
   it("rejects the exact development database URL", () => {
@@ -22,6 +29,25 @@ describe("test database isolation", () => {
     ).toThrow("refusing development/production database access");
   });
 
+  it("allows equal runtime URLs only for an explicit CI ephemeral container", () => {
+    const databaseUrl =
+      "postgresql://postgres:postgres@127.0.0.1:54322/postgres";
+    expect(
+      validateTestDatabaseEnvironment({
+        ...baseEnvironment,
+        CI: "true",
+        GITHUB_ACTIONS: "true",
+        SCCVI_TEST_DATABASE_MODE: "CI_EPHEMERAL",
+        SCCVI_CI_EPHEMERAL_DATABASE_CONFIRMED:
+          "github-actions-job-container-only",
+        TEST_DATABASE_URL: databaseUrl,
+        DATABASE_URL: databaseUrl,
+        DIRECT_URL: databaseUrl,
+        E2E_SUPABASE_URL: "http://127.0.0.1:54321",
+      }),
+    ).toMatchObject({ databaseUrl });
+  });
+
   it("rejects an alternative URL to the same logical database by persisted identity", async () => {
     const configuration = validateTestDatabaseEnvironment({
       ...baseEnvironment,
@@ -29,7 +55,7 @@ describe("test database isolation", () => {
       TEST_DATABASE_URL: "postgresql://pooler.invalid/postgres",
     });
     const query = vi.fn().mockResolvedValue({
-      rows: [{ environment: "DEVELOPMENT", identity: isolatedId }],
+      rows: [{ ...matchingMarker, environment: "DEVELOPMENT" }],
     });
 
     await expect(
@@ -52,7 +78,7 @@ describe("test database isolation", () => {
     const query = vi.fn().mockResolvedValue({
       rows: [
         {
-          environment: "ISOLATED_TEST",
+          ...matchingMarker,
           identity: "ee2b3584-e726-4a56-9900-54fb290e5852",
         },
       ],
@@ -65,11 +91,26 @@ describe("test database isolation", () => {
 
   it("accepts the correctly marked isolated database", async () => {
     const query = vi.fn().mockResolvedValue({
-      rows: [{ environment: "ISOLATED_TEST", identity: isolatedId }],
+      rows: [matchingMarker],
     });
 
     await expect(
       verifyPersistedTestDatabaseIdentity({ query }, isolatedId),
     ).resolves.toBeUndefined();
+  });
+
+  it("rejects a conflicting persisted environment marker", async () => {
+    const query = vi.fn().mockResolvedValue({
+      rows: [
+        {
+          ...matchingMarker,
+          stagingMarker: "sccvi_staging_database_identity",
+        },
+      ],
+    });
+
+    await expect(
+      verifyPersistedTestDatabaseIdentity({ query }, isolatedId),
+    ).rejects.toThrow("not the confirmed SCCVI isolated test database");
   });
 });
