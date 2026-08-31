@@ -140,15 +140,32 @@ jobs:
         shell: bash
         run: |
           runtime_file=.vercel/.env.production.local
+          project_file=.vercel/project.json
+          expected_staging_project_id=prj_PlCZ5dVCgMCxpI7Qr4DovugOeM8e
           if [ ! -f "$runtime_file" ]; then
             echo "Deployment blocked: Vercel runtime configuration was not pulled."
+            exit 1
+          fi
+          if [ ! -f "$project_file" ]; then
+            echo "Deployment blocked: Vercel project configuration was not pulled."
+            exit 1
+          fi
+          actual_project_id=$(node -p "require('./$project_file').projectId || ''")
+          if [ "$actual_project_id" != "$expected_staging_project_id" ]; then
+            echo "Deployment blocked: Vercel project is not the isolated staging project."
             exit 1
           fi
           if grep -Eq '^(DIRECT_URL|SUPABASE_SERVICE_ROLE_KEY|SUPABASE_SECRET_KEY|TEST_DATABASE_URL|STAGING_SMOKE_USER_PASSWORD|VERCEL_TOKEN)=' "$runtime_file"; then
             echo "Deployment blocked: administrative or smoke secret is configured in Vercel runtime."
             exit 1
           fi
-          if ! grep -Eq '^SCCVI_DEPLOYMENT_ENV="?STAGING"?$' "$runtime_file"; then
+          if grep -Eq '^SCCVI_DEPLOYMENT_ENV="?STAGING"?$' "$runtime_file"; then
+            :
+          # Vercel serializes sensitive values as [SENSITIVE]. The fixed project ID
+          # above keeps this fallback scoped to the isolated staging project.
+          elif grep -Fxq 'SCCVI_DEPLOYMENT_ENV="[SENSITIVE]"' "$runtime_file"; then
+            echo "SCCVI_DEPLOYMENT_ENV is sensitive; isolated staging project identity verified."
+          else
             echo "Deployment blocked: Vercel runtime is not explicitly marked STAGING."
             exit 1
           fi
