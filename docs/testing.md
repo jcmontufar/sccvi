@@ -57,9 +57,12 @@ They never reset a schema or delete shared development data. Run them with
 GitHub Actions does not use that long-lived local target. Each isolated-test
 job starts a fresh local Supabase Docker stack on the runner, including
 PostgreSQL and Auth. Setup generates a per-job identity UUID, creates the
-`ISOLATED_TEST` marker before migrations or fixture writes, positively verifies
-it, applies repository migrations with `prisma migrate deploy`, imports the
-approved reference artifacts and provisions only minimal fictional E2E data.
+repository schema with `prisma migrate deploy`, then creates and positively
+verifies the `ISOLATED_TEST` marker before any reference import, fixture write,
+test or cleanup. This order leaves Prisma a genuinely empty application schema
+while the strict loopback/GitHub Actions preflight protects migration setup.
+The approved reference artifacts and minimal fictional E2E data are written
+only after the persisted identity succeeds.
 All database URLs are required to be the same loopback PostgreSQL URL in this
 explicit CI mode, and the Supabase API must also be loopback-only. The runner
 destroys the containers and their data when the job ends. No development,

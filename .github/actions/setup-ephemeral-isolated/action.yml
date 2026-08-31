@@ -37,7 +37,16 @@ runs:
           --override-name auth.anon_key=E2E_SUPABASE_ANON_KEY \
           --override-name auth.service_role_key=E2E_SUPABASE_SERVICE_ROLE_KEY \
           > "$RUNNER_TEMP/sccvi-supabase.env"
-        sed -e 's/="/=/' -e 's/"$//' "$RUNNER_TEMP/sccvi-supabase.env" >> "$GITHUB_ENV"
+        while IFS='=' read -r name value; do
+          case "$name" in
+            TEST_DATABASE_URL|E2E_SUPABASE_URL|E2E_SUPABASE_ANON_KEY|E2E_SUPABASE_SERVICE_ROLE_KEY)
+              value="${value#\"}"
+              value="${value%\"}"
+              echo "::add-mask::$value"
+              echo "$name=$value" >> "$GITHUB_ENV"
+              ;;
+          esac
+        done < "$RUNNER_TEMP/sccvi-supabase.env"
     - name: Bind all CI database access to the ephemeral PostgreSQL URL
       shell: bash
       run: |
@@ -47,15 +56,15 @@ runs:
         fi
         echo "DATABASE_URL=$TEST_DATABASE_URL" >> "$GITHUB_ENV"
         echo "DIRECT_URL=$TEST_DATABASE_URL" >> "$GITHUB_ENV"
-    - name: Create and verify persisted ISOLATED_TEST identity
-      shell: bash
-      run: npm run ci:test-db:prepare
     - name: Validate and apply repository migrations to the ephemeral database
       shell: bash
       run: |
         npm run prisma:validate
         npm run prisma:generate
         npx prisma migrate deploy
+    - name: Create and verify persisted ISOLATED_TEST identity
+      shell: bash
+      run: npm run ci:test-db:prepare
     - name: Import approved reference data into the verified ephemeral database
       shell: bash
       run: |

@@ -18,13 +18,14 @@ excluded. It requires Docker on the GitHub-hosted runner but no long-lived
 database, Supabase or application secrets.
 
 The shared setup action starts a job-only local Supabase stack, obtains its
-loopback PostgreSQL and Auth endpoints without logging them, generates a fresh
-test identity and password, and explicitly creates and verifies the persisted
-`ISOLATED_TEST` marker. It then runs Prisma validation/generation, applies all
-repository migrations with `prisma migrate deploy`, imports the approved
-reference artifacts through the identity-guarded importers, and provisions a
-minimal fictional Auth/application fixture. The job installs Chromium and runs
-integration followed by the complete E2E suite.
+loopback PostgreSQL and Auth endpoints without logging them, and generates a
+fresh test identity and password. After strict GitHub Actions and loopback
+preflight, it runs Prisma validation/generation and applies all repository
+migrations with `prisma migrate deploy` to the empty application schema. It
+then explicitly creates and verifies the persisted `ISOLATED_TEST` marker
+before importing the approved reference artifacts through identity-guarded
+importers or provisioning a minimal fictional Auth/application fixture. The
+job installs Chromium and runs integration followed by the complete E2E suite.
 
 Explicit CI confirmations, GitHub Actions context, equal database URLs and
 loopback-only PostgreSQL/Auth endpoints are all required. Any missing or
