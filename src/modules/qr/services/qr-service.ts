@@ -11,11 +11,13 @@ import {
 } from "@/modules/children/services/child-service";
 import {
   qrCredentialIdSchema,
-  qrOpaqueTokenSchema,
   qrPinSchema,
   qrTokenInputSchema,
 } from "@/modules/qr/schemas/qr-schema";
-import { assertCredentialAvailable } from "@/modules/qr/services/qr-credential";
+import {
+  assertCredentialAvailable,
+  parseOpaqueQrToken,
+} from "@/modules/qr/services/qr-credential";
 import {
   generateOpaqueToken,
   hashOpaqueToken,
@@ -124,7 +126,7 @@ export async function accessDigitalCard(
   pinValue?: string,
   currentInstant = new Date(),
 ) {
-  const token = qrOpaqueTokenSchema.parse(rawToken);
+  const token = parseOpaqueQrToken(rawToken);
   const tokenHash = hashOpaqueToken(token);
   const result = await getPrisma().$transaction(async (transaction) => {
     const candidate = await transaction.qRToken.findUnique({

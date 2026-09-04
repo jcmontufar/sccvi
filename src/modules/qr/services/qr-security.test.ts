@@ -1,6 +1,9 @@
 import { describe, expect, it } from "vitest";
 
-import { assertCredentialAvailable } from "@/modules/qr/services/qr-credential";
+import {
+  assertCredentialAvailable,
+  parseOpaqueQrToken,
+} from "@/modules/qr/services/qr-credential";
 import {
   generateOpaqueToken,
   hashOpaqueToken,
@@ -47,6 +50,12 @@ describe("QR credential security", () => {
 
   it("rejects a malformed credential identifier before persistence access", () => {
     expect(qrCredentialIdSchema.safeParse("not-a-uuid").success).toBe(false);
+  });
+
+  it("maps a malformed opaque token to the safe invalid credential error", () => {
+    expect(() =>
+      parseOpaqueQrToken("staging-invalid-token-that-does-not-exist"),
+    ).toThrow("La credencial de la tarjeta digital no es válida.");
   });
 
   it("locks repeated failures after the configured limit", () => {
