@@ -27,6 +27,8 @@
     "staging:reference:import": "tsx scripts/staging-reference-data.ts import",
     "staging:bootstrap:verify": "tsx scripts/bootstrap-staging.ts verify",
     "staging:bootstrap:apply": "tsx scripts/bootstrap-staging.ts apply",
+    "staging:demo:verify": "tsx scripts/staging-demo-dataset.ts verify",
+    "staging:demo:apply": "tsx scripts/staging-demo-dataset.ts apply",
     "openapi:validate": "redocly lint docs/api/openapi.yaml",
     "test": "vitest run",
     "test:integration": "vitest run --config vitest.integration.config.mts",
