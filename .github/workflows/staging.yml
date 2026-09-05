@@ -190,4 +190,4 @@ jobs:
       - name: Promote verified candidate to stable staging hostname
         run: npx --yes vercel@59.10.0 promote "${{ steps.candidate.outputs.url }}" --token="$VERCEL_TOKEN"
       - name: Verify stable hostname after promotion
-        run: npx --yes vercel@59.10.0 curl / --deployment https://sccvi-staging.vercel.app --token="$VERCEL_TOKEN"
+        run: npx --yes vercel@59.10.0 --token="$VERCEL_TOKEN" curl / --deployment https://sccvi-staging.vercel.app
