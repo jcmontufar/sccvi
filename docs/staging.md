@@ -110,8 +110,37 @@ After identity verification, one transaction idempotently reconciles:
   records;
 - one sanitized `STAGING_BOOTSTRAP` audit entry.
 
-`npm run staging:bootstrap:verify` is read-only. Functional demo fixtures remain
-forbidden in staging and must never be used as a substitute.
+`npm run staging:bootstrap:verify` is read-only. The local-development fixtures
+remain forbidden in staging and must never be used as a substitute.
+
+## Integral fictional demo dataset
+
+TASK-089 provides a separate, optional staging-only dataset after the minimal
+bootstrap and approved WHO/MSPAS data exist. It uses fixed identifiers and the
+marker `SCCVI_STAGING_DEMO_V1`; it contains five communities, 18 children and
+guardians, longitudinal growth measurements, factual scheduled-dose
+applications, overdue/pending scenarios, preventive alerts and missed
+follow-ups. Names are prefixed with `[STAGING DEMO]` and no contact data is
+created.
+
+Read-only verification:
+
+```bash
+npm run staging:demo:verify
+```
+
+Reviewed application requires the operation-specific confirmation only for that
+command:
+
+```bash
+SCCVI_STAGING_DEMO_CONFIRMED=apply-integral-fictional-demo-to-isolated-staging npm run staging:demo:apply
+```
+
+Both commands validate the strict staging environment and persisted staging
+database identity. Apply verifies identity again inside one transaction, fails
+on unrecognized deterministic IDs, and uses upserts so rerunning does not create
+duplicates. It does not alter WHO/MSPAS reference rows or the schedule. This
+operation is manual and is not part of `Deploy isolated staging`.
 
 ## Deployment and smoke
 
