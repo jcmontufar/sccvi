@@ -1,4 +1,5 @@
 import { requireApplicationUser } from "@/modules/auth/session";
+import { DashboardOverview } from "@/modules/dashboard/components/dashboard-overview";
 import { getDashboardMetrics } from "@/modules/dashboard/services/dashboard-service";
 
 const roleLabels = {
@@ -11,47 +12,19 @@ const roleLabels = {
 export default async function ApplicationHomePage() {
   const user = await requireApplicationUser();
   const metrics = await getDashboardMetrics(user);
-  const cards = [
-    ["Niños activos", metrics.children],
-    ["Comunidades activas", metrics.communities],
-    ["Tutores activos", metrics.guardians],
-    ["Mediciones registradas", metrics.growthRecords],
-    ["Alertas abiertas", metrics.openAlerts],
-    ["Dosis pendientes", metrics.pendingVaccinations],
-    ["Dosis atrasadas", metrics.overdueVaccinations],
-  ];
-
   return (
-    <section className="space-y-6">
-      <p className="text-sm font-medium text-primary">Área protegida</p>
-      <h1 className="text-3xl font-semibold tracking-tight">
-        Bienvenido, {user.fullName}
-      </h1>
-      <p className="text-muted-foreground">
-        Perfil: {roleLabels[user.role]}. Selecciona una opción del menú para
-        continuar.
-      </p>
-      <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4 xl:grid-cols-7">
-        {cards
-          .filter(
-            ([label]) =>
-              user.role !== "GUARDIAN" ||
-              !["Comunidades activas", "Tutores activos"].includes(
-                String(label),
-              ),
-          )
-          .map(([label, value]) => (
-            <article className="rounded-xl border bg-card p-5" key={label}>
-              <p className="text-sm text-muted-foreground">{label}</p>
-              <p className="mt-2 text-3xl font-semibold">{value}</p>
-            </article>
-          ))}
-      </div>
-      <p className="rounded-xl border p-4 text-sm text-muted-foreground">
-        Las dosis pendientes y atrasadas son conteos de seguimiento derivados
-        del esquema vigente. No se muestra cobertura porcentual porque aún no
-        existe una metodología de denominador aprobada.
-      </p>
+    <section className="space-y-7">
+      <header className="space-y-2">
+        <p className="text-sm font-medium text-sky-700">Resumen operativo</p>
+        <h1 className="text-3xl font-semibold tracking-tight sm:text-4xl">
+          Bienvenido, {user.fullName}
+        </h1>
+        <p className="text-muted-foreground">
+          Perfil: {roleLabels[user.role]}. Consulta el estado actual y prioriza
+          los próximos seguimientos.
+        </p>
+      </header>
+      <DashboardOverview metrics={metrics} role={user.role} />
     </section>
   );
 }
