@@ -1,0 +1,44 @@
+name: Apply isolated staging demo dataset
+
+on:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: sccvi-staging-demo
+  cancel-in-progress: false
+
+jobs:
+  apply-staging-demo:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    environment:
+      name: sccvi-staging
+    env:
+      SCCVI_DEPLOYMENT_ENV: STAGING
+      STAGING_DATABASE_ID: ${{ vars.STAGING_DATABASE_ID }}
+      APP_URL: https://sccvi-staging.vercel.app
+      DATABASE_URL: ${{ secrets.DATABASE_URL }}
+      DIRECT_URL: ${{ secrets.DIRECT_URL }}
+      NEXT_PUBLIC_SUPABASE_URL: ${{ vars.NEXT_PUBLIC_SUPABASE_URL }}
+      NEXT_PUBLIC_SUPABASE_ANON_KEY: ${{ vars.NEXT_PUBLIC_SUPABASE_ANON_KEY }}
+      STAGING_BOOTSTRAP_AUTH_USER_ID: ${{ vars.STAGING_BOOTSTRAP_AUTH_USER_ID }}
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: main
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+      - run: npm ci
+      - name: Verify isolated staging before applying demo data
+        run: npm run staging:demo:verify
+      - name: Apply integral fictional demo data
+        env:
+          SCCVI_STAGING_DEMO_CONFIRMED: apply-integral-fictional-demo-to-isolated-staging
+        run: npm run staging:demo:apply
+      - name: Verify isolated staging demo data
+        run: npm run staging:demo:verify
