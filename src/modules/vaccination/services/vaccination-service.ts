@@ -174,7 +174,9 @@ export async function listAuthorizedChildrenVaccinationStatuses(
   currentInstant = new Date(),
   limit = 1000,
 ) {
-  authorize(user, "vaccination:list");
+  authorize(user, "vaccination:list", {
+    guardianUserIds: user.role === "GUARDIAN" ? [user.id] : undefined,
+  });
   const evaluationDate = getVaccinationEvaluationDate(currentInstant);
   const version = await getApplicableVersion(evaluationDate);
   const schedules = await getPrisma().vaccineSchedule.findMany({
@@ -191,8 +193,14 @@ export async function listAuthorizedChildrenVaccinationStatuses(
       isActive: true,
       community: {
         healthCenterId:
-          user.role === "ADMIN" ? undefined : (user.healthCenterId ?? ""),
+          user.role === "ADMIN" || user.role === "GUARDIAN"
+            ? undefined
+            : (user.healthCenterId ?? ""),
       },
+      childGuardians:
+        user.role === "GUARDIAN"
+          ? { some: { guardian: { userId: user.id, isActive: true } } }
+          : undefined,
     },
     select: {
       id: true,

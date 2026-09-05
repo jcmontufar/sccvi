@@ -3,7 +3,7 @@ import "server-only";
 import { getPrisma } from "@/lib/prisma";
 import { authorize } from "@/modules/auth/authorization";
 import type { ApplicationUser } from "@/modules/auth/types";
-import { listChildVaccinationStatuses } from "@/modules/vaccination/services/vaccination-service";
+import { listAuthorizedChildrenVaccinationStatuses } from "@/modules/vaccination/services/vaccination-service";
 
 export async function getDashboardMetrics(user: ApplicationUser) {
   authorize(user, "dashboard:read", {
@@ -27,7 +27,7 @@ export async function getDashboardMetrics(user: ApplicationUser) {
     guardians,
     growthRecords,
     openAlerts,
-    childIds,
+    vaccinationStatuses,
   ] = await Promise.all([
     getPrisma().child.count({ where: childWhere }),
     user.role === "GUARDIAN"
@@ -42,19 +42,15 @@ export async function getDashboardMetrics(user: ApplicationUser) {
         }),
     getPrisma().growthRecord.count({ where: { child: childWhere } }),
     getPrisma().alert.count({ where: { status: "OPEN", child: childWhere } }),
-    getPrisma().child.findMany({ where: childWhere, select: { id: true } }),
+    listAuthorizedChildrenVaccinationStatuses(user),
   ]);
-  let pendingVaccinations = 0;
-  let overdueVaccinations = 0;
-  for (const child of childIds) {
-    const result = await listChildVaccinationStatuses(user, child.id);
-    pendingVaccinations += result.doses.filter(
-      (dose) => dose.status === "PENDING",
-    ).length;
-    overdueVaccinations += result.doses.filter(
-      (dose) => dose.status === "OVERDUE",
-    ).length;
-  }
+  const doses = vaccinationStatuses.flatMap(({ doses }) => doses);
+  const pendingVaccinations = doses.filter(
+    (dose) => dose.status === "PENDING",
+  ).length;
+  const overdueVaccinations = doses.filter(
+    (dose) => dose.status === "OVERDUE",
+  ).length;
   return {
     children,
     communities,

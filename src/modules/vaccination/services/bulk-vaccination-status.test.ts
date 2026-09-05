@@ -25,6 +25,13 @@ const staff: ApplicationUser = {
   role: "HEALTH_STAFF",
   isActive: true,
 };
+const guardian: ApplicationUser = {
+  ...staff,
+  id: "guardian-a",
+  authUserId: "guardian-auth-a",
+  healthCenterId: null,
+  role: "GUARDIAN",
+};
 const version = {
   id: "version-current",
   code: "GT-MSPAS-2026-01-12",
@@ -147,5 +154,20 @@ describe("bulk vaccination status query", () => {
     prisma.child.findMany.mockResolvedValue([]);
     expect(await listAuthorizedChildrenVaccinationStatuses(staff)).toEqual([]);
     expect(prisma.vaccination.findMany).not.toHaveBeenCalled();
+  });
+
+  it("preserves explicit guardian-child authorization in the bulk cohort", async () => {
+    await listAuthorizedChildrenVaccinationStatuses(guardian);
+
+    expect(prisma.child.findMany).toHaveBeenCalledWith(
+      expect.objectContaining({
+        where: expect.objectContaining({
+          community: { healthCenterId: undefined },
+          childGuardians: {
+            some: { guardian: { userId: guardian.id, isActive: true } },
+          },
+        }),
+      }),
+    );
   });
 });
