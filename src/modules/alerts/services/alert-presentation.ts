@@ -20,3 +20,26 @@ export function getGrowthPercentileThresholdLabel(percentile: number) {
     return "Mayor de 95";
   return null;
 }
+
+export function buildOpenAlertSummary(
+  groups: readonly {
+    status: "OPEN" | "REVIEWED" | "RESOLVED";
+    severity: "PREVENTIVE" | "CRITICAL";
+    type: "GROWTH" | "VACCINATION" | "MISSED_FOLLOW_UP";
+    count: number;
+  }[],
+) {
+  const open = groups.filter((group) => group.status === "OPEN");
+  const count = (predicate: (group: (typeof open)[number]) => boolean) =>
+    open.filter(predicate).reduce((total, group) => total + group.count, 0);
+  return {
+    open: count(() => true),
+    preventive: count((group) => group.severity === "PREVENTIVE"),
+    critical: count((group) => group.severity === "CRITICAL"),
+    byType: {
+      growth: count((group) => group.type === "GROWTH"),
+      vaccination: count((group) => group.type === "VACCINATION"),
+      followUp: count((group) => group.type === "MISSED_FOLLOW_UP"),
+    },
+  };
+}

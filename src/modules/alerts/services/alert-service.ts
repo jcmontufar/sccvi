@@ -41,6 +41,21 @@ function alertResource(alert: Awaited<ReturnType<typeof findAlert>> & object) {
   };
 }
 
+function alertScope(user: ApplicationUser) {
+  return {
+    child: {
+      community:
+        user.role === "ADMIN" || user.role === "GUARDIAN"
+          ? undefined
+          : { healthCenterId: user.healthCenterId ?? "" },
+      childGuardians:
+        user.role === "GUARDIAN"
+          ? { some: { guardian: { userId: user.id, isActive: true } } }
+          : undefined,
+    },
+  } as const;
+}
+
 async function findAlert(id: string) {
   return getPrisma().alert.findUnique({ where: { id }, include: alertInclude });
 }
@@ -54,20 +69,23 @@ export async function listAlerts(user: ApplicationUser, input: unknown) {
     where: {
       status: filters.status === "ALL" ? undefined : filters.status,
       severity: filters.severity === "ALL" ? undefined : filters.severity,
-      child: {
-        community:
-          user.role === "ADMIN" || user.role === "GUARDIAN"
-            ? undefined
-            : { healthCenterId: user.healthCenterId ?? "" },
-        childGuardians:
-          user.role === "GUARDIAN"
-            ? { some: { guardian: { userId: user.id, isActive: true } } }
-            : undefined,
-      },
+      type: filters.type === "ALL" ? undefined : filters.type,
+      ...alertScope(user),
     },
     include: alertInclude,
     orderBy: { createdAt: "desc" },
     take: 200,
+  });
+}
+
+export async function getAlertSummary(user: ApplicationUser) {
+  authorize(user, "alert:list", {
+    guardianUserIds: user.role === "GUARDIAN" ? [user.id] : undefined,
+  });
+  return getPrisma().alert.groupBy({
+    by: ["status", "severity", "type"],
+    where: alertScope(user),
+    _count: { _all: true },
   });
 }
 
