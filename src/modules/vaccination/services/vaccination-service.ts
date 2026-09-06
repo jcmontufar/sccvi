@@ -258,6 +258,178 @@ export async function listAuthorizedChildrenVaccinationStatuses(
   }));
 }
 
+export type VaccinationPopulationFilters = {
+  healthCenterId?: string;
+  communityId?: string;
+  sex?: "MALE" | "FEMALE";
+  dateOfBirth?: { gt?: Date; lte?: Date };
+};
+
+type BulkVaccinationStatus = Awaited<
+  ReturnType<typeof listAuthorizedChildrenVaccinationStatuses>
+>[number];
+
+export type AuthorizedChildVaccinationStatus = Omit<
+  BulkVaccinationStatus,
+  "child"
+> & {
+  child: {
+    id: string;
+    fullName: string;
+    dateOfBirth: Date;
+    sex: "MALE" | "FEMALE";
+    community: {
+      id: string;
+      name: string;
+      healthCenter: { name: string };
+    };
+  };
+};
+
+export async function iterateAuthorizedChildrenVaccinationStatuses(
+  user: ApplicationUser,
+  options: {
+    currentInstant?: Date;
+    pageSize?: number;
+    filters?: VaccinationPopulationFilters;
+  },
+  visit: (status: AuthorizedChildVaccinationStatus) => void | Promise<void>,
+) {
+  authorize(user, "vaccination:list", {
+    guardianUserIds: user.role === "GUARDIAN" ? [user.id] : undefined,
+  });
+  const requestedCenterId = options.filters?.healthCenterId;
+  if (
+    user.role !== "ADMIN" &&
+    user.role !== "GUARDIAN" &&
+    requestedCenterId &&
+    requestedCenterId !== user.healthCenterId
+  ) {
+    throw new ApplicationError("FORBIDDEN");
+  }
+
+  const evaluationDate = getVaccinationEvaluationDate(
+    options.currentInstant ?? new Date(),
+  );
+  const version = await getApplicableVersion(evaluationDate);
+  const schedules = await getPrisma().vaccineSchedule.findMany({
+    where: { scheduleVersionId: version.id, isActive: true },
+    include: { vaccine: true },
+    orderBy: [
+      { recommendedAgeMonths: "asc" },
+      { recommendedAgeDays: "asc" },
+      { vaccine: { name: "asc" } },
+    ],
+  });
+  const scheduleInputs = schedules.map(scheduleEvaluationInput);
+  const applicableVersion = versionApplicability(version);
+  const pageSize = Math.min(Math.max(options.pageSize ?? 250, 1), 500);
+  let cursor: string | undefined;
+  let pages = 0;
+  let childrenEvaluated = 0;
+
+  while (true) {
+    const children = await getPrisma().child.findMany({
+      where: {
+        isActive: true,
+        communityId: options.filters?.communityId,
+        sex: options.filters?.sex,
+        dateOfBirth: options.filters?.dateOfBirth,
+        community: {
+          healthCenterId:
+            user.role === "ADMIN" || user.role === "GUARDIAN"
+              ? requestedCenterId
+              : (user.healthCenterId ?? ""),
+        },
+        childGuardians:
+          user.role === "GUARDIAN"
+            ? { some: { guardian: { userId: user.id, isActive: true } } }
+            : undefined,
+      },
+      select: {
+        id: true,
+        fullName: true,
+        dateOfBirth: true,
+        sex: true,
+        community: {
+          select: {
+            id: true,
+            name: true,
+            healthCenter: { select: { name: true } },
+          },
+        },
+      },
+      orderBy: { id: "asc" },
+      cursor: cursor ? { id: cursor } : undefined,
+      skip: cursor ? 1 : undefined,
+      take: pageSize,
+    });
+    if (!children.length) break;
+    pages += 1;
+
+    const vaccinations = await getPrisma().vaccination.findMany({
+      where: {
+        childId: { in: children.map(({ id }) => id) },
+        vaccineSchedule: { scheduleVersionId: version.id },
+      },
+      select: {
+        id: true,
+        childId: true,
+        vaccineScheduleId: true,
+        applicationDate: true,
+      },
+    });
+    const vaccinationsByChild = new Map<
+      string,
+      { id: string; vaccineScheduleId: string; applicationDate: string }[]
+    >();
+    for (const vaccination of vaccinations) {
+      const existing = vaccinationsByChild.get(vaccination.childId) ?? [];
+      existing.push({
+        id: vaccination.id,
+        vaccineScheduleId: vaccination.vaccineScheduleId,
+        applicationDate: dateOnly(vaccination.applicationDate),
+      });
+      vaccinationsByChild.set(vaccination.childId, existing);
+    }
+
+    for (const child of children) {
+      await visit({
+        child,
+        version,
+        evaluationDate,
+        doses: evaluateVaccinationScheduleForChild({
+          dateOfBirth: dateOnly(child.dateOfBirth),
+          evaluationDate,
+          version: applicableVersion,
+          schedules: scheduleInputs,
+          vaccinations: vaccinationsByChild.get(child.id) ?? [],
+        }),
+      });
+      childrenEvaluated += 1;
+    }
+    cursor = children.at(-1)?.id;
+    if (children.length < pageSize) break;
+  }
+
+  return {
+    versionCode: version.code,
+    evaluationDate,
+    pages,
+    childrenEvaluated,
+    doses: scheduleInputs.flatMap((schedule) =>
+      schedule.doseCode
+        ? [
+            {
+              doseCode: schedule.doseCode,
+              label: `${schedule.vaccineName} — ${schedule.doseName ?? `Dosis ${schedule.doseNumber}`}`,
+            },
+          ]
+        : [],
+    ),
+  };
+}
+
 export async function createVaccination(
   user: ApplicationUser,
   input: unknown,

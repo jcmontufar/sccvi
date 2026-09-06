@@ -701,6 +701,21 @@ Possible metrics:
 
 Dashboard queries must respect authorization.
 
+The analytical dashboard is implemented as a dedicated `analytics` module. Its
+server-side read service validates filters with Zod, applies the central report
+authorization policy and builds one scoped child population for aggregated
+queries. Vaccination evaluation reuses the central MSPAS evaluator and walks
+the authorized population in sequential pages of at most 250 children; the
+schedule version is loaded once and vaccination applications are bulk-loaded
+once per page. This avoids per-child queries, the report limit of 1,000 rows and
+unbounded database concurrency.
+
+The analytics presentation receives structured indicators and does not parse
+display strings. Percentile counts retain separate evaluation and unique-child
+figures. Per-dose coverage retains applied/elegible counts and represents an
+empty denominator as N/A. No analytics table, materialized view or composite
+risk score is part of the MVP.
+
 ---
 
 ## 23. Reports Architecture
