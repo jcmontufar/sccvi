@@ -21,7 +21,9 @@ test("staging critical reads are reachable without domain mutations", async ({
     .fill(process.env.STAGING_SMOKE_USER_PASSWORD!);
   await page.getByRole("button", { name: "Iniciar sesión" }).click();
   await expect(page).toHaveURL(/\/app$/);
-  await expect(page.getByText("Área protegida")).toBeVisible();
+  await expect(
+    page.getByRole("region", { name: "Resumen operativo" }),
+  ).toBeVisible();
 
   const reads = [
     ["/app/centros-de-salud", "Centros de salud"],
