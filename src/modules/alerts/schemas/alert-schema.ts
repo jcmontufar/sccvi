@@ -15,4 +15,7 @@ export const alertInputSchema = z.object({
 export const alertSearchSchema = z.object({
   status: z.enum(["OPEN", "REVIEWED", "RESOLVED", "ALL"]).default("OPEN"),
   severity: z.enum(["PREVENTIVE", "CRITICAL", "ALL"]).default("ALL"),
+  type: z
+    .enum(["GROWTH", "VACCINATION", "MISSED_FOLLOW_UP", "ALL"])
+    .default("ALL"),
 });
