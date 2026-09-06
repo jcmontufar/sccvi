@@ -207,15 +207,12 @@ export default async function ChildVaccinationPage({
         ) : null}
       </article>
 
-      <section aria-labelledby="vaccination-timeline-title">
+      <section>
         <div className="mb-4">
           <p className="text-sm font-medium text-sky-700">
             Esquema cronológico
           </p>
-          <h2
-            className="text-2xl font-semibold tracking-tight"
-            id="vaccination-timeline-title"
-          >
+          <h2 className="text-2xl font-semibold tracking-tight">
             Dosis por edad o etapa
           </h2>
         </div>
