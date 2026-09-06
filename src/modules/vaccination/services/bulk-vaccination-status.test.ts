@@ -15,6 +15,7 @@ vi.mock("@/lib/prisma", () => ({ getPrisma: () => prisma }));
 
 let listAuthorizedChildrenVaccinationStatuses: typeof import("@/modules/vaccination/services/vaccination-service").listAuthorizedChildrenVaccinationStatuses;
 let listActiveVaccinationScheduleDoses: typeof import("@/modules/vaccination/services/vaccination-service").listActiveVaccinationScheduleDoses;
+let iterateAuthorizedChildrenVaccinationStatuses: typeof import("@/modules/vaccination/services/vaccination-service").iterateAuthorizedChildrenVaccinationStatuses;
 
 const staff: ApplicationUser = {
   id: "staff-a",
@@ -58,6 +59,8 @@ beforeAll(async () => {
   ({ listAuthorizedChildrenVaccinationStatuses } =
     await import("@/modules/vaccination/services/vaccination-service"));
   ({ listActiveVaccinationScheduleDoses } =
+    await import("@/modules/vaccination/services/vaccination-service"));
+  ({ iterateAuthorizedChildrenVaccinationStatuses } =
     await import("@/modules/vaccination/services/vaccination-service"));
 });
 
@@ -169,5 +172,68 @@ describe("bulk vaccination status query", () => {
         }),
       }),
     );
+  });
+
+  it("evaluates the full population in bounded pages without reloading the schedule", async () => {
+    const children = ["child-a", "child-b", "child-c"].map((id) => ({
+      id,
+      fullName: id,
+      dateOfBirth: new Date("2025-12-01T00:00:00Z"),
+      sex: "FEMALE" as const,
+      community: {
+        id: "community-a",
+        name: "Comunidad A",
+        healthCenter: { name: "Centro A" },
+      },
+    }));
+    prisma.child.findMany
+      .mockResolvedValueOnce(children.slice(0, 2))
+      .mockResolvedValueOnce(children.slice(2));
+    const visited: string[] = [];
+
+    const result = await iterateAuthorizedChildrenVaccinationStatuses(
+      staff,
+      {
+        currentInstant: new Date("2026-08-27T12:00:00Z"),
+        pageSize: 2,
+        filters: { communityId: "community-a", sex: "FEMALE" },
+      },
+      ({ child, doses }) => {
+        visited.push(child.id);
+        expect(doses[0]?.status).toBe("OVERDUE");
+      },
+    );
+
+    expect(visited).toEqual(["child-a", "child-b", "child-c"]);
+    expect(result).toMatchObject({ pages: 2, childrenEvaluated: 3 });
+    expect(prisma.vaccineScheduleVersion.findFirst).toHaveBeenCalledTimes(1);
+    expect(prisma.vaccineSchedule.findMany).toHaveBeenCalledTimes(1);
+    expect(prisma.child.findMany).toHaveBeenCalledTimes(2);
+    expect(prisma.vaccination.findMany).toHaveBeenCalledTimes(2);
+    expect(prisma.child.findMany).toHaveBeenNthCalledWith(
+      1,
+      expect.objectContaining({
+        take: 2,
+        where: expect.objectContaining({
+          communityId: "community-a",
+          sex: "FEMALE",
+        }),
+      }),
+    );
+    expect(prisma.child.findMany).toHaveBeenNthCalledWith(
+      2,
+      expect.objectContaining({ cursor: { id: "child-b" }, skip: 1 }),
+    );
+  });
+
+  it("rejects a cross-center population filter before reading clinical data", async () => {
+    await expect(
+      iterateAuthorizedChildrenVaccinationStatuses(
+        staff,
+        { filters: { healthCenterId: "center-b" } },
+        vi.fn(),
+      ),
+    ).rejects.toMatchObject({ code: "FORBIDDEN" });
+    expect(prisma.vaccineScheduleVersion.findFirst).not.toHaveBeenCalled();
   });
 });

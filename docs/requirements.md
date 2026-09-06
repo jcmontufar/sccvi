@@ -476,6 +476,18 @@ Possible indicators include:
 
 Dashboard information must respect user authorization.
 
+The analytical dashboard provides an authorized operational read model with
+global period, cutoff-date, health-center, community, age and sex filters. It
+may show factual activity trends, per-community operational counts, current
+per-dose vaccination coverage, preventive weight-for-age percentile counts and
+oldest pending follow-up work. Coverage remains scoped to one dose and one
+community denominator; a zero denominator is displayed as N/A.
+
+Analytical indicators must distinguish records from unique children, must not
+introduce composite risk scores or diagnostic conclusions, and must not treat
+historical coverage or historical overdue status as available when those
+point-in-time methods have not been approved.
+
 ---
 
 ## 24. Reports

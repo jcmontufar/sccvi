@@ -30,7 +30,10 @@ export function getNavigation(role: ApplicationRole): NavigationItem[] {
   }
 
   if (role !== "GUARDIAN") {
-    items.push({ href: "/app/reportes", label: "Reportes" });
+    items.push(
+      { href: "/app/analitica", label: "Analítica" },
+      { href: "/app/reportes", label: "Reportes" },
+    );
   }
 
   return items;
