@@ -239,3 +239,7 @@ export function evaluateVaccinationScheduleForChild(input: {
       : [];
   });
 }
+
+export type EvaluatedVaccinationDose = ReturnType<
+  typeof evaluateVaccinationScheduleForChild
+>[number];
