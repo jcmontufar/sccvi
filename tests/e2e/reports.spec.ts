@@ -6,13 +6,36 @@ test.beforeEach(async ({ page }) => {
   await login(page);
 });
 
+test("organiza el centro de reportes y conserva tabla y exportaciones", async ({
+  page,
+}) => {
+  await page.goto("/app/reportes");
+  await expect(
+    page.getByRole("heading", { name: "Centro de reportes" }),
+  ).toBeVisible();
+  const reportSelector = page.getByLabel("Reporte");
+  await expect(reportSelector.getByRole("option")).toHaveCount(9);
+  await expect(
+    page.getByText("En el resultado generado").first(),
+  ).toBeVisible();
+  await expect(page.getByRole("link", { name: "Exportar PDF" })).toBeVisible();
+  await expect(
+    page.getByRole("link", { name: "Exportar Excel" }),
+  ).toBeVisible();
+  await expect(
+    page.getByRole("heading", { name: "Detalle del resultado" }),
+  ).toBeVisible();
+});
+
 test("cobertura carga sin dosis y ofrece el esquema activo", async ({
   page,
 }) => {
   await page.goto(
     "/app/reportes?type=vaccination-coverage&doseCode=&from=&to=",
   );
-  await expect(page.getByRole("heading", { name: "Reportes" })).toBeVisible();
+  await expect(
+    page.getByRole("heading", { name: "Centro de reportes" }),
+  ).toBeVisible();
   await expect(
     page.getByText(/Selecciona una dosis del esquema vigente/i),
   ).toBeVisible();
@@ -40,5 +63,7 @@ test("dosis inválida es segura y el filtro no aparece en otros reportes", async
   ).toBeVisible();
   await page.goto("/app/reportes?type=low-weight&from=&to=");
   await expect(page.getByLabel("Dosis del esquema vigente")).toHaveCount(0);
-  await expect(page.getByRole("heading", { name: "Reportes" })).toBeVisible();
+  await expect(
+    page.getByRole("heading", { name: "Centro de reportes" }),
+  ).toBeVisible();
 });
