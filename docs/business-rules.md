@@ -301,6 +301,14 @@ Alerts may originate from:
 
 Alert-generation rules must be centralized.
 
+The internal overdue-alert job evaluates incomplete growth follow-ups whose
+`dueDate` is before the current `America/Guatemala` business date and only
+vaccination doses returned as `OVERDUE` by the central MSPAS evaluator. It does
+not create alerts for `PENDING`, `APPLIED` or inapplicable historical doses,
+does not reopen resolved alerts, and does not introduce a grace period. The
+same deterministic source identity and notification uniqueness constraints
+apply to manual and scheduled executions.
+
 ---
 
 ## BR-027 — Alert Severity

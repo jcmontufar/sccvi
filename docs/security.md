@@ -110,6 +110,15 @@ explicitly associated children and cannot review or resolve them. Operational ro
 their assigned-center scope. The conservative lifecycle is `OPEN` → `REVIEWED` → `RESOLVED`;
 skipped or reverse transitions are rejected, and resolution creates an audit record.
 
+The scheduled overdue-alert route is an internal server endpoint protected by a
+dedicated random `CRON_SECRET` of at least 16 characters. Authentication uses an
+exact constant-time bearer comparison and fails closed when configuration is
+missing. The secret is never exposed through client code, query parameters or
+logs. The route accepts no caller-supplied center or evaluation date and returns
+only aggregate counts and fixed safe error codes. Its private system principal
+is constructed server-side and is limited to the two approved overdue-alert
+generators; it does not alter the authorization model used by human sessions.
+
 Campaigns are restricted to `ADMIN` and `CENTER_MANAGER`. Center managers can create and
 read campaigns only inside their assigned center. Recipient previews use active guardians
 with email addresses and active associated children, segmented only by authorized community
