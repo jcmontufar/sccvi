@@ -358,6 +358,12 @@ The system must support alerts for:
 
 Alert rules must be centralized and testable.
 
+The deployed application must be able to evaluate incomplete growth follow-ups
+and schedule-derived `OVERDUE` vaccination doses without a human opening the
+alerts screen. The scheduled operation must use the Guatemala business date,
+must not create alerts for `PENDING` or non-applicable doses, and must preserve
+the existing notification policy and idempotency guarantees.
+
 ---
 
 ## 19. Alert Management

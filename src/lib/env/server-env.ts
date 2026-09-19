@@ -18,6 +18,7 @@ export const serverEnvironmentSchema = z.object({
   EMAIL_API_KEY: optionalString,
   EMAIL_FROM: optionalString,
   QR_SECRET: optionalString,
+  CRON_SECRET: optionalString,
 });
 
 export type ServerEnvironment = z.infer<typeof serverEnvironmentSchema>;
@@ -32,6 +33,7 @@ export function getServerEnvironment(): ServerEnvironment {
     EMAIL_API_KEY: process.env.EMAIL_API_KEY,
     EMAIL_FROM: process.env.EMAIL_FROM,
     QR_SECRET: process.env.QR_SECRET,
+    CRON_SECRET: process.env.CRON_SECRET,
   });
 
   if (!result.success) {

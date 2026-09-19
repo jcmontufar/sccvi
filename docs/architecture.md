@@ -569,6 +569,34 @@ REVIEWED
 ↓
 RESOLVED
 
+### Scheduled overdue-alert evaluation
+
+Vercel Cron invokes `GET /api/internal/alerts/overdue` once daily at `12:00`
+UTC (approximately `06:00` in Guatemala). The route requires the server-only
+`CRON_SECRET` bearer credential and accepts no external center, date or rule
+parameters. It runs with a private system principal that has global operational
+scope; normal browser operations retain their existing user and center checks.
+
+Both alert sources are processed sequentially to limit database pressure.
+Growth follow-ups use bounded cursor pages. Vaccination evaluation reuses the
+central paginated population iterator, loads the applicable MSPAS schedule once
+per run, and batches alert persistence and email work. Alert and notification
+unique constraints plus provider idempotency keys make repeated or duplicate
+cron invocations safe. A failure in one generator is represented by a fixed,
+non-sensitive error code and does not prevent the other generator from running.
+
+The daily schedule is compatible with Vercel Hobby's once-per-day minimum and
+hour-level precision as documented on 2026-09-19 in the official
+[Cron usage and pricing](https://vercel.com/docs/cron-jobs/usage-and-pricing)
+and [Cron management](https://vercel.com/docs/cron-jobs/manage-cron-jobs)
+documentation. Vercel schedules are UTC and apply to a project's production
+deployment. For SCCVI staging, the isolated `sccvi-staging` project uses its
+production deployment target as the stable staging environment; `CRON_SECRET`
+must be configured only in that project's runtime before a reviewed deployment.
+Production enablement later requires its own independently generated secret and
+a separately approved production deployment. This change does not deploy or
+configure either environment.
+
 ---
 
 ## 19. Notification Architecture
