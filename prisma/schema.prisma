@@ -88,25 +88,26 @@ model HealthCenter {
 }
 
 model User {
-  id                       String           @id @default(uuid()) @db.Uuid
-  authUserId               String           @unique @db.Uuid
-  healthCenterId           String?          @db.Uuid
-  fullName                 String
-  email                    String
-  role                     UserRole
-  isActive                 Boolean          @default(true)
-  createdAt                DateTime         @default(now()) @db.Timestamptz(3)
-  updatedAt                DateTime         @updatedAt @db.Timestamptz(3)
-  healthCenter             HealthCenter?    @relation(fields: [healthCenterId], references: [id], onDelete: Restrict)
-  guardian                 Guardian?
-  growthRecordsMeasured    GrowthRecord[]   @relation("GrowthRecordMeasuredBy")
-  growthFollowUpsScheduled GrowthFollowUp[] @relation("GrowthFollowUpScheduledBy")
-  vaccinationsAdministered Vaccination[]    @relation("VaccinationAdministeredBy")
-  alertsReviewed           Alert[]          @relation("AlertReviewedBy")
-  alertsResolved           Alert[]          @relation("AlertResolvedBy")
-  campaignsCreated         Campaign[]       @relation("CampaignCreatedBy")
-  qrTokensCreated          QRToken[]        @relation("QRTokenCreatedBy")
-  auditLogs                AuditLog[]
+  id                        String              @id @default(uuid()) @db.Uuid
+  authUserId                String              @unique @db.Uuid
+  healthCenterId            String?             @db.Uuid
+  fullName                  String
+  email                     String
+  role                      UserRole
+  isActive                  Boolean             @default(true)
+  createdAt                 DateTime            @default(now()) @db.Timestamptz(3)
+  updatedAt                 DateTime            @updatedAt @db.Timestamptz(3)
+  healthCenter              HealthCenter?       @relation(fields: [healthCenterId], references: [id], onDelete: Restrict)
+  guardian                  Guardian?
+  growthRecordsMeasured     GrowthRecord[]      @relation("GrowthRecordMeasuredBy")
+  growthFollowUpsScheduled  GrowthFollowUp[]    @relation("GrowthFollowUpScheduledBy")
+  vaccinationsAdministered  Vaccination[]       @relation("VaccinationAdministeredBy")
+  alertsReviewed            Alert[]             @relation("AlertReviewedBy")
+  alertsResolved            Alert[]             @relation("AlertResolvedBy")
+  campaignsCreated          Campaign[]          @relation("CampaignCreatedBy")
+  qrTokensCreated           QRToken[]           @relation("QRTokenCreatedBy")
+  telegramLinkTokensCreated TelegramLinkToken[] @relation("TelegramLinkTokenCreatedBy")
+  auditLogs                 AuditLog[]
 
   @@index([healthCenterId])
   @@index([role])
@@ -130,22 +131,24 @@ model Community {
 }
 
 model Guardian {
-  id                           String               @id @default(uuid()) @db.Uuid
-  communityId                  String               @db.Uuid
-  userId                       String?              @unique @db.Uuid
+  id                           String                      @id @default(uuid()) @db.Uuid
+  communityId                  String                      @db.Uuid
+  userId                       String?                     @unique @db.Uuid
   fullName                     String
   identification               String?
   phone                        String?
   email                        String?
   preferredNotificationChannel NotificationChannel?
-  isActive                     Boolean              @default(true)
-  createdAt                    DateTime             @default(now()) @db.Timestamptz(3)
-  updatedAt                    DateTime             @updatedAt @db.Timestamptz(3)
-  community                    Community            @relation(fields: [communityId], references: [id], onDelete: Restrict)
-  user                         User?                @relation(fields: [userId], references: [id], onDelete: SetNull)
+  isActive                     Boolean                     @default(true)
+  createdAt                    DateTime                    @default(now()) @db.Timestamptz(3)
+  updatedAt                    DateTime                    @updatedAt @db.Timestamptz(3)
+  community                    Community                   @relation(fields: [communityId], references: [id], onDelete: Restrict)
+  user                         User?                       @relation(fields: [userId], references: [id], onDelete: SetNull)
   childGuardians               ChildGuardian[]
   notifications                Notification[]
   campaignRecipients           CampaignRecipient[]
+  telegramConnection           GuardianTelegramConnection?
+  telegramLinkTokens           TelegramLinkToken[]
 
   @@index([communityId])
 }
@@ -388,6 +391,7 @@ model Notification {
   providerMessageId   String?
   errorMessage        String?             @db.Text
   sentAt              DateTime?           @db.Timestamptz(3)
+  deliveryClaimedAt   DateTime?           @db.Timestamptz(3)
   createdAt           DateTime            @default(now()) @db.Timestamptz(3)
   updatedAt           DateTime            @updatedAt @db.Timestamptz(3)
   guardian            Guardian?           @relation(fields: [guardianId], references: [id], onDelete: SetNull)
@@ -395,11 +399,41 @@ model Notification {
   campaignRecipient   CampaignRecipient?  @relation(fields: [campaignRecipientId], references: [id], onDelete: SetNull)
 
   @@unique([alertId, guardianId, channel])
+  @@unique([alertId, guardianId])
   @@unique([campaignRecipientId, channel])
   @@index([guardianId])
   @@index([alertId])
   @@index([campaignRecipientId])
   @@index([status])
+  @@index([providerMessageId])
+}
+
+model GuardianTelegramConnection {
+  id          String    @id @default(uuid()) @db.Uuid
+  guardianId  String    @unique @db.Uuid
+  chatId      String?   @unique
+  linkedAt    DateTime? @db.Timestamptz(3)
+  consentedAt DateTime? @db.Timestamptz(3)
+  revokedAt   DateTime? @db.Timestamptz(3)
+  createdAt   DateTime  @default(now()) @db.Timestamptz(3)
+  updatedAt   DateTime  @updatedAt @db.Timestamptz(3)
+  guardian    Guardian  @relation(fields: [guardianId], references: [id], onDelete: Restrict)
+}
+
+model TelegramLinkToken {
+  id              String    @id @default(uuid()) @db.Uuid
+  guardianId      String    @db.Uuid
+  createdByUserId String    @db.Uuid
+  tokenHash       String    @unique
+  expiresAt       DateTime  @db.Timestamptz(3)
+  consumedAt      DateTime? @db.Timestamptz(3)
+  revokedAt       DateTime? @db.Timestamptz(3)
+  createdAt       DateTime  @default(now()) @db.Timestamptz(3)
+  guardian        Guardian  @relation(fields: [guardianId], references: [id], onDelete: Restrict)
+  createdBy       User      @relation("TelegramLinkTokenCreatedBy", fields: [createdByUserId], references: [id], onDelete: Restrict)
+
+  @@index([guardianId, createdAt])
+  @@index([expiresAt])
 }
 
 model Campaign {

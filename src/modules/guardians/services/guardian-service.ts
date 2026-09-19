@@ -37,6 +37,13 @@ const guardianSelect = {
     },
     orderBy: { child: { fullName: "asc" as const } },
   },
+  telegramConnection: {
+    select: {
+      linkedAt: true,
+      consentedAt: true,
+      revokedAt: true,
+    },
+  },
 } as const;
 
 async function authorizeCommunity(

@@ -154,10 +154,18 @@ policy is documented.
 
 ## Notification Provider Boundary
 
-The notification service defines a provider-independent email contract and persists
-`PENDING`, `SENT`, and `FAILED` states. Resend is the approved initial adapter. Only an
-adapter-confirmed success can become `SENT`; missing configuration or provider failure becomes
-`FAILED` with a safe message. API keys remain server-only environment values. Operational alert
-email applies to missed growth follow-up and schedule-derived overdue vaccination alerts,
-respects explicit guardian `EMAIL` preference, and is deduplicated by alert, guardian and
-channel. Campaign creation still does not claim message delivery.
+The notification dispatcher supports Resend email and Telegram Bot API through
+a channel-checked provider registry. A `PENDING` notification must acquire its
+persisted `deliveryClaimedAt` atomically before provider I/O, preventing two
+workers from delivering it concurrently. Missing configuration or provider
+failure becomes `FAILED` with a safe message. Alerts and campaigns respect
+exactly one explicit guardian channel and remain deduplicated by their existing
+database constraints.
+
+Telegram link tokens contain 256 random bits, are persisted only as SHA-256,
+expire after 15 minutes, are single-use and revoke an earlier active token.
+Only the authenticated Telegram webhook may bind the webhook-provided private
+chat ID. SCCVI stores no Telegram username, name, telephone number or photo.
+Authorized center staff may create a link or revoke it; `/stop` revokes from the
+linked chat. Link generation is limited to three requests per guardian per
+hour. Provider credentials and both webhook secrets remain server-only.

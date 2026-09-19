@@ -23,7 +23,7 @@ export const guardianInputSchema = z.object({
     .union([z.literal(""), z.email("Ingresa un correo electrónico válido.")])
     .transform((value) => value || null),
   preferredNotificationChannel: z
-    .union([z.literal(""), z.enum(["EMAIL", "TELEGRAM", "WHATSAPP"])])
+    .union([z.literal(""), z.enum(["EMAIL", "TELEGRAM"])])
     .transform((value) => value || null),
 });
 

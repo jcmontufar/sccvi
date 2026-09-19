@@ -6,13 +6,36 @@ import { authorize } from "@/modules/auth/authorization";
 import type { ApplicationUser } from "@/modules/auth/types";
 import {
   deliveryResultToUpdate,
+  type DeliverableNotificationChannel,
   type NotificationMessage,
-  type NotificationProvider,
 } from "@/modules/notifications/services/notification-delivery";
+import {
+  asProviderRegistry,
+  createNotificationProviderRegistry,
+  type NotificationProviderSource,
+} from "@/modules/notifications/services/provider-registry";
 
-export async function queueEmailNotification(
+type PendingNotification = {
+  id: string;
+  channel: string;
+  destination: string;
+  subject: string | null;
+  message: string;
+  status: string;
+  deliveryClaimedAt: Date | null;
+};
+
+function deliverableChannel(channel: string): DeliverableNotificationChannel {
+  if (channel !== "EMAIL" && channel !== "TELEGRAM") {
+    throw new ApplicationError("VALIDATION_ERROR");
+  }
+  return channel;
+}
+
+export async function queueNotification(
   user: ApplicationUser,
   message: NotificationMessage & {
+    channel: DeliverableNotificationChannel;
     guardianId?: string;
     alertId?: string;
     campaignRecipientId?: string;
@@ -27,16 +50,68 @@ export async function queueEmailNotification(
       guardianId: message.guardianId,
       alertId: message.alertId,
       campaignRecipientId: message.campaignRecipientId,
-      channel: "EMAIL",
+      channel: message.channel,
       status: "PENDING",
     },
+  });
+}
+
+export async function queueEmailNotification(
+  user: ApplicationUser,
+  message: NotificationMessage & {
+    guardianId?: string;
+    alertId?: string;
+    campaignRecipientId?: string;
+  },
+) {
+  return queueNotification(user, { ...message, channel: "EMAIL" });
+}
+
+export async function dispatchPendingNotification(
+  notification: PendingNotification,
+  providerSource: NotificationProviderSource = createNotificationProviderRegistry(),
+) {
+  const registry = asProviderRegistry(providerSource);
+  if (notification.status !== "PENDING" || notification.deliveryClaimedAt) {
+    return getPrisma().notification.findUniqueOrThrow({
+      where: { id: notification.id },
+    });
+  }
+  const channel = deliverableChannel(notification.channel);
+  const provider = registry.get(channel);
+  if (provider.channel !== channel) {
+    throw new Error("NOTIFICATION_PROVIDER_CHANNEL_MISMATCH");
+  }
+  const claimedAt = new Date();
+  const claim = await getPrisma().notification.updateMany({
+    where: {
+      id: notification.id,
+      status: "PENDING",
+      deliveryClaimedAt: null,
+    },
+    data: { deliveryClaimedAt: claimedAt },
+  });
+  if (claim.count !== 1) {
+    return getPrisma().notification.findUniqueOrThrow({
+      where: { id: notification.id },
+    });
+  }
+  const result = await provider.deliver({
+    destination: notification.destination,
+    subject: notification.subject ?? undefined,
+    message: notification.message,
+    idempotencyKey: `notification/${notification.id}`,
+  });
+  return getPrisma().notification.update({
+    where: { id: notification.id },
+    data: deliveryResultToUpdate(result),
   });
 }
 
 export async function deliverQueuedNotification(
   user: ApplicationUser,
   notificationId: string,
-  provider: NotificationProvider,
+  providerSource: NotificationProviderSource = createNotificationProviderRegistry(),
 ) {
   authorize(user, "notification:create");
   const notification = await getPrisma().notification.findUniqueOrThrow({
@@ -66,17 +141,5 @@ export async function deliverQueuedNotification(
     notification.alert?.child.community.healthCenterId ??
     notification.campaignRecipient?.campaign.createdBy.healthCenterId;
   authorize(user, "notification:create", { healthCenterId });
-  if (notification.status !== "PENDING") {
-    throw new ApplicationError("VALIDATION_ERROR");
-  }
-  const result = await provider.deliver({
-    destination: notification.destination,
-    subject: notification.subject ?? undefined,
-    message: notification.message,
-    idempotencyKey: `notification/${notification.id}`,
-  });
-  return getPrisma().notification.update({
-    where: { id: notification.id },
-    data: deliveryResultToUpdate(result),
-  });
+  return dispatchPendingNotification(notification, providerSource);
 }

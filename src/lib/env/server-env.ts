@@ -17,6 +17,10 @@ export const serverEnvironmentSchema = z.object({
   EMAIL_PROVIDER: optionalString,
   EMAIL_API_KEY: optionalString,
   EMAIL_FROM: optionalString,
+  RESEND_WEBHOOK_SECRET: optionalString,
+  TELEGRAM_BOT_TOKEN: optionalString,
+  TELEGRAM_BOT_USERNAME: optionalString,
+  TELEGRAM_WEBHOOK_SECRET: optionalString,
   QR_SECRET: optionalString,
   CRON_SECRET: optionalString,
 });
@@ -32,6 +36,10 @@ export function getServerEnvironment(): ServerEnvironment {
     EMAIL_PROVIDER: process.env.EMAIL_PROVIDER,
     EMAIL_API_KEY: process.env.EMAIL_API_KEY,
     EMAIL_FROM: process.env.EMAIL_FROM,
+    RESEND_WEBHOOK_SECRET: process.env.RESEND_WEBHOOK_SECRET,
+    TELEGRAM_BOT_TOKEN: process.env.TELEGRAM_BOT_TOKEN,
+    TELEGRAM_BOT_USERNAME: process.env.TELEGRAM_BOT_USERNAME,
+    TELEGRAM_WEBHOOK_SECRET: process.env.TELEGRAM_WEBHOOK_SECRET,
     QR_SECRET: process.env.QR_SECRET,
     CRON_SECRET: process.env.CRON_SECRET,
   });

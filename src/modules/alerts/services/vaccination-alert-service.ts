@@ -14,7 +14,7 @@ import {
   getVaccinationAlertIdentity,
   shouldCreateVaccinationAlert,
 } from "@/modules/alerts/services/vaccination-alert-rule";
-import type { NotificationProvider } from "@/modules/notifications/services/notification-delivery";
+import type { NotificationProviderRegistry } from "@/modules/notifications/services/notification-delivery";
 import { iterateAuthorizedChildrenVaccinationStatuses } from "@/modules/vaccination/services/vaccination-service";
 
 export async function generateVaccinationAlerts(
@@ -23,7 +23,7 @@ export async function generateVaccinationAlerts(
   options: {
     pageSize?: number;
     alertBatchSize?: number;
-    provider?: NotificationProvider;
+    providerRegistry?: NotificationProviderRegistry;
   } = {},
 ) {
   authorize(user, "alert:review");
@@ -39,7 +39,7 @@ export async function generateVaccinationAlerts(
     const batch = await persistOperationalAlertCandidates(
       user,
       candidates,
-      options.provider,
+      options.providerRegistry,
     );
     addAlertBatchToSummary(summary, batch);
     candidates = [];

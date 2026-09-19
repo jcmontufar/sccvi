@@ -152,6 +152,9 @@ follow-ups do not alert. One alert is allowed per follow-up source.
 
 ## Email provider decision
 
+The provider-independent delivery boundary remains valid. Multichannel
+dispatch, Resend callbacks and Telegram are specified by ADR-008.
+
 Resend is the approved initial email provider. Its adapter remains behind the
 provider-independent notification service. Configuration uses:
 

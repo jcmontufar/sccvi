@@ -11,6 +11,10 @@ import {
   setGuardianActive,
   updateGuardian,
 } from "@/modules/guardians/services/guardian-service";
+import {
+  createTelegramLink,
+  unlinkGuardianTelegram,
+} from "@/modules/notifications/services/telegram-link-service";
 
 export type GuardianFormState = { error?: string };
 
@@ -54,6 +58,7 @@ export async function updateGuardianAction(
   _state: GuardianFormState,
   formData: FormData,
 ) {
+  void _state;
   try {
     const user = await requireApplicationUser();
     await updateGuardian(user, id, inputFrom(formData));
@@ -69,6 +74,37 @@ export async function setGuardianActiveAction(id: string, isActive: boolean) {
     const user = await requireApplicationUser();
     await setGuardianActive(user, id, isActive);
     revalidatePath("/app/tutores");
+    return {};
+  } catch (error) {
+    return { error: getSafeErrorMessage(error) };
+  }
+}
+
+export type TelegramLinkState = {
+  error?: string;
+  url?: string;
+  expiresAt?: string;
+};
+
+export async function createTelegramLinkAction(
+  id: string,
+  _state: TelegramLinkState,
+) {
+  void _state;
+  try {
+    const user = await requireApplicationUser();
+    const link = await createTelegramLink(user, id);
+    return { url: link.url, expiresAt: link.expiresAt.toISOString() };
+  } catch (error) {
+    return { error: getSafeErrorMessage(error) };
+  }
+}
+
+export async function unlinkGuardianTelegramAction(id: string) {
+  try {
+    const user = await requireApplicationUser();
+    await unlinkGuardianTelegram(user, id);
+    revalidatePath(`/app/tutores/${id}`);
     return {};
   } catch (error) {
     return { error: getSafeErrorMessage(error) };

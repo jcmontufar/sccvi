@@ -10,7 +10,7 @@ const mocks = vi.hoisted(() => ({
 const { prisma, sendEmails } = mocks;
 vi.mock("@/lib/prisma", () => ({ getPrisma: () => mocks.prisma }));
 vi.mock("@/modules/notifications/services/alert-email-service", () => ({
-  sendOperationalAlertEmailsForAlerts: mocks.sendEmails,
+  sendOperationalAlertNotificationsForAlerts: mocks.sendEmails,
 }));
 
 import { persistOperationalAlertCandidates } from "@/modules/alerts/services/operational-alert-batch";

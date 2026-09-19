@@ -3,7 +3,7 @@
 Sistema de Control de Crecimiento y Vacunación Infantil (SCCVI) is a responsive
 web application for municipal health centers in Guatemala. It manages
 communities, guardians, children, factual growth and vaccination history,
-preventive alerts, email notifications, QR digital cards, campaigns,
+preventive alerts, email and Telegram notifications, QR digital cards, campaigns,
 dashboards, reports and audit records.
 
 SCCVI is monitoring and decision-support software. It does not provide medical
@@ -16,7 +16,7 @@ diagnoses, invent growth thresholds or alter authoritative vaccination data.
 - PostgreSQL on Supabase, Prisma ORM and Supabase Auth
 - Zod validation
 - Vitest and Playwright
-- Resend behind a provider-independent email service
+- Resend and Telegram Bot API behind a provider-independent dispatcher
 - OpenAPI for implemented REST report exports
 
 The application is a modular monolith with presentation, application, domain
@@ -44,7 +44,10 @@ Configure development values only in `.env.local`:
 - `DATABASE_URL` and `DIRECT_URL`
 - `NEXT_PUBLIC_SUPABASE_URL` and `NEXT_PUBLIC_SUPABASE_ANON_KEY`
 - `SUPABASE_SERVICE_ROLE_KEY` when an explicitly server-only workflow needs it
-- `EMAIL_PROVIDER`, `EMAIL_API_KEY` and `EMAIL_FROM` for email delivery
+- `EMAIL_PROVIDER`, `EMAIL_API_KEY`, `EMAIL_FROM` and
+  `RESEND_WEBHOOK_SECRET` for Resend delivery and status callbacks
+- `TELEGRAM_BOT_TOKEN`, `TELEGRAM_BOT_USERNAME` and
+  `TELEGRAM_WEBHOOK_SECRET` for the Telegram Bot API
 - `QR_SECRET` when required by the configured QR boundary
 
 Use the placeholders in `.env.example`; never copy real credentials into source

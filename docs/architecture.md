@@ -612,16 +612,17 @@ NotificationService
 ↓
 Notification Provider
 
-Initial provider type:
+`NotificationDispatcher` atomically claims each pending notification and asks a
+`ProviderRegistry` for the provider matching the persisted channel. The
+implemented providers are Email through Resend and Telegram through the
+Telegram Bot API. One guardian preference resolves to exactly one eligible
+channel; there is no implicit fallback or dual delivery. WhatsApp remains
+unimplemented.
 
-Email through the Resend adapter selected in ADR-005
-
-Future optional provider types:
-
-Telegram
-WhatsApp
-
-The notification service must record delivery state appropriately.
+Telegram identity is established only through a 15-minute, one-use deep-link
+token. The webhook derives the chat identity from Telegram and never accepts a
+guardian or center identifier. Resend and Telegram callbacks are authenticated
+with independent server-only webhook secrets.
 
 ---
 

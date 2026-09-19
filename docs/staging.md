@@ -18,7 +18,9 @@ test or production marker blocks the operation.
 
 Vercel runtime contains only `APP_URL`, `DATABASE_URL`, the public Supabase URL
 and anonymous key, `SCCVI_DEPLOYMENT_ENV=STAGING`, `STAGING_DATABASE_ID`, and the
-complete Resend triple when email is enabled. `DIRECT_URL`, service-role keys,
+complete Resend configuration (including its webhook secret) when email is
+enabled, and the complete Telegram bot configuration when Telegram is enabled.
+`DIRECT_URL`, service-role keys,
 Vercel credentials, bootstrap values and smoke credentials must not be Vercel
 runtime variables.
 
@@ -169,11 +171,12 @@ staging run at a time.
 
 ## Email provider boundary
 
-Email configuration must be either complete (`EMAIL_PROVIDER=resend`, API key
-and sender) or entirely omitted. Deployment does not send email. TASK-054 live
-verification remains an optional, separately approved owner action using a
-neutral message and one controlled recipient; no patient, guardian or campaign
-data is allowed.
+Email configuration must be either complete (`EMAIL_PROVIDER=resend`, API key,
+sender and `RESEND_WEBHOOK_SECRET`) or entirely omitted. Telegram configuration
+must likewise provide bot token, bot username and webhook secret together or be
+omitted. Deployment does not send notifications. Live provider verification is
+a separately approved owner action using fictional data and controlled
+recipients.
 
 ## Failure and rollback
 

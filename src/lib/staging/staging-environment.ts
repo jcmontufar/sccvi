@@ -25,6 +25,10 @@ const stagingEnvironmentSchema = z
     EMAIL_PROVIDER: optionalResendProvider,
     EMAIL_API_KEY: optionalNonEmptyString,
     EMAIL_FROM: optionalNonEmptyString,
+    RESEND_WEBHOOK_SECRET: optionalNonEmptyString,
+    TELEGRAM_BOT_TOKEN: optionalNonEmptyString,
+    TELEGRAM_BOT_USERNAME: optionalNonEmptyString,
+    TELEGRAM_WEBHOOK_SECRET: optionalNonEmptyString,
     TEST_DATABASE_URL: z.string().optional(),
   })
   .superRefine((environment, context) => {
@@ -51,13 +55,27 @@ const stagingEnvironmentSchema = z
       environment.EMAIL_PROVIDER,
       environment.EMAIL_API_KEY,
       environment.EMAIL_FROM,
+      environment.RESEND_WEBHOOK_SECRET,
     ];
     const configuredEmailValues = emailValues.filter(Boolean).length;
-    if (configuredEmailValues !== 0 && configuredEmailValues !== 3) {
+    if (configuredEmailValues !== 0 && configuredEmailValues !== 4) {
       context.addIssue({
         code: "custom",
         path: ["EMAIL_PROVIDER"],
         message: "Staging email configuration must be complete or omitted.",
+      });
+    }
+    const telegramValues = [
+      environment.TELEGRAM_BOT_TOKEN,
+      environment.TELEGRAM_BOT_USERNAME,
+      environment.TELEGRAM_WEBHOOK_SECRET,
+    ];
+    const configuredTelegramValues = telegramValues.filter(Boolean).length;
+    if (configuredTelegramValues !== 0 && configuredTelegramValues !== 3) {
+      context.addIssue({
+        code: "custom",
+        path: ["TELEGRAM_BOT_TOKEN"],
+        message: "Staging Telegram configuration must be complete or omitted.",
       });
     }
   });
