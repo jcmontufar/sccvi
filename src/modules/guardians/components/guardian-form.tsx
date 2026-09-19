@@ -113,6 +113,7 @@ export function GuardianForm({ guardian, communities }: GuardianFormProps) {
           >
             <option value="">Sin preferencia</option>
             <option value="EMAIL">Correo electrónico</option>
+            <option value="TELEGRAM">Telegram</option>
           </select>
         </label>
       </div>

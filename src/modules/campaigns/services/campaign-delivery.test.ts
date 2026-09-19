@@ -4,10 +4,14 @@ vi.mock("server-only", () => ({}));
 
 let deriveCampaignResult: typeof import("@/modules/campaigns/services/campaign-service").deriveCampaignResult;
 let isCampaignDeliveryEligible: typeof import("@/modules/campaigns/services/campaign-service").isCampaignDeliveryEligible;
+let resolveCampaignDeliveryRecipient: typeof import("@/modules/campaigns/services/campaign-service").resolveCampaignDeliveryRecipient;
 
 beforeAll(async () => {
-  ({ deriveCampaignResult, isCampaignDeliveryEligible } =
-    await import("@/modules/campaigns/services/campaign-service"));
+  ({
+    deriveCampaignResult,
+    isCampaignDeliveryEligible,
+    resolveCampaignDeliveryRecipient,
+  } = await import("@/modules/campaigns/services/campaign-service"));
 });
 
 const eligible = {
@@ -37,6 +41,24 @@ describe("campaign delivery policy", () => {
         guardianHealthCenterId: "center-b",
       }),
     ).toBe(false);
+  });
+
+  it("routes a campaign to Telegram only when the preferred channel is linked", () => {
+    expect(
+      resolveCampaignDeliveryRecipient({
+        ...eligible,
+        preferredChannel: "TELEGRAM",
+        telegramChatId: "12345",
+        telegramRevokedAt: null,
+      }),
+    ).toMatchObject({ channel: "TELEGRAM", destination: "12345" });
+    expect(
+      resolveCampaignDeliveryRecipient({
+        ...eligible,
+        preferredChannel: "TELEGRAM",
+        telegramChatId: null,
+      }),
+    ).toBeNull();
   });
 
   it("maps provider outcomes to aggregate campaign status", () => {

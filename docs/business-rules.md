@@ -352,12 +352,8 @@ Alerts must not automatically declare a definitive medical diagnosis.
 
 ## BR-031 — Notification Channel
 
-Email is the required initial notification channel.
-
-Future optional channels may include:
-
-- Telegram
-- WhatsApp
+Implemented channels are Email and Telegram. WhatsApp remains a possible future
+channel but is not eligible for delivery.
 
 ---
 
@@ -411,9 +407,11 @@ Age segmentation uses the `America/Guatemala` business date.
 
 Resolved recipients form a persisted snapshot when the draft is created. Send
 must not silently replace that snapshot by recalculating clinical segmentation.
-Immediately before delivery, SCCVI revalidates only that the guardian remains
-active, has an email address, permits `EMAIL` and remains in authorized center
-scope. An ineligible recipient is `SKIPPED`.
+Immediately before delivery, SCCVI revalidates that the guardian remains
+active, has a valid destination for the one preferred channel and remains in
+authorized center scope. Email requires an email address; Telegram requires an
+active verified connection. An ineligible recipient is `SKIPPED`; SCCVI does
+not fall back to another channel.
 
 One notification per campaign recipient and channel is allowed. Only provider
 confirmation produces `SENT`; provider failure produces `FAILED`.

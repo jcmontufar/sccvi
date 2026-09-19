@@ -16,6 +16,10 @@ const validEnvironment = {
   EMAIL_PROVIDER: "resend",
   EMAIL_API_KEY: "server-only-placeholder",
   EMAIL_FROM: "SCCVI <staging@example.invalid>",
+  RESEND_WEBHOOK_SECRET: "resend-webhook-placeholder",
+  TELEGRAM_BOT_TOKEN: "telegram-bot-placeholder",
+  TELEGRAM_BOT_USERNAME: "SccviStagingBot",
+  TELEGRAM_WEBHOOK_SECRET: "telegram-webhook-placeholder",
 };
 
 describe("validateStagingEnvironment", () => {
@@ -54,12 +58,30 @@ describe("validateStagingEnvironment", () => {
         EMAIL_PROVIDER: "",
         EMAIL_API_KEY: "",
         EMAIL_FROM: "",
+        RESEND_WEBHOOK_SECRET: "",
       }),
     ).not.toThrow();
     expect(() =>
       validateStagingEnvironment({
         ...validEnvironment,
         EMAIL_API_KEY: "",
+      }),
+    ).toThrow("STAGING PREFLIGHT BLOCKED");
+  });
+
+  it("allows Telegram to be disabled but rejects partial configuration", () => {
+    expect(() =>
+      validateStagingEnvironment({
+        ...validEnvironment,
+        TELEGRAM_BOT_TOKEN: "",
+        TELEGRAM_BOT_USERNAME: "",
+        TELEGRAM_WEBHOOK_SECRET: "",
+      }),
+    ).not.toThrow();
+    expect(() =>
+      validateStagingEnvironment({
+        ...validEnvironment,
+        TELEGRAM_WEBHOOK_SECRET: "",
       }),
     ).toThrow("STAGING PREFLIGHT BLOCKED");
   });

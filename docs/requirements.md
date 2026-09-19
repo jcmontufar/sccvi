@@ -398,14 +398,12 @@ Resolution of important alerts should be auditable.
 
 ## 20. Notifications
 
-The initial required notification channel is:
+Implemented notification channels are:
 
-- Email
+- Email through Resend
+- Telegram through the Telegram Bot API
 
-Future optional channels may include:
-
-- Telegram
-- WhatsApp
+WhatsApp remains optional and unimplemented.
 
 The system must:
 

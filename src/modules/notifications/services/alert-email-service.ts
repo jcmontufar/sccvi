@@ -4,15 +4,15 @@ import { mapWithConcurrency } from "@/lib/async/map-with-concurrency";
 import { getPrisma } from "@/lib/prisma";
 import { authorize } from "@/modules/auth/authorization";
 import type { ApplicationUser } from "@/modules/auth/types";
+import { eligibleAlertNotificationGuardians } from "@/modules/notifications/services/notification-recipient-policy";
+import { dispatchPendingNotification } from "@/modules/notifications/services/notification-service";
 import {
-  createResendEmailProvider,
-  unavailableEmailProvider,
-} from "@/modules/notifications/providers/resend-email-provider";
-import { eligibleAlertEmailGuardians } from "@/modules/notifications/services/alert-email-policy";
-import type { NotificationProvider } from "@/modules/notifications/services/notification-delivery";
-import { deliveryResultToUpdate } from "@/modules/notifications/services/notification-delivery";
+  asProviderRegistry,
+  createNotificationProviderRegistry,
+  type NotificationProviderSource,
+} from "@/modules/notifications/services/provider-registry";
 
-export type OperationalEmailSummary = {
+export type OperationalNotificationSummary = {
   eligibleRecipients: number;
   created: number;
   existing: number;
@@ -24,12 +24,12 @@ const notificationSubject = "Seguimiento infantil pendiente en SCCVI";
 const notificationMessage =
   "SCCVI registró un seguimiento pendiente. Comunícate con tu centro de salud para coordinar la evaluación correspondiente. Esta notificación no constituye un diagnóstico médico.";
 
-export async function sendOperationalAlertEmailsForAlerts(
+export async function sendOperationalAlertNotificationsForAlerts(
   user: ApplicationUser,
   alertIds: readonly string[],
-  provider: NotificationProvider = createResendEmailProvider() ??
-    unavailableEmailProvider,
-): Promise<OperationalEmailSummary> {
+  providerSource: NotificationProviderSource = createNotificationProviderRegistry(),
+): Promise<OperationalNotificationSummary> {
+  const registry = asProviderRegistry(providerSource);
   const uniqueAlertIds = [...new Set(alertIds)];
   if (!uniqueAlertIds.length) {
     return {
@@ -47,7 +47,9 @@ export async function sendOperationalAlertEmailsForAlerts(
       child: {
         include: {
           community: { select: { healthCenterId: true } },
-          childGuardians: { include: { guardian: true } },
+          childGuardians: {
+            include: { guardian: { include: { telegramConnection: true } } },
+          },
         },
       },
     },
@@ -56,20 +58,15 @@ export async function sendOperationalAlertEmailsForAlerts(
     authorize(user, "notification:create", {
       healthCenterId: alert.child.community.healthCenterId,
     });
-    return eligibleAlertEmailGuardians(
+    return eligibleAlertNotificationGuardians(
       alert.type,
       alert.child.childGuardians.map(({ guardian }) => guardian),
-    ).flatMap((guardian) => {
-      const destination = guardian.email?.trim();
-      return destination
-        ? [{ alertId: alert.id, guardianId: guardian.id, destination }]
-        : [];
-    });
+    ).map((recipient) => ({ alertId: alert.id, ...recipient }));
   });
   const uniqueRecipients = [
     ...new Map(
       recipients.map((recipient) => [
-        `${recipient.alertId}:${recipient.guardianId}`,
+        `${recipient.alertId}:${recipient.guardianId}:${recipient.channel}`,
         recipient,
       ]),
     ).values(),
@@ -87,7 +84,6 @@ export async function sendOperationalAlertEmailsForAlerts(
   const created = await getPrisma().notification.createMany({
     data: uniqueRecipients.map((recipient) => ({
       ...recipient,
-      channel: "EMAIL" as const,
       subject: notificationSubject,
       message: notificationMessage,
       status: "PENDING" as const,
@@ -96,7 +92,8 @@ export async function sendOperationalAlertEmailsForAlerts(
   });
   const expectedPairs = new Set(
     uniqueRecipients.map(
-      ({ alertId, guardianId }) => `${alertId}:${guardianId}`,
+      ({ alertId, guardianId, channel }) =>
+        `${alertId}:${guardianId}:${channel}`,
     ),
   );
   const notifications = (
@@ -106,31 +103,23 @@ export async function sendOperationalAlertEmailsForAlerts(
         guardianId: {
           in: uniqueRecipients.map(({ guardianId }) => guardianId),
         },
-        channel: "EMAIL",
+        channel: { in: ["EMAIL", "TELEGRAM"] },
       },
     })
   ).filter(
     (notification) =>
       notification.alertId &&
       notification.guardianId &&
-      expectedPairs.has(`${notification.alertId}:${notification.guardianId}`),
+      expectedPairs.has(
+        `${notification.alertId}:${notification.guardianId}:${notification.channel}`,
+      ),
   );
   const pending = notifications.filter(({ status }) => status === "PENDING");
   const deliveryResults = await mapWithConcurrency(
     pending,
     4,
     async (notification) => {
-      const result = await provider.deliver({
-        destination: notification.destination,
-        subject: notification.subject ?? undefined,
-        message: notification.message,
-        idempotencyKey: `notification/${notification.id}`,
-      });
-      await getPrisma().notification.update({
-        where: { id: notification.id },
-        data: deliveryResultToUpdate(result),
-      });
-      return result;
+      return dispatchPendingNotification(notification, registry);
     },
   );
 
@@ -138,21 +127,25 @@ export async function sendOperationalAlertEmailsForAlerts(
     eligibleRecipients: uniqueRecipients.length,
     created: created.count,
     existing: uniqueRecipients.length - created.count,
-    sent: deliveryResults.filter(({ delivered }) => delivered).length,
-    failed: deliveryResults.filter(({ delivered }) => !delivered).length,
+    sent: deliveryResults.filter(({ status }) => status === "SENT").length,
+    failed: deliveryResults.filter(({ status }) => status === "FAILED").length,
   };
 }
 
-export async function sendOperationalAlertEmails(
+export async function sendOperationalAlertNotifications(
   user: ApplicationUser,
   alertId: string,
-  provider: NotificationProvider = createResendEmailProvider() ??
-    unavailableEmailProvider,
+  providerSource: NotificationProviderSource = createNotificationProviderRegistry(),
 ) {
-  const summary = await sendOperationalAlertEmailsForAlerts(
+  const summary = await sendOperationalAlertNotificationsForAlerts(
     user,
     [alertId],
-    provider,
+    providerSource,
   );
   return summary;
 }
+
+export const sendOperationalAlertEmailsForAlerts =
+  sendOperationalAlertNotificationsForAlerts;
+export const sendOperationalAlertEmails = sendOperationalAlertNotifications;
+export type OperationalEmailSummary = OperationalNotificationSummary;

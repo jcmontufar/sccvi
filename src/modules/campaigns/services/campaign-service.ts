@@ -17,12 +17,10 @@ import {
   deduplicateGuardianIds,
   matchesVaccinationSegmentation,
 } from "@/modules/campaigns/services/campaign-segmentation";
-import {
-  createResendEmailProvider,
-  unavailableEmailProvider,
-} from "@/modules/notifications/providers/resend-email-provider";
-import type { NotificationProvider } from "@/modules/notifications/services/notification-delivery";
+import { selectGuardianNotificationRecipient } from "@/modules/notifications/services/notification-recipient-policy";
 import { deliverQueuedNotification } from "@/modules/notifications/services/notification-service";
+import { createNotificationProviderRegistry } from "@/modules/notifications/services/provider-registry";
+import type { NotificationProviderSource } from "@/modules/notifications/services/provider-registry";
 import { listChildVaccinationStatuses } from "@/modules/vaccination/services/vaccination-service";
 
 const campaignInclude = {
@@ -31,29 +29,48 @@ const campaignInclude = {
     include: {
       guardian: { select: { fullName: true, email: true } },
       notifications: {
-        where: { channel: "EMAIL" as const },
-        select: { status: true, errorMessage: true },
+        select: { channel: true, status: true, errorMessage: true },
       },
     },
     orderBy: { guardian: { fullName: "asc" as const } },
   },
 };
 
-export function isCampaignDeliveryEligible(input: {
+export function resolveCampaignDeliveryRecipient(input: {
   guardianActive: boolean;
   email: string | null;
+  telegramChatId?: string | null;
+  telegramRevokedAt?: Date | null;
   preferredChannel: string | null;
   guardianHealthCenterId: string;
   campaignHealthCenterId: string | null;
   senderRole: ApplicationUser["role"];
 }) {
-  return Boolean(
-    input.guardianActive &&
-    input.email?.trim() &&
-    input.preferredChannel === "EMAIL" &&
-    (input.senderRole === "ADMIN" ||
-      input.guardianHealthCenterId === input.campaignHealthCenterId),
-  );
+  if (
+    input.senderRole !== "ADMIN" &&
+    input.guardianHealthCenterId !== input.campaignHealthCenterId
+  ) {
+    return null;
+  }
+  return selectGuardianNotificationRecipient({
+    id: "campaign-recipient",
+    isActive: input.guardianActive,
+    email: input.email,
+    preferredNotificationChannel: input.preferredChannel as
+      "EMAIL" | "TELEGRAM" | "WHATSAPP" | null,
+    telegramConnection: input.telegramChatId
+      ? {
+          chatId: input.telegramChatId,
+          revokedAt: input.telegramRevokedAt ?? null,
+        }
+      : null,
+  });
+}
+
+export function isCampaignDeliveryEligible(
+  input: Parameters<typeof resolveCampaignDeliveryRecipient>[0],
+) {
+  return Boolean(resolveCampaignDeliveryRecipient(input));
 }
 
 export function deriveCampaignResult(
@@ -256,8 +273,7 @@ export async function createCampaign(
 export async function sendCampaign(
   user: ApplicationUser,
   id: string,
-  provider: NotificationProvider = createResendEmailProvider() ??
-    unavailableEmailProvider,
+  providerSource: NotificationProviderSource = createNotificationProviderRegistry(),
 ) {
   const campaignId = campaignIdSchema.parse(id);
   const campaign = await getPrisma().campaign.findUnique({
@@ -267,7 +283,10 @@ export async function sendCampaign(
       recipients: {
         include: {
           guardian: {
-            include: { community: { select: { healthCenterId: true } } },
+            include: {
+              community: { select: { healthCenterId: true } },
+              telegramConnection: true,
+            },
           },
         },
       },
@@ -298,15 +317,17 @@ export async function sendCampaign(
   try {
     const statuses: CampaignRecipientStatus[] = [];
     for (const recipient of campaign.recipients) {
-      const eligible = isCampaignDeliveryEligible({
+      const recipientDestination = resolveCampaignDeliveryRecipient({
         guardianActive: recipient.guardian.isActive,
         email: recipient.guardian.email,
+        telegramChatId: recipient.guardian.telegramConnection?.chatId,
+        telegramRevokedAt: recipient.guardian.telegramConnection?.revokedAt,
         preferredChannel: recipient.guardian.preferredNotificationChannel,
         guardianHealthCenterId: recipient.guardian.community.healthCenterId,
         campaignHealthCenterId: campaign.createdBy.healthCenterId,
         senderRole: user.role,
       });
-      if (!eligible) {
+      if (!recipientDestination) {
         await getPrisma().campaignRecipient.update({
           where: { id: recipient.id },
           data: { status: "SKIPPED" },
@@ -319,15 +340,15 @@ export async function sendCampaign(
         where: {
           campaignRecipientId_channel: {
             campaignRecipientId: recipient.id,
-            channel: "EMAIL",
+            channel: recipientDestination.channel,
           },
         },
         update: {},
         create: {
           guardianId: recipient.guardian.id,
           campaignRecipientId: recipient.id,
-          channel: "EMAIL",
-          destination: recipient.guardian.email!.trim(),
+          channel: recipientDestination.channel,
+          destination: recipientDestination.destination,
           subject: campaign.subject,
           message: campaign.message,
           status: "PENDING",
@@ -335,7 +356,11 @@ export async function sendCampaign(
       });
       const delivered =
         notification.status === "PENDING"
-          ? await deliverQueuedNotification(user, notification.id, provider)
+          ? await deliverQueuedNotification(
+              user,
+              notification.id,
+              providerSource,
+            )
           : notification;
       const recipientStatus = delivered.status === "SENT" ? "SENT" : "FAILED";
       await getPrisma().campaignRecipient.update({

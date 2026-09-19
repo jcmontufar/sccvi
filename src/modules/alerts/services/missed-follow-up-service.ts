@@ -12,12 +12,15 @@ import {
   getMissedFollowUpAlertIdentity,
 } from "@/modules/alerts/services/missed-follow-up-rule";
 import { persistOperationalAlertCandidates } from "@/modules/alerts/services/operational-alert-batch";
-import type { NotificationProvider } from "@/modules/notifications/services/notification-delivery";
+import type { NotificationProviderRegistry } from "@/modules/notifications/services/notification-delivery";
 
 export async function generateMissedFollowUpAlerts(
   user: ApplicationUser,
   currentInstant = new Date(),
-  options: { pageSize?: number; provider?: NotificationProvider } = {},
+  options: {
+    pageSize?: number;
+    providerRegistry?: NotificationProviderRegistry;
+  } = {},
 ) {
   authorize(user, "alert:review");
   const today = getFollowUpEvaluationDate(currentInstant);
@@ -63,7 +66,7 @@ export async function generateMissedFollowUpAlerts(
           sourceId: identity.sourceId,
         };
       }),
-      options.provider,
+      options.providerRegistry,
     );
     addAlertBatchToSummary(summary, batch);
     cursor = followUps.at(-1)?.id;

@@ -34,12 +34,21 @@ test("registro crítico: comunidad, tutor y niño", async ({ page }) => {
     .getAttribute("value");
   await page.getByLabel("Comunidad").selectOption(guardianCommunityValue!);
   await page.getByLabel("Nombre completo").fill(guardian);
+  await expect(
+    page
+      .getByLabel("Preferencia de notificación")
+      .locator('option[value="TELEGRAM"]'),
+  ).toHaveText("Telegram");
   await page.getByRole("button", { name: "Registrar tutor" }).click();
   await expect(page).toHaveURL(/\/app\/tutores\/[0-9a-f-]+\?creado=1$/);
   await expect(page.getByRole("heading", { name: guardian })).toBeVisible();
   await expect(
     page.getByText("La información se guardó correctamente."),
   ).toBeVisible();
+  await expect(
+    page.getByRole("heading", { name: "Conexión de Telegram" }),
+  ).toBeVisible();
+  await expect(page.getByText("Estado: No vinculado")).toBeVisible();
 
   await page.goto("/app/ninos/nuevo");
   const childCommunityValue = await page

@@ -4,10 +4,10 @@ import type { Alert, Prisma } from "@/generated/prisma/client";
 import { getPrisma } from "@/lib/prisma";
 import type { ApplicationUser } from "@/modules/auth/types";
 import {
-  sendOperationalAlertEmailsForAlerts,
-  type OperationalEmailSummary,
+  sendOperationalAlertNotificationsForAlerts,
+  type OperationalNotificationSummary,
 } from "@/modules/notifications/services/alert-email-service";
-import type { NotificationProvider } from "@/modules/notifications/services/notification-delivery";
+import type { NotificationProviderRegistry } from "@/modules/notifications/services/notification-delivery";
 
 export type OperationalAlertCandidate = Pick<
   Prisma.AlertCreateManyInput,
@@ -24,10 +24,10 @@ export type OperationalAlertBatchResult = {
   alerts: Alert[];
   alertsCreated: number;
   alertsExisting: number;
-  notifications: OperationalEmailSummary;
+  notifications: OperationalNotificationSummary;
 };
 
-const emptyNotificationSummary = (): OperationalEmailSummary => ({
+const emptyNotificationSummary = (): OperationalNotificationSummary => ({
   eligibleRecipients: 0,
   created: 0,
   existing: 0,
@@ -38,7 +38,7 @@ const emptyNotificationSummary = (): OperationalEmailSummary => ({
 export async function persistOperationalAlertCandidates(
   user: ApplicationUser,
   candidates: readonly OperationalAlertCandidate[],
-  provider?: NotificationProvider,
+  providerRegistry?: NotificationProviderRegistry,
 ): Promise<OperationalAlertBatchResult> {
   const uniqueCandidates = [
     ...new Map(
@@ -70,10 +70,10 @@ export async function persistOperationalAlertCandidates(
       })),
     },
   });
-  const notifications = await sendOperationalAlertEmailsForAlerts(
+  const notifications = await sendOperationalAlertNotificationsForAlerts(
     user,
     alerts.map(({ id }) => id),
-    provider,
+    providerRegistry,
   );
 
   return {

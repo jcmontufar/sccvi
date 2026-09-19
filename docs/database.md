@@ -180,7 +180,8 @@ Initial NotificationChannel:
 - TELEGRAM
 - WHATSAPP
 
-EMAIL is the initially implemented delivery channel.
+EMAIL and TELEGRAM are implemented delivery channels. WHATSAPP remains
+unimplemented.
 
 ---
 
@@ -592,6 +593,7 @@ Fields:
 - providerMessageId: string, optional
 - errorMessage: text, optional
 - sentAt: datetime, optional
+- deliveryClaimedAt: datetime, optional; atomic delivery ownership marker
 - createdAt: datetime
 - updatedAt: datetime
 
@@ -613,6 +615,35 @@ Notification
 N → 0..1 CampaignRecipient
 
 A failed delivery must not be stored as SENT.
+
+`providerMessageId` is indexed for authenticated provider callbacks.
+Operational alert delivery is additionally unique by `alertId + guardianId`;
+the existing channel-qualified constraint remains for compatibility.
+
+## 16.1 GuardianTelegramConnection
+
+Stores only the verified Telegram delivery identity required by SCCVI:
+
+- guardianId: UUID, required, unique
+- chatId: string, optional, unique while linked
+- linkedAt: datetime, optional
+- consentedAt: datetime, optional
+- revokedAt: datetime, optional
+
+No Telegram username, name, phone number or photo is stored. Unlinking clears
+`chatId` and preserves revocation traceability.
+
+## 16.2 TelegramLinkToken
+
+Stores a temporary one-use link credential:
+
+- guardianId and createdByUserId: UUID, required
+- tokenHash: SHA-256 string, required, unique
+- expiresAt: datetime, required
+- consumedAt and revokedAt: datetime, optional
+
+The raw 256-bit token is never persisted. Creating a new active token revokes
+the previous one.
 
 ---
 
