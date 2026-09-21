@@ -4,6 +4,10 @@ import { mapWithConcurrency } from "@/lib/async/map-with-concurrency";
 import { getPrisma } from "@/lib/prisma";
 import { authorize } from "@/modules/auth/authorization";
 import type { ApplicationUser } from "@/modules/auth/types";
+import {
+  operationalAlertNotificationMessage,
+  operationalAlertNotificationSubject,
+} from "@/modules/notifications/services/alert-notification-content";
 import { eligibleAlertNotificationGuardians } from "@/modules/notifications/services/notification-recipient-policy";
 import { dispatchPendingNotification } from "@/modules/notifications/services/notification-service";
 import {
@@ -19,10 +23,6 @@ export type OperationalNotificationSummary = {
   sent: number;
   failed: number;
 };
-
-const notificationSubject = "Seguimiento infantil pendiente en SCCVI";
-const notificationMessage =
-  "SCCVI registró un seguimiento pendiente. Comunícate con tu centro de salud para coordinar la evaluación correspondiente. Esta notificación no constituye un diagnóstico médico.";
 
 export async function sendOperationalAlertNotificationsForAlerts(
   user: ApplicationUser,
@@ -84,8 +84,8 @@ export async function sendOperationalAlertNotificationsForAlerts(
   const created = await getPrisma().notification.createMany({
     data: uniqueRecipients.map((recipient) => ({
       ...recipient,
-      subject: notificationSubject,
-      message: notificationMessage,
+      subject: operationalAlertNotificationSubject,
+      message: operationalAlertNotificationMessage,
       status: "PENDING" as const,
     })),
     skipDuplicates: true,

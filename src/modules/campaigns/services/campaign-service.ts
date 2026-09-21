@@ -40,6 +40,8 @@ export function resolveCampaignDeliveryRecipient(input: {
   guardianActive: boolean;
   email: string | null;
   telegramChatId?: string | null;
+  telegramLinkedAt?: Date | null;
+  telegramConsentedAt?: Date | null;
   telegramRevokedAt?: Date | null;
   preferredChannel: string | null;
   guardianHealthCenterId: string;
@@ -61,6 +63,8 @@ export function resolveCampaignDeliveryRecipient(input: {
     telegramConnection: input.telegramChatId
       ? {
           chatId: input.telegramChatId,
+          linkedAt: input.telegramLinkedAt ?? null,
+          consentedAt: input.telegramConsentedAt ?? null,
           revokedAt: input.telegramRevokedAt ?? null,
         }
       : null,
@@ -321,6 +325,8 @@ export async function sendCampaign(
         guardianActive: recipient.guardian.isActive,
         email: recipient.guardian.email,
         telegramChatId: recipient.guardian.telegramConnection?.chatId,
+        telegramLinkedAt: recipient.guardian.telegramConnection?.linkedAt,
+        telegramConsentedAt: recipient.guardian.telegramConnection?.consentedAt,
         telegramRevokedAt: recipient.guardian.telegramConnection?.revokedAt,
         preferredChannel: recipient.guardian.preferredNotificationChannel,
         guardianHealthCenterId: recipient.guardian.community.healthCenterId,

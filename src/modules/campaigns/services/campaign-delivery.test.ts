@@ -49,6 +49,8 @@ describe("campaign delivery policy", () => {
         ...eligible,
         preferredChannel: "TELEGRAM",
         telegramChatId: "12345",
+        telegramLinkedAt: new Date("2026-09-01T00:00:00Z"),
+        telegramConsentedAt: new Date("2026-09-01T00:00:00Z"),
         telegramRevokedAt: null,
       }),
     ).toMatchObject({ channel: "TELEGRAM", destination: "12345" });

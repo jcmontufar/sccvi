@@ -67,6 +67,35 @@ export async function queueEmailNotification(
   return queueNotification(user, { ...message, channel: "EMAIL" });
 }
 
+export async function queueAlertNotification(
+  user: ApplicationUser,
+  message: NotificationMessage & {
+    channel: DeliverableNotificationChannel;
+    guardianId: string;
+    alertId: string;
+  },
+) {
+  authorize(user, "notification:create");
+  return getPrisma().notification.upsert({
+    where: {
+      alertId_guardianId: {
+        alertId: message.alertId,
+        guardianId: message.guardianId,
+      },
+    },
+    update: {},
+    create: {
+      destination: message.destination,
+      subject: message.subject,
+      message: message.message,
+      guardianId: message.guardianId,
+      alertId: message.alertId,
+      channel: message.channel,
+      status: "PENDING",
+    },
+  });
+}
+
 export async function dispatchPendingNotification(
   notification: PendingNotification,
   providerSource: NotificationProviderSource = createNotificationProviderRegistry(),
