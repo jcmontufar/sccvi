@@ -105,7 +105,7 @@ export function AppShell({
           className="rounded-xl px-3 py-3 outline-none focus-visible:ring-3 focus-visible:ring-sidebar-ring/40"
           href="/app"
         >
-          <SccviLogo inverted />
+          <SccviLogo className="mx-auto size-16" compact />
         </Link>
         <nav
           aria-label="Navegación principal"
@@ -136,7 +136,7 @@ export function AppShell({
             className="rounded-lg outline-none focus-visible:ring-3 focus-visible:ring-ring/30"
             href="/app"
           >
-            <SccviLogo compact />
+            <SccviLogo className="size-11" compact />
           </Link>
           <details className="group relative">
             <summary className="flex size-11 cursor-pointer list-none items-center justify-center rounded-xl border bg-background text-primary shadow-sm outline-none hover:bg-accent focus-visible:ring-3 focus-visible:ring-ring/30 [&::-webkit-details-marker]:hidden">
