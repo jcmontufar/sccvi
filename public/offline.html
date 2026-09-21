@@ -1,0 +1,95 @@
+<!doctype html>
+<html lang="es-GT">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <meta name="theme-color" content="#07556D" />
+    <title>Sin conexión · SCCVI</title>
+    <style>
+      * {
+        box-sizing: border-box;
+      }
+
+      body {
+        align-items: center;
+        background: linear-gradient(180deg, #f8fbfc 0, #f4f8fa 100%);
+        color: #17323b;
+        display: flex;
+        font-family:
+          system-ui,
+          -apple-system,
+          BlinkMacSystemFont,
+          "Segoe UI",
+          sans-serif;
+        justify-content: center;
+        margin: 0;
+        min-height: 100vh;
+        min-height: 100svh;
+        padding: 1.5rem;
+      }
+
+      main {
+        background: #ffffff;
+        border: 1px solid #d4e2e7;
+        border-radius: 1.5rem;
+        box-shadow: 0 1.25rem 3rem rgb(7 85 109 / 12%);
+        max-width: 32rem;
+        padding: clamp(1.5rem, 5vw, 2.5rem);
+        text-align: center;
+        width: 100%;
+      }
+
+      .brand {
+        color: #07556d;
+        font-size: 1rem;
+        font-weight: 800;
+        letter-spacing: 0.1em;
+        margin: 0 0 1.5rem;
+      }
+
+      h1 {
+        font-size: clamp(1.75rem, 7vw, 2.25rem);
+        letter-spacing: -0.025em;
+        line-height: 1.1;
+        margin: 0;
+      }
+
+      p {
+        color: #55717b;
+        line-height: 1.65;
+        margin: 1rem auto 1.5rem;
+        max-width: 27rem;
+      }
+
+      button {
+        background: #07556d;
+        border: 0;
+        border-radius: 0.75rem;
+        color: #ffffff;
+        cursor: pointer;
+        font: inherit;
+        font-weight: 700;
+        min-height: 2.75rem;
+        padding: 0.7rem 1.25rem;
+      }
+
+      button:focus-visible {
+        outline: 3px solid #25a7b8;
+        outline-offset: 3px;
+      }
+    </style>
+  </head>
+  <body>
+    <main>
+      <p class="brand">SCCVI</p>
+      <h1>Sin conexión</h1>
+      <p>
+        SCCVI necesita conexión para consultar o registrar información. Revisa
+        tu conexión e inténtalo nuevamente.
+      </p>
+      <form method="get">
+        <button type="submit">Reintentar</button>
+      </form>
+    </main>
+  </body>
+</html>

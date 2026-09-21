@@ -111,6 +111,16 @@ External services may include:
 
 The application must not depend unnecessarily on external services.
 
+### Progressive Web Application boundary
+
+SCCVI is installable as a Progressive Web Application through the native
+Next.js manifest and a minimal service worker. The service worker uses the
+network for every application navigation and caches only the self-contained
+offline fallback page. It does not cache authenticated pages, API responses,
+React Server Component payloads, reports or domain data, and it does not queue
+mutations. All clinical and operational work continues to require a live
+server connection.
+
 ---
 
 ## 4. Application Layers
