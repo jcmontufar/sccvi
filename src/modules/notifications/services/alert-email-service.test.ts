@@ -124,7 +124,12 @@ describe("bulk operational alert email", () => {
                 email: "guardian@example.test",
                 isActive: true,
                 preferredNotificationChannel: "TELEGRAM",
-                telegramConnection: { chatId: "12345", revokedAt: null },
+                telegramConnection: {
+                  chatId: "12345",
+                  linkedAt: new Date("2026-09-01T00:00:00Z"),
+                  consentedAt: new Date("2026-09-01T00:00:00Z"),
+                  revokedAt: null,
+                },
               },
             },
           ],

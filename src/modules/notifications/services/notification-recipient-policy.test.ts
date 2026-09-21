@@ -10,7 +10,12 @@ const guardian = {
   email: "guardian@example.test",
   isActive: true,
   preferredNotificationChannel: "EMAIL" as const,
-  telegramConnection: { chatId: "12345", revokedAt: null },
+  telegramConnection: {
+    chatId: "12345",
+    linkedAt: new Date("2026-09-01T00:00:00Z"),
+    consentedAt: new Date("2026-09-01T00:00:00Z"),
+    revokedAt: null,
+  },
 };
 
 describe("notification recipient policy", () => {
@@ -39,7 +44,24 @@ describe("notification recipient policy", () => {
       selectGuardianNotificationRecipient({
         ...guardian,
         preferredNotificationChannel: "TELEGRAM",
-        telegramConnection: { chatId: null, revokedAt: new Date() },
+        telegramConnection: {
+          chatId: null,
+          linkedAt: null,
+          consentedAt: null,
+          revokedAt: new Date(),
+        },
+      }),
+    ).toBeNull();
+    expect(
+      selectGuardianNotificationRecipient({
+        ...guardian,
+        preferredNotificationChannel: "TELEGRAM",
+        telegramConnection: {
+          chatId: "12345",
+          linkedAt: new Date(),
+          consentedAt: null,
+          revokedAt: null,
+        },
       }),
     ).toBeNull();
   });
