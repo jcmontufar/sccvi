@@ -1,6 +1,7 @@
 import Link from "next/link";
 
 import { Button } from "@/components/ui/button";
+import { PageBackLink } from "@/components/ui/page-back-link";
 import { can } from "@/modules/auth/authorization";
 import { requireApplicationUser } from "@/modules/auth/session";
 import { ChildNavigation } from "@/modules/children/components/child-navigation";
@@ -16,22 +17,22 @@ const statusPresentation = {
     label: "Aplicada",
     plural: "Aplicadas",
     symbol: "✓",
-    badge: "bg-teal-50 text-teal-700 ring-teal-200",
-    icon: "bg-teal-600 text-white",
+    badge: "bg-success/10 text-success ring-success/20",
+    icon: "bg-success text-success-foreground",
   },
   PENDING: {
     label: "Pendiente",
     plural: "Pendientes",
     symbol: "○",
-    badge: "bg-amber-50 text-amber-700 ring-amber-200",
-    icon: "bg-amber-50 text-amber-700 ring-1 ring-amber-200",
+    badge: "bg-warning/10 text-warning ring-warning/25",
+    icon: "bg-warning/10 text-warning ring-1 ring-warning/25",
   },
   OVERDUE: {
     label: "Atrasada",
     plural: "Atrasadas",
     symbol: "⚠",
-    badge: "bg-rose-50 text-rose-700 ring-rose-200",
-    icon: "bg-rose-600 text-white",
+    badge: "bg-destructive/10 text-destructive ring-destructive/20",
+    icon: "bg-destructive text-destructive-foreground",
   },
 } as const;
 
@@ -69,9 +70,13 @@ export default async function ChildVaccinationPage({
 
   return (
     <section className="space-y-6">
+      <PageBackLink
+        href={`/app/ninos/${result.child.id}`}
+        label="Volver al perfil"
+      />
       <header className="flex flex-wrap items-end justify-between gap-4">
         <div>
-          <p className="text-sm font-medium text-sky-700">
+          <p className="text-sm font-medium text-primary">
             Carné de vacunación
           </p>
           <h1 className="text-3xl font-semibold tracking-tight">
@@ -101,7 +106,7 @@ export default async function ChildVaccinationPage({
       />
       {(await searchParams).registrada ? (
         <p
-          className="rounded-xl border border-teal-200 bg-teal-50 p-3 text-sm text-teal-800"
+          className="rounded-xl border border-success/20 bg-success/10 p-3 text-sm text-success"
           role="status"
         >
           La vacuna se registró correctamente.
@@ -147,9 +152,9 @@ export default async function ChildVaccinationPage({
         </article>
       </div>
 
-      <article className="rounded-2xl border bg-gradient-to-br from-slate-950 to-sky-950 p-5 text-white shadow-sm">
+      <article className="rounded-2xl border border-primary/70 bg-gradient-to-br from-primary to-[#063e50] p-5 text-white shadow-sm">
         <div className="mb-4">
-          <p className="text-sm font-medium text-sky-300">
+          <p className="text-sm font-medium text-secondary">
             Prioridad operativa
           </p>
           <h2 className="text-xl font-semibold">Atención requerida</h2>
@@ -197,7 +202,7 @@ export default async function ChildVaccinationPage({
         </div>
         {canRegister && (attention.overdue.length || attention.nextPending) ? (
           <Button
-            className="mt-4 bg-white text-slate-950 hover:bg-white/90"
+            className="mt-4 bg-white text-primary hover:bg-white/90"
             render={
               <Link href={`/app/ninos/${result.child.id}/vacunacion/nueva`} />
             }
@@ -209,7 +214,7 @@ export default async function ChildVaccinationPage({
 
       <section>
         <div className="mb-4">
-          <p className="text-sm font-medium text-sky-700">
+          <p className="text-sm font-medium text-primary">
             Esquema cronológico
           </p>
           <h2 className="text-2xl font-semibold tracking-tight">
@@ -224,14 +229,14 @@ export default async function ChildVaccinationPage({
                 key={stage.scheduledDate}
               >
                 <div className="sm:text-right">
-                  <p className="text-sm font-semibold text-sky-800">
+                  <p className="text-sm font-semibold text-primary">
                     {stage.stageLabel}
                   </p>
                   <p className="text-xs text-muted-foreground">
                     {formatDate(stage.scheduledDate)}
                   </p>
                 </div>
-                <span className="absolute top-1 left-3.5 size-4 rounded-full border-4 border-background bg-sky-600 ring-1 ring-sky-200 sm:left-[6.55rem]" />
+                <span className="absolute top-1 left-3.5 size-4 rounded-full border-4 border-background bg-primary ring-1 ring-primary/25 sm:left-[6.55rem]" />
                 <div className="grid gap-3 md:grid-cols-2">
                   {stage.doses.map((dose) => {
                     const presentation = statusPresentation[dose.status];

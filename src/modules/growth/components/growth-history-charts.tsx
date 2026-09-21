@@ -37,9 +37,20 @@ function MeasurementChart({
   return (
     <article className="rounded-xl border bg-card p-4">
       <h2 className="mb-4 font-semibold">{title}</h2>
-      <div className="h-72 w-full">
+      <div
+        aria-label={`Gráfica de ${title}`}
+        className="h-72 w-full"
+        role="img"
+      >
+        <p className="sr-only">
+          {data.length} mediciones comparadas con la referencia OMS disponible.
+        </p>
         <ResponsiveContainer height="100%" width="100%">
-          <LineChart data={data} margin={{ left: 4, right: 16, top: 8 }}>
+          <LineChart
+            accessibilityLayer
+            data={data}
+            margin={{ left: 4, right: 16, top: 8 }}
+          >
             <CartesianGrid strokeDasharray="3 3" />
             <XAxis
               dataKey="ageDays"

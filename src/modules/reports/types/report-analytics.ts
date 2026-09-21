@@ -16,7 +16,6 @@ export type ReportChart = {
   series: {
     key: string;
     label: string;
-    color: string;
     unit?: string;
   }[];
 };

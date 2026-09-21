@@ -14,7 +14,12 @@ import {
   YAxis,
 } from "recharts";
 
+import {
+  chartPalette,
+  semanticChartColors,
+} from "@/components/charts/chart-palette";
 import { Button } from "@/components/ui/button";
+import { EmptyState } from "@/components/ui/empty-state";
 import type { ApplicationRole } from "@/modules/auth/types";
 import type { DashboardMetrics } from "@/modules/dashboard/services/dashboard-service";
 
@@ -35,7 +40,11 @@ const alertSeverityLabels = {
   CRITICAL: "Crítica",
 } as const;
 
-const chartColors = ["#0d9488", "#f59e0b", "#e11d48"];
+const vaccinationChartColors = [
+  semanticChartColors.applied,
+  semanticChartColors.pending,
+  semanticChartColors.overdue,
+];
 
 function DashboardIcon({ name }: { name: string }) {
   const paths: Record<string, React.ReactNode> = {
@@ -68,14 +77,6 @@ function DashboardIcon({ name }: { name: string }) {
     >
       {paths[name]}
     </svg>
-  );
-}
-
-function EmptyState({ children }: { children: React.ReactNode }) {
-  return (
-    <div className="flex min-h-48 items-center justify-center rounded-xl border border-dashed bg-muted/30 p-6 text-center text-sm text-muted-foreground">
-      {children}
-    </div>
   );
 }
 
@@ -114,45 +115,45 @@ export function DashboardOverview({
       label: "Niños activos",
       value: metrics.children,
       icon: "children",
-      tone: "bg-sky-50 text-sky-700",
+      tone: "bg-primary/10 text-primary",
     },
     {
       label: "Comunidades activas",
       value: metrics.communities,
       icon: "communities",
-      tone: "bg-emerald-50 text-emerald-700",
+      tone: "bg-success/10 text-success",
       hideForGuardian: true,
     },
     {
       label: "Tutores activos",
       value: metrics.guardians,
       icon: "guardians",
-      tone: "bg-violet-50 text-violet-700",
+      tone: "bg-chart-4/10 text-chart-4",
       hideForGuardian: true,
     },
     {
       label: "Mediciones registradas",
       value: metrics.growthRecords,
       icon: "growth",
-      tone: "bg-cyan-50 text-cyan-700",
+      tone: "bg-secondary/15 text-primary",
     },
     {
       label: "Alertas abiertas",
       value: metrics.openAlerts,
       icon: "alerts",
-      tone: "bg-rose-50 text-rose-700",
+      tone: "bg-destructive/10 text-destructive",
     },
     {
       label: "Dosis pendientes",
       value: metrics.pendingVaccinations,
       icon: "pending",
-      tone: "bg-amber-50 text-amber-700",
+      tone: "bg-warning/10 text-warning",
     },
     {
       label: "Dosis atrasadas",
       value: metrics.overdueVaccinations,
       icon: "overdue",
-      tone: "bg-orange-50 text-orange-700",
+      tone: "bg-destructive/10 text-destructive",
     },
   ].filter((card) => role !== "GUARDIAN" || !card.hideForGuardian);
 
@@ -231,7 +232,11 @@ export function DashboardOverview({
                     {vaccinationData.map((item, index) => (
                       <Cell
                         key={item.name}
-                        fill={chartColors[index % chartColors.length]}
+                        fill={
+                          vaccinationChartColors[
+                            index % vaccinationChartColors.length
+                          ]
+                        }
                       />
                     ))}
                   </Pie>
@@ -245,7 +250,9 @@ export function DashboardOverview({
                       className="size-2 rounded-full"
                       style={{
                         backgroundColor:
-                          chartColors[index % chartColors.length],
+                          vaccinationChartColors[
+                            index % vaccinationChartColors.length
+                          ],
                       }}
                     />
                     {item.name}: {item.value}
@@ -290,7 +297,7 @@ export function DashboardOverview({
                   <Bar
                     dataKey="value"
                     name="Alertas"
-                    fill="#e11d48"
+                    fill={semanticChartColors.critical}
                     radius={[0, 6, 6, 0]}
                   />
                 </BarChart>
@@ -325,7 +332,7 @@ export function DashboardOverview({
                   key={item.id}
                 >
                   <span
-                    className={`size-2.5 shrink-0 rounded-full ${item.kind === "ALERT" ? "bg-rose-500" : "bg-amber-500"}`}
+                    className={`size-2.5 shrink-0 rounded-full ${item.kind === "ALERT" ? "bg-destructive" : "bg-warning"}`}
                   />
                   <div className="min-w-0 flex-1">
                     <p className="truncate text-sm font-medium">{item.title}</p>
@@ -382,7 +389,7 @@ export function DashboardOverview({
                   <Bar
                     dataKey="children"
                     name="Niños"
-                    fill="#0284c7"
+                    fill={chartPalette[0]}
                     radius={[6, 6, 0, 0]}
                   />
                 </BarChart>
@@ -434,7 +441,7 @@ export function DashboardOverview({
           )}
         </article>
 
-        <article className="rounded-2xl border bg-gradient-to-br from-sky-950 to-teal-900 p-5 text-white shadow-sm">
+        <article className="rounded-2xl border border-primary/70 bg-gradient-to-br from-primary to-[#063e50] p-5 text-white shadow-sm">
           <h2 className="font-semibold">Accesos rápidos</h2>
           <p className="mb-5 text-sm text-white/70">
             Continúa con las tareas más frecuentes.

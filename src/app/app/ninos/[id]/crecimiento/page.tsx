@@ -2,6 +2,8 @@ import Link from "next/link";
 import { notFound } from "next/navigation";
 
 import { Button } from "@/components/ui/button";
+import { DataTableShell } from "@/components/ui/data-table-shell";
+import { PageBackLink } from "@/components/ui/page-back-link";
 import { can } from "@/modules/auth/authorization";
 import { requireApplicationUser } from "@/modules/auth/session";
 import { ChildNavigation } from "@/modules/children/components/child-navigation";
@@ -43,6 +45,7 @@ export default async function GrowthHistoryPage({
     .reverse();
   return (
     <section className="space-y-6">
+      <PageBackLink href={`/app/ninos/${child.id}`} label="Volver al perfil" />
       <header className="flex flex-wrap items-end justify-between gap-4">
         <div>
           <p className="text-sm font-medium text-primary">Crecimiento</p>
@@ -73,7 +76,7 @@ export default async function GrowthHistoryPage({
       </div>
       <GrowthHistoryCharts data={chartData} />
       {records.length ? (
-        <div className="overflow-x-auto rounded-xl border bg-card">
+        <DataTableShell>
           <table className="w-full min-w-3xl text-left text-sm">
             <thead className="border-b bg-muted/40">
               <tr>
@@ -155,7 +158,7 @@ export default async function GrowthHistoryPage({
               ))}
             </tbody>
           </table>
-        </div>
+        </DataTableShell>
       ) : (
         <p className="rounded-xl border p-6 text-muted-foreground">
           Aún no hay mediciones de crecimiento registradas.

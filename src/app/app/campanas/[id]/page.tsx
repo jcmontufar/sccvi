@@ -1,3 +1,4 @@
+import { PageBackLink } from "@/components/ui/page-back-link";
 import { requireApplicationUser } from "@/modules/auth/session";
 import { CampaignSendButton } from "@/modules/campaigns/components/campaign-send-button";
 import { getCampaign } from "@/modules/campaigns/services/campaign-service";
@@ -37,6 +38,7 @@ export default async function CampaignDetailPage({
   );
   return (
     <section className="space-y-6">
+      <PageBackLink href="/app/campanas" label="Volver a campañas" />
       <header className="flex flex-wrap items-start justify-between gap-4">
         <div>
           <h1 className="text-3xl font-semibold">{campaign.name}</h1>

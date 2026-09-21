@@ -33,15 +33,15 @@ export function ChildNavigation({
   return (
     <nav
       aria-label="Secciones del perfil del niño"
-      className="flex gap-2 overflow-x-auto border-b pb-3"
+      className="flex gap-2 overflow-x-auto rounded-2xl border bg-card p-2 shadow-sm"
     >
       {visibleLinks.map((item) => (
         <Link
           aria-current={active === item.key ? "page" : undefined}
           className={
             active === item.key
-              ? "rounded-lg bg-primary px-3 py-2 text-sm text-primary-foreground"
-              : "rounded-lg px-3 py-2 text-sm hover:bg-muted"
+              ? "flex min-h-11 items-center rounded-xl bg-primary px-3.5 py-2 text-sm font-semibold whitespace-nowrap text-primary-foreground"
+              : "flex min-h-11 items-center rounded-xl px-3.5 py-2 text-sm font-semibold whitespace-nowrap text-muted-foreground hover:bg-accent hover:text-accent-foreground"
           }
           href={item.href}
           key={item.key}

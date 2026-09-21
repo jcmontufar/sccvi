@@ -1,6 +1,9 @@
 import Link from "next/link";
 
 import { Button } from "@/components/ui/button";
+import { DataTableShell } from "@/components/ui/data-table-shell";
+import { PageHeader } from "@/components/ui/page-header";
+import { Select } from "@/components/ui/select";
 import { requireApplicationUser } from "@/modules/auth/session";
 import { ReportAnalytics } from "@/modules/reports/components/report-analytics";
 import { getReport } from "@/modules/reports/services/report-service";
@@ -69,16 +72,11 @@ export default async function ReportsPage({
 
   return (
     <section className="space-y-6">
-      <header>
-        <p className="text-sm font-medium text-sky-700">Análisis operativo</p>
-        <h1 className="text-3xl font-semibold tracking-tight">
-          Centro de reportes
-        </h1>
-        <p className="mt-2 max-w-3xl text-muted-foreground">
-          Consulta información autorizada para seguimiento territorial, de
-          crecimiento, vacunación y alertas, sin emitir diagnósticos.
-        </p>
-      </header>
+      <PageHeader
+        description="Consulta información autorizada para seguimiento territorial, de crecimiento, vacunación y alertas, sin emitir diagnósticos."
+        eyebrow="Análisis operativo"
+        title="Centro de reportes"
+      />
 
       <form className="rounded-2xl border bg-card p-4 shadow-sm">
         <div
@@ -86,11 +84,7 @@ export default async function ReportsPage({
         >
           <label className="text-sm font-medium">
             Reporte
-            <select
-              className="mt-2 h-10 w-full rounded-lg border bg-background px-3"
-              defaultValue={filters.type}
-              name="type"
-            >
+            <Select className="mt-2" defaultValue={filters.type} name="type">
               <optgroup label="Territorio">
                 <option value="communities">Comunidades</option>
               </optgroup>
@@ -112,13 +106,13 @@ export default async function ReportsPage({
               <optgroup label="Seguimiento operativo">
                 <option value="alerts">Alertas</option>
               </optgroup>
-            </select>
+            </Select>
           </label>
           {schedule ? (
             <label className="text-sm font-medium">
               Dosis del esquema vigente
-              <select
-                className="mt-2 h-10 w-full rounded-lg border bg-background px-3"
+              <Select
+                className="mt-2"
                 defaultValue={filters.doseCode}
                 name="doseCode"
               >
@@ -128,7 +122,7 @@ export default async function ReportsPage({
                     {dose.label}
                   </option>
                 ))}
-              </select>
+              </Select>
             </label>
           ) : (
             <>
@@ -197,7 +191,7 @@ export default async function ReportsPage({
       </header>
 
       {report.notice ? (
-        <p className="rounded-xl border bg-amber-50 p-4 text-sm text-amber-900">
+        <p className="rounded-xl border border-warning/20 bg-warning/10 p-4 text-sm text-warning">
           {report.notice}
         </p>
       ) : null}
@@ -215,7 +209,7 @@ export default async function ReportsPage({
               {report.rows.length === 1 ? "registro" : "registros"}).
             </p>
           </div>
-          <div className="overflow-x-auto rounded-2xl border bg-card shadow-sm">
+          <DataTableShell>
             <table className="w-full min-w-3xl text-sm">
               <thead className="bg-muted">
                 <tr>
@@ -241,7 +235,7 @@ export default async function ReportsPage({
                 ))}
               </tbody>
             </table>
-          </div>
+          </DataTableShell>
         </section>
       ) : (
         <section className="rounded-2xl border border-dashed bg-muted/30 p-8 text-center">

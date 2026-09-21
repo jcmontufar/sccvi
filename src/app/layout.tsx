@@ -1,4 +1,4 @@
-import type { Metadata } from "next";
+import type { Metadata, Viewport } from "next";
 import { Geist } from "next/font/google";
 import "./globals.css";
 
@@ -8,8 +8,18 @@ const geist = Geist({
 });
 
 export const metadata: Metadata = {
-  title: "SCCVI",
+  title: {
+    default: "SCCVI",
+    template: "%s · SCCVI",
+  },
   description: "Sistema de Control de Crecimiento y Vacunación Infantil",
+  applicationName: "SCCVI",
+};
+
+export const viewport: Viewport = {
+  themeColor: "#07556D",
+  width: "device-width",
+  initialScale: 1,
 };
 
 export default function RootLayout({

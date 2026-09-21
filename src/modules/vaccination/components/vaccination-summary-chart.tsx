@@ -2,10 +2,12 @@
 
 import { Cell, Pie, PieChart, ResponsiveContainer, Tooltip } from "recharts";
 
+import { semanticChartColors } from "@/components/charts/chart-palette";
+
 const items = [
-  { key: "APPLIED", label: "Aplicadas", color: "#0d9488" },
-  { key: "PENDING", label: "Pendientes", color: "#f59e0b" },
-  { key: "OVERDUE", label: "Atrasadas", color: "#e11d48" },
+  { key: "APPLIED", label: "Aplicadas", color: semanticChartColors.applied },
+  { key: "PENDING", label: "Pendientes", color: semanticChartColors.pending },
+  { key: "OVERDUE", label: "Atrasadas", color: semanticChartColors.overdue },
 ] as const;
 
 export function VaccinationSummaryChart({

@@ -1,4 +1,5 @@
 import { requireApplicationUser } from "@/modules/auth/session";
+import { PageHeader } from "@/components/ui/page-header";
 import { DashboardOverview } from "@/modules/dashboard/components/dashboard-overview";
 import { getDashboardMetrics } from "@/modules/dashboard/services/dashboard-service";
 
@@ -14,16 +15,11 @@ export default async function ApplicationHomePage() {
   const metrics = await getDashboardMetrics(user);
   return (
     <section className="space-y-7">
-      <header className="space-y-2">
-        <p className="text-sm font-medium text-sky-700">Resumen operativo</p>
-        <h1 className="text-3xl font-semibold tracking-tight sm:text-4xl">
-          Bienvenido, {user.fullName}
-        </h1>
-        <p className="text-muted-foreground">
-          Perfil: {roleLabels[user.role]}. Consulta el estado actual y prioriza
-          los próximos seguimientos.
-        </p>
-      </header>
+      <PageHeader
+        description={`Perfil: ${roleLabels[user.role]}. Consulta el estado actual y prioriza los próximos seguimientos.`}
+        eyebrow="Resumen operativo"
+        title={`Bienvenido, ${user.fullName}`}
+      />
       <DashboardOverview metrics={metrics} role={user.role} />
     </section>
   );

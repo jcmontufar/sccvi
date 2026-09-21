@@ -1,6 +1,7 @@
 import Link from "next/link";
 
 import { Button } from "@/components/ui/button";
+import { DataTableShell } from "@/components/ui/data-table-shell";
 import { can } from "@/modules/auth/authorization";
 import { requireApplicationUser } from "@/modules/auth/session";
 import { CommunityStatusButton } from "@/modules/communities/components/community-status-button";
@@ -101,7 +102,7 @@ export default async function CommunitiesPage({
         </Button>
       </form>
       {communities.length ? (
-        <div className="overflow-x-auto rounded-xl border bg-card">
+        <DataTableShell>
           <table className="w-full min-w-2xl text-left text-sm">
             <thead className="border-b bg-muted/40">
               <tr>
@@ -161,7 +162,7 @@ export default async function CommunitiesPage({
               })}
             </tbody>
           </table>
-        </div>
+        </DataTableShell>
       ) : (
         <p className="rounded-xl border p-6 text-muted-foreground">
           No se encontraron comunidades con los filtros seleccionados.
