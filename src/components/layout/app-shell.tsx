@@ -1,5 +1,6 @@
 "use client";
 
+import Image from "next/image";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 
@@ -102,10 +103,32 @@ export function AppShell({
     <div className="min-h-svh bg-background">
       <aside className="fixed inset-y-0 left-0 z-30 hidden w-64 flex-col border-r border-sidebar-border bg-sidebar p-4 text-sidebar-foreground md:flex">
         <Link
-          className="rounded-xl px-3 py-3 outline-none focus-visible:ring-3 focus-visible:ring-sidebar-ring/40"
+          className="flex items-center gap-2 rounded-xl px-2 py-3 outline-none focus-visible:ring-3 focus-visible:ring-sidebar-ring/40"
           href="/app"
         >
-          <SccviLogo className="mx-auto size-16" compact />
+          <Image
+            alt=""
+            aria-hidden="true"
+            className="size-11 shrink-0 object-contain"
+            height={1254}
+            priority
+            sizes="44px"
+            src="/branding/sccvi-isotype.png"
+            width={1254}
+          />
+          <span className="min-w-0">
+            <span className="block text-lg leading-none font-bold tracking-[0.08em] text-white">
+              SCCVI
+            </span>
+            <span className="mt-1 block text-[0.55rem] leading-[1.3] font-medium text-sidebar-foreground/75">
+              <span className="block whitespace-nowrap">
+                Sistema de Control de
+              </span>
+              <span className="block whitespace-nowrap">
+                Crecimiento y Vacunación Infantil
+              </span>
+            </span>
+          </span>
         </Link>
         <nav
           aria-label="Navegación principal"
