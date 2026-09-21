@@ -33,6 +33,7 @@
     "test": "vitest run",
     "test:integration": "vitest run --config vitest.integration.config.mts",
     "test:e2e": "playwright test",
+    "test:pwa": "playwright test --config playwright.pwa.config.ts",
     "test:staging-smoke": "playwright test --config playwright.staging.config.ts",
     "typecheck": "node -e \"require('node:fs').rmSync('.next/dev', { recursive: true, force: true })\" && next typegen && tsc --noEmit",
     "start": "next start"

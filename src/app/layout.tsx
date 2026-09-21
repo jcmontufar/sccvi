@@ -1,5 +1,8 @@
 import type { Metadata, Viewport } from "next";
 import { Geist } from "next/font/google";
+
+import { ServiceWorkerRegistration } from "@/components/pwa/service-worker-registration";
+
 import "./globals.css";
 
 const geist = Geist({
@@ -14,6 +17,11 @@ export const metadata: Metadata = {
   },
   description: "Sistema de Control de Crecimiento y Vacunación Infantil",
   applicationName: "SCCVI",
+  appleWebApp: {
+    capable: true,
+    statusBarStyle: "default",
+    title: "SCCVI",
+  },
 };
 
 export const viewport: Viewport = {
@@ -29,7 +37,10 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="es" className={geist.variable}>
-      <body>{children}</body>
+      <body>
+        {children}
+        <ServiceWorkerRegistration />
+      </body>
     </html>
   );
 }

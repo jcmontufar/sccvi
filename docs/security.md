@@ -169,3 +169,13 @@ chat ID. SCCVI stores no Telegram username, name, telephone number or photo.
 Authorized center staff may create a link or revoke it; `/stop` revokes from the
 linked chat. Link generation is limited to three requests per guardian per
 hour. Provider credentials and both webhook secrets remain server-only.
+
+## PWA Cache Boundary
+
+The SCCVI service worker maintains a versioned cache containing only the
+self-contained public `/offline.html` fallback. It never stores authenticated
+pages, children, guardians, growth, vaccination, alerts, campaigns, reports,
+API responses or React Server Component payloads. Non-GET requests are not
+intercepted, and no background synchronization or offline mutation queue is
+implemented. Losing connectivity therefore presents a generic Spanish offline
+state and cannot enable offline clinical work.
