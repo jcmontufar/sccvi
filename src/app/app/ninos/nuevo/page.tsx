@@ -1,5 +1,6 @@
 import { notFound } from "next/navigation";
 
+import { PageBackLink } from "@/components/ui/page-back-link";
 import { can } from "@/modules/auth/authorization";
 import { requireApplicationUser } from "@/modules/auth/session";
 import { ChildForm } from "@/modules/children/components/child-form";
@@ -19,6 +20,7 @@ export default async function NewChildPage() {
   });
   return (
     <section className="mx-auto max-w-2xl space-y-6">
+      <PageBackLink href="/app/ninos" label="Volver a niños" />
       <header>
         <p className="text-sm font-medium text-primary">Niños</p>
         <h1 className="text-3xl font-semibold">Registrar niño</h1>

@@ -1,6 +1,9 @@
 import Link from "next/link";
 
 import { Button } from "@/components/ui/button";
+import { EmptyState } from "@/components/ui/empty-state";
+import { PageHeader } from "@/components/ui/page-header";
+import { Select } from "@/components/ui/select";
 import { can } from "@/modules/auth/authorization";
 import { requireApplicationUser } from "@/modules/auth/session";
 import { RefreshFollowUpsButton } from "@/modules/alerts/components/refresh-follow-ups-button";
@@ -23,12 +26,12 @@ const statusLabels = {
 const severityPresentation = {
   PREVENTIVE: {
     label: "Preventiva",
-    className: "bg-amber-50 text-amber-800 ring-amber-200",
+    className: "bg-warning/10 text-warning ring-warning/25",
     symbol: "○",
   },
   CRITICAL: {
     label: "Crítica",
-    className: "bg-rose-50 text-rose-800 ring-rose-200",
+    className: "bg-destructive/10 text-destructive ring-destructive/20",
     symbol: "!",
   },
 } as const;
@@ -36,17 +39,17 @@ const severityPresentation = {
 const typePresentation = {
   GROWTH: {
     label: "Crecimiento",
-    className: "bg-sky-50 text-sky-800",
+    className: "bg-primary/10 text-primary",
     symbol: "↗",
   },
   VACCINATION: {
     label: "Vacunación",
-    className: "bg-teal-50 text-teal-800",
+    className: "bg-success/10 text-success",
     symbol: "✓",
   },
   MISSED_FOLLOW_UP: {
     label: "Seguimiento",
-    className: "bg-violet-50 text-violet-800",
+    className: "bg-chart-4/10 text-chart-4",
     symbol: "◷",
   },
 } as const;
@@ -86,14 +89,11 @@ export default async function AlertsPage({
 
   return (
     <section className="space-y-6">
-      <header>
-        <p className="text-sm font-medium text-sky-700">Bandeja operativa</p>
-        <h1 className="text-3xl font-semibold tracking-tight">Alertas</h1>
-        <p className="mt-2 text-muted-foreground">
-          Prioriza seguimientos preventivos. Las alertas no constituyen
-          diagnósticos médicos.
-        </p>
-      </header>
+      <PageHeader
+        description="Prioriza seguimientos preventivos. Las alertas no constituyen diagnósticos médicos."
+        eyebrow="Bandeja operativa"
+        title="Alertas"
+      />
 
       <section
         aria-label="Resumen de alertas abiertas"
@@ -103,19 +103,19 @@ export default async function AlertsPage({
           {
             label: "Abiertas",
             value: summary.open,
-            tone: "bg-sky-50 text-sky-700",
+            tone: "bg-primary/10 text-primary",
             symbol: "◎",
           },
           {
             label: "Preventivas",
             value: summary.preventive,
-            tone: "bg-amber-50 text-amber-700",
+            tone: "bg-warning/10 text-warning",
             symbol: "○",
           },
           {
             label: "Críticas",
             value: summary.critical,
-            tone: "bg-rose-50 text-rose-700",
+            tone: "bg-destructive/10 text-destructive",
             symbol: "!",
           },
         ].map((item) => (
@@ -173,8 +173,8 @@ export default async function AlertsPage({
         <div className="grid gap-3 md:grid-cols-3">
           <label className="text-sm font-medium">
             Estado
-            <select
-              className="mt-2 h-10 w-full rounded-lg border bg-background px-3"
+            <Select
+              className="mt-2"
               defaultValue={filters.status}
               name="status"
             >
@@ -182,32 +182,28 @@ export default async function AlertsPage({
               <option value="REVIEWED">Revisadas</option>
               <option value="RESOLVED">Resueltas</option>
               <option value="ALL">Todas</option>
-            </select>
+            </Select>
           </label>
           <label className="text-sm font-medium">
             Severidad
-            <select
-              className="mt-2 h-10 w-full rounded-lg border bg-background px-3"
+            <Select
+              className="mt-2"
               defaultValue={filters.severity}
               name="severity"
             >
               <option value="ALL">Todas</option>
               <option value="PREVENTIVE">Preventiva</option>
               <option value="CRITICAL">Crítica</option>
-            </select>
+            </Select>
           </label>
           <label className="text-sm font-medium">
             Tipo
-            <select
-              className="mt-2 h-10 w-full rounded-lg border bg-background px-3"
-              defaultValue={filters.type}
-              name="type"
-            >
+            <Select className="mt-2" defaultValue={filters.type} name="type">
               <option value="ALL">Todos</option>
               <option value="GROWTH">Crecimiento</option>
               <option value="VACCINATION">Vacunación</option>
               <option value="MISSED_FOLLOW_UP">Seguimiento vencido</option>
-            </select>
+            </Select>
           </label>
         </div>
         <div className="mt-4 flex flex-wrap gap-2">
@@ -232,8 +228,8 @@ export default async function AlertsPage({
             <article
               className={`rounded-2xl border bg-card p-5 shadow-sm ${
                 alert.severity === "CRITICAL"
-                  ? "border-l-4 border-l-rose-500"
-                  : "border-l-4 border-l-amber-400"
+                  ? "border-l-4 border-l-destructive"
+                  : "border-l-4 border-l-warning"
               }`}
               key={alert.id}
             >
@@ -294,7 +290,7 @@ export default async function AlertsPage({
           );
         })}
         {!alerts.length ? (
-          <div className="rounded-2xl border border-dashed bg-muted/30 p-8 text-center">
+          <EmptyState className="flex-col">
             <h2 className="font-medium">No hay alertas para mostrar</h2>
             <p className="mt-1 text-sm text-muted-foreground">
               Ajusta los filtros o vuelve a revisar más adelante.
@@ -308,7 +304,7 @@ export default async function AlertsPage({
                 Limpiar filtros
               </Button>
             ) : null}
-          </div>
+          </EmptyState>
         ) : null}
       </div>
     </section>

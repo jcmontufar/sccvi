@@ -1,5 +1,6 @@
 import { notFound } from "next/navigation";
 
+import { PageBackLink } from "@/components/ui/page-back-link";
 import { can } from "@/modules/auth/authorization";
 import { requireApplicationUser } from "@/modules/auth/session";
 import { communityService } from "@/modules/communities/queries/prisma-community-repository";
@@ -27,6 +28,10 @@ export default async function EditGuardianPage({
   });
   return (
     <section className="mx-auto max-w-2xl space-y-6">
+      <PageBackLink
+        href={`/app/tutores/${guardian.id}`}
+        label="Volver al tutor"
+      />
       <header>
         <p className="text-sm font-medium text-primary">Tutores</p>
         <h1 className="text-3xl font-semibold">Editar tutor o responsable</h1>

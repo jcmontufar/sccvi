@@ -1,5 +1,6 @@
 import { notFound } from "next/navigation";
 
+import { PageBackLink } from "@/components/ui/page-back-link";
 import { can } from "@/modules/auth/authorization";
 import { requireApplicationUser } from "@/modules/auth/session";
 import {
@@ -19,6 +20,10 @@ export default async function NewGrowthRecordPage({
   if (!can(user, "growth:create", childAccessResource(child))) notFound();
   return (
     <section className="mx-auto max-w-3xl space-y-6">
+      <PageBackLink
+        href={`/app/ninos/${child.id}/crecimiento`}
+        label="Volver a crecimiento"
+      />
       <header>
         <p className="text-sm font-medium text-primary">
           Crecimiento · {child.fullName}

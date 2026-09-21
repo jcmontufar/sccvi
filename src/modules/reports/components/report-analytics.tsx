@@ -11,7 +11,22 @@ import {
   YAxis,
 } from "recharts";
 
+import {
+  chartPalette,
+  semanticChartColors,
+} from "@/components/charts/chart-palette";
+import { ChartCard } from "@/components/charts/chart-card";
+import { EmptyState } from "@/components/ui/empty-state";
 import type { ReportAnalytics as ReportAnalyticsData } from "@/modules/reports/types/report-analytics";
+
+function reportSeriesColor(key: string, index: number) {
+  if (key === "applied") return semanticChartColors.applied;
+  if (key === "pending") return semanticChartColors.pending;
+  if (key === "overdue" || key === "critical") {
+    return semanticChartColors.critical;
+  }
+  return chartPalette[index % chartPalette.length];
+}
 
 function AnalyticsTooltip({
   active,
@@ -87,14 +102,12 @@ export function ReportAnalytics({
             ),
           );
           return (
-            <article
-              className="rounded-2xl border bg-card p-5 shadow-sm"
+            <ChartCard
+              description={chart.description}
               key={chart.title}
+              summary={`${chart.data.length} categorías representadas.`}
+              title={chart.title}
             >
-              <h3 className="font-semibold">{chart.title}</h3>
-              <p className="mb-4 text-sm text-muted-foreground">
-                {chart.description}
-              </p>
               {chart.data.length && hasValues ? (
                 <div
                   aria-label={chart.title}
@@ -119,10 +132,10 @@ export function ReportAnalytics({
                       />
                       <Tooltip content={<AnalyticsTooltip />} />
                       {chart.series.length > 1 ? <Legend /> : null}
-                      {chart.series.map((series) => (
+                      {chart.series.map((series, index) => (
                         <Bar
                           dataKey={series.key}
-                          fill={series.color}
+                          fill={reportSeriesColor(series.key, index)}
                           key={series.key}
                           name={series.label}
                           radius={[0, 5, 5, 0]}
@@ -133,9 +146,9 @@ export function ReportAnalytics({
                   </ResponsiveContainer>
                 </div>
               ) : (
-                <p className="rounded-xl border border-dashed bg-muted/30 p-6 text-center text-sm text-muted-foreground">
+                <EmptyState className="min-h-28">
                   No hay valores para representar en esta gráfica.
-                </p>
+                </EmptyState>
               )}
               {chart.data.some((item) => item.detail === "N/A") ? (
                 <div className="mt-3 flex flex-wrap gap-2 text-xs text-muted-foreground">
@@ -151,7 +164,7 @@ export function ReportAnalytics({
                     ))}
                 </div>
               ) : null}
-            </article>
+            </ChartCard>
           );
         })}
       </div>

@@ -33,7 +33,7 @@ export function ManualAlertNotificationButton({
         {pending ? "Enviando…" : "Enviar notificación"}
       </Button>
       {result.message ? (
-        <p className="mt-2 text-sm text-emerald-700" role="status">
+        <p className="mt-2 text-sm text-success" role="status">
           {result.message}
         </p>
       ) : null}

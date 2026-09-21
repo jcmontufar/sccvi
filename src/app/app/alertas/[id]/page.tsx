@@ -1,3 +1,4 @@
+import { PageBackLink } from "@/components/ui/page-back-link";
 import { can } from "@/modules/auth/authorization";
 import { requireApplicationUser } from "@/modules/auth/session";
 import { AlertTransitionButton } from "@/modules/alerts/components/alert-transition-button";
@@ -63,6 +64,7 @@ export default async function AlertDetailPage({
     : [];
   return (
     <section className="mx-auto max-w-3xl space-y-6">
+      <PageBackLink href="/app/alertas" label="Volver a alertas" />
       <header>
         <h1 className="text-3xl font-semibold">{alert.title}</h1>
         <p className="mt-2 text-muted-foreground">

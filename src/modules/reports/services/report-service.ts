@@ -138,12 +138,10 @@ export async function getReport(
               {
                 key: "children",
                 label: "Niños",
-                color: "#0284c7",
               },
               {
                 key: "guardians",
                 label: "Tutores",
-                color: "#0d9488",
               },
             ],
           },
@@ -209,7 +207,6 @@ export async function getReport(
               {
                 key: "value",
                 label: "Mediciones",
-                color: "#0284c7",
               },
             ],
           },
@@ -286,7 +283,6 @@ export async function getReport(
               {
                 key: "value",
                 label: "Aplicaciones",
-                color: "#0d9488",
               },
             ],
           },
@@ -394,12 +390,10 @@ export async function getReport(
               {
                 key: "pending",
                 label: "Pendientes",
-                color: "#f59e0b",
               },
               {
                 key: "overdue",
                 label: "Atrasadas",
-                color: "#e11d48",
               },
             ],
           },
@@ -497,7 +491,6 @@ export async function getReport(
               {
                 key: "value",
                 label: "Registros",
-                color: filters.type === "low-weight" ? "#0284c7" : "#f97316",
               },
             ],
           },
@@ -628,7 +621,6 @@ export async function getReport(
               {
                 key: "percentage",
                 label: "Cobertura",
-                color: "#0d9488",
                 unit: "%",
               },
             ],
@@ -739,7 +731,6 @@ export async function getReport(
               {
                 key: "averageWeight",
                 label: "Peso promedio",
-                color: "#0284c7",
                 unit: " kg",
               },
             ],
@@ -756,7 +747,6 @@ export async function getReport(
               {
                 key: "averageHeight",
                 label: "Talla promedio",
-                color: "#0d9488",
                 unit: " cm",
               },
             ],
@@ -836,12 +826,10 @@ export async function getReport(
             {
               key: "preventive",
               label: "Preventivas",
-              color: "#f59e0b",
             },
             {
               key: "critical",
               label: "Críticas",
-              color: "#e11d48",
             },
           ],
         },

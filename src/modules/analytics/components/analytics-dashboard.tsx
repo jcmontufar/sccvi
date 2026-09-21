@@ -14,7 +14,14 @@ import {
   YAxis,
 } from "recharts";
 
+import { ChartCard } from "@/components/charts/chart-card";
+import {
+  chartPalette,
+  semanticChartColors,
+} from "@/components/charts/chart-palette";
 import { Button } from "@/components/ui/button";
+import { DataTableShell } from "@/components/ui/data-table-shell";
+import { EmptyState } from "@/components/ui/empty-state";
 import type { AnalyticsResult } from "@/modules/analytics/types/analytics";
 import type { ApplicationRole } from "@/modules/auth/types";
 
@@ -35,32 +42,6 @@ const alertTypeLabels = {
   VACCINATION: "Vacunación",
   MISSED_FOLLOW_UP: "Seguimiento vencido",
 } as const;
-
-function EmptyState({ children }: { children: React.ReactNode }) {
-  return (
-    <div className="rounded-xl border border-dashed bg-muted/30 p-8 text-center text-sm text-muted-foreground">
-      {children}
-    </div>
-  );
-}
-
-function ChartCard({
-  title,
-  description,
-  children,
-}: {
-  title: string;
-  description: string;
-  children: React.ReactNode;
-}) {
-  return (
-    <article className="rounded-2xl border bg-card p-5 shadow-sm">
-      <h3 className="font-semibold">{title}</h3>
-      <p className="mb-4 text-sm text-muted-foreground">{description}</p>
-      {children}
-    </article>
-  );
-}
 
 function PriorityList({
   title,
@@ -92,7 +73,7 @@ function PriorityList({
                     {item.community} · desde {item.date}
                   </p>
                 </div>
-                <span className="shrink-0 rounded-full bg-amber-100 px-2 py-1 text-xs font-medium text-amber-900">
+                <span className="shrink-0 rounded-full bg-warning/10 px-2 py-1 text-xs font-semibold text-warning">
                   {item.daysPending} días pendientes
                 </span>
               </div>
@@ -359,17 +340,17 @@ export function AnalyticsDashboard({
                     <Line
                       dataKey="measurements"
                       name="Mediciones"
-                      stroke="#0284c7"
+                      stroke={chartPalette[0]}
                     />
                     <Line
                       dataKey="measuredChildren"
                       name="Niños medidos"
-                      stroke="#0d9488"
+                      stroke={chartPalette[2]}
                     />
                     <Line
                       dataKey="vaccinations"
                       name="Vacunas aplicadas"
-                      stroke="#7c3aed"
+                      stroke={chartPalette[3]}
                     />
                   </LineChart>
                 </ResponsiveContainer>
@@ -394,22 +375,22 @@ export function AnalyticsDashboard({
                     <Line
                       dataKey="alertsGenerated"
                       name="Alertas generadas"
-                      stroke="#e11d48"
+                      stroke={semanticChartColors.critical}
                     />
                     <Line
                       dataKey="alertsResolved"
                       name="Alertas resueltas"
-                      stroke="#16a34a"
+                      stroke={semanticChartColors.applied}
                     />
                     <Line
                       dataKey="followUpsDue"
                       name="Seguimientos previstos"
-                      stroke="#f59e0b"
+                      stroke={semanticChartColors.pending}
                     />
                     <Line
                       dataKey="followUpsCompleted"
                       name="Seguimientos completados"
-                      stroke="#0891b2"
+                      stroke={chartPalette[1]}
                     />
                   </LineChart>
                 </ResponsiveContainer>
@@ -432,7 +413,7 @@ export function AnalyticsDashboard({
           </p>
         </div>
         {result.territories.length ? (
-          <div className="overflow-x-auto rounded-2xl border bg-card shadow-sm">
+          <DataTableShell>
             <table className="w-full min-w-6xl text-sm">
               <thead className="bg-muted">
                 <tr>
@@ -463,7 +444,7 @@ export function AnalyticsDashboard({
                 ))}
               </tbody>
             </table>
-          </div>
+          </DataTableShell>
         ) : (
           <EmptyState>
             No hay comunidades autorizadas para los filtros seleccionados.
@@ -524,7 +505,7 @@ export function AnalyticsDashboard({
                   <Bar
                     dataKey="value"
                     name="Dosis atrasadas"
-                    fill="#f97316"
+                    fill={semanticChartColors.overdue}
                     radius={[6, 6, 0, 0]}
                   />
                 </BarChart>

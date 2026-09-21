@@ -1,5 +1,6 @@
 import { notFound } from "next/navigation";
 
+import { PageBackLink } from "@/components/ui/page-back-link";
 import { can } from "@/modules/auth/authorization";
 import { requireApplicationUser } from "@/modules/auth/session";
 import { HealthCenterForm } from "@/modules/health-centers/components/health-center-form";
@@ -21,6 +22,10 @@ export default async function HealthCenterPage({
 
   return (
     <section className="space-y-6">
+      <PageBackLink
+        href="/app/centros-de-salud"
+        label="Volver a centros de salud"
+      />
       <header>
         <p className="text-sm font-medium text-primary">Centro de salud</p>
         <h1 className="text-3xl font-semibold">{healthCenter.name}</h1>

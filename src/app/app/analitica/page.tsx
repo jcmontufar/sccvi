@@ -1,4 +1,5 @@
 import { getCurrentBusinessDate } from "@/lib/date/business-date";
+import { PageHeader } from "@/components/ui/page-header";
 import { AnalyticsDashboard } from "@/modules/analytics/components/analytics-dashboard";
 import { getAnalytics } from "@/modules/analytics/services/analytics-service";
 import { requireApplicationUser } from "@/modules/auth/session";
@@ -40,16 +41,11 @@ export default async function AnalyticsPage({
 
   return (
     <section className="space-y-7">
-      <header>
-        <p className="text-sm font-medium text-sky-700">Apoyo operativo</p>
-        <h1 className="text-3xl font-semibold tracking-tight sm:text-4xl">
-          Dashboard analítico
-        </h1>
-        <p className="mt-2 max-w-3xl text-muted-foreground">
-          Analiza actividad, seguimiento, vacunación, crecimiento y territorio
-          con información autorizada y criterios metodológicos explícitos.
-        </p>
-      </header>
+      <PageHeader
+        description="Analiza actividad, seguimiento, vacunación, crecimiento y territorio con información autorizada y criterios metodológicos explícitos."
+        eyebrow="Apoyo operativo"
+        title="Dashboard analítico"
+      />
       <AnalyticsDashboard result={result} role={user.role} />
     </section>
   );

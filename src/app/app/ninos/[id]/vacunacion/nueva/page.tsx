@@ -1,5 +1,6 @@
 import { notFound } from "next/navigation";
 
+import { PageBackLink } from "@/components/ui/page-back-link";
 import { can } from "@/modules/auth/authorization";
 import { requireApplicationUser } from "@/modules/auth/session";
 import { VaccinationForm } from "@/modules/vaccination/components/vaccination-form";
@@ -21,6 +22,10 @@ export default async function NewVaccinationPage({
   }
   return (
     <section className="mx-auto max-w-3xl space-y-6">
+      <PageBackLink
+        href={`/app/ninos/${result.child.id}/vacunacion`}
+        label="Volver a vacunación"
+      />
       <header>
         <p className="text-sm font-medium text-primary">Vacunación</p>
         <h1 className="text-3xl font-semibold">Registrar vacuna</h1>

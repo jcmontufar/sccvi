@@ -1,5 +1,6 @@
 import { notFound } from "next/navigation";
 
+import { PageBackLink } from "@/components/ui/page-back-link";
 import { can } from "@/modules/auth/authorization";
 import { requireApplicationUser } from "@/modules/auth/session";
 import { ChildForm } from "@/modules/children/components/child-form";
@@ -27,6 +28,7 @@ export default async function EditChildPage({
   });
   return (
     <section className="mx-auto max-w-2xl space-y-6">
+      <PageBackLink href={`/app/ninos/${child.id}`} label="Volver al perfil" />
       <header>
         <p className="text-sm font-medium text-primary">Niños</p>
         <h1 className="text-3xl font-semibold">Editar información del niño</h1>

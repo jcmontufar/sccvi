@@ -2,6 +2,7 @@ import Link from "next/link";
 import { notFound } from "next/navigation";
 
 import { Button } from "@/components/ui/button";
+import { PageBackLink } from "@/components/ui/page-back-link";
 import { can } from "@/modules/auth/authorization";
 import { requireApplicationUser } from "@/modules/auth/session";
 import { TelegramLinkControls } from "@/modules/guardians/components/telegram-link-controls";
@@ -23,6 +24,7 @@ export default async function GuardianDetailPage({
   });
   return (
     <section className="space-y-6">
+      <PageBackLink href="/app/tutores" label="Volver a tutores" />
       <header className="flex flex-wrap items-end justify-between gap-4">
         <div>
           <p className="text-sm font-medium text-primary">

@@ -1,3 +1,4 @@
+import { PageBackLink } from "@/components/ui/page-back-link";
 import { requireApplicationUser } from "@/modules/auth/session";
 import { CampaignForm } from "@/modules/campaigns/components/campaign-form";
 import { listCampaignVaccinationDoses } from "@/modules/campaigns/services/campaign-service";
@@ -13,6 +14,7 @@ export default async function NewCampaignPage() {
   const vaccinationSchedule = await listCampaignVaccinationDoses(user);
   return (
     <section className="mx-auto max-w-3xl space-y-6">
+      <PageBackLink href="/app/campanas" label="Volver a campañas" />
       <div>
         <h1 className="text-3xl font-semibold">Nueva campaña</h1>
         <p className="mt-2 text-muted-foreground">
