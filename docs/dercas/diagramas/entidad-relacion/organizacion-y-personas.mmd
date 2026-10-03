@@ -1,0 +1,61 @@
+erDiagram
+  HealthCenter {
+    uuid id PK
+    string name
+    string code
+    string address
+    string phone
+    string email
+    boolean isActive
+  }
+  User {
+    uuid id PK
+    uuid authUserId
+    uuid healthCenterId FK
+    string fullName
+    string email
+    UserRole role
+    boolean isActive
+  }
+  Community {
+    uuid id PK
+    uuid healthCenterId FK
+    string name
+    string location
+    int estimatedFamilies
+    boolean isActive
+  }
+  Guardian {
+    uuid id PK
+    uuid communityId FK
+    uuid userId FK
+    string fullName
+    string identification
+    string phone
+    string email
+    NotificationChannel preferredNotificationChannel
+    boolean isActive
+  }
+  Child {
+    uuid id PK
+    uuid communityId FK
+    string fullName
+    date dateOfBirth
+    Sex sex
+    boolean isActive
+  }
+  ChildGuardian {
+    uuid id PK
+    uuid childId FK
+    uuid guardianId FK
+    string relationshipType
+    boolean isPrimary
+  }
+
+  HealthCenter o|--o{ User : healthCenterId
+  HealthCenter ||--o{ Community : healthCenterId
+  Community ||--o{ Guardian : communityId
+  Community ||--o{ Child : communityId
+  User o|--o| Guardian : userId
+  Child ||--o{ ChildGuardian : childId
+  Guardian ||--o{ ChildGuardian : guardianId

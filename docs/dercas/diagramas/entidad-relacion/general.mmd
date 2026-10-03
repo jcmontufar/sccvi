@@ -1,0 +1,204 @@
+erDiagram
+  HealthCenter {
+    uuid id PK
+    string name
+    string code
+    boolean isActive
+  }
+  User {
+    uuid id PK
+    uuid authUserId
+    uuid healthCenterId FK
+    string fullName
+    string email
+    UserRole role
+    boolean isActive
+  }
+  Community {
+    uuid id PK
+    uuid healthCenterId FK
+    string name
+    boolean isActive
+  }
+  Guardian {
+    uuid id PK
+    uuid communityId FK
+    uuid userId FK
+    string fullName
+    NotificationChannel preferredNotificationChannel
+    boolean isActive
+  }
+  Child {
+    uuid id PK
+    uuid communityId FK
+    string fullName
+    date dateOfBirth
+    Sex sex
+    boolean isActive
+  }
+  ChildGuardian {
+    uuid id PK
+    uuid childId FK
+    uuid guardianId FK
+    string relationshipType
+    boolean isPrimary
+  }
+  GrowthRecord {
+    uuid id PK
+    uuid childId FK
+    uuid measuredByUserId FK
+    date measurementDate
+    decimal weightKg
+    decimal heightCm
+  }
+  GrowthAssessment {
+    uuid id PK
+    uuid growthRecordId FK
+    GrowthIndicator indicator
+    decimal zScore
+    decimal percentile
+    string standardVersion
+  }
+  GrowthReference {
+    uuid id PK
+    string standardName
+    string standardVersion
+    Sex sex
+    GrowthIndicator indicator
+    decimal ageReference
+  }
+  GrowthFollowUp {
+    uuid id PK
+    uuid childId FK
+    uuid scheduledByUserId FK
+    uuid sourceGrowthRecordId FK
+    uuid completedByGrowthRecordId FK
+    date dueDate
+    datetime completedAt
+  }
+  Vaccine {
+    uuid id PK
+    string officialCode
+    string name
+    boolean isActive
+  }
+  VaccineScheduleVersion {
+    uuid id PK
+    string code
+    date effectiveFrom
+    date effectiveTo
+    boolean isActive
+  }
+  VaccineSchedule {
+    uuid id PK
+    uuid vaccineId FK
+    uuid scheduleVersionId FK
+    string doseCode
+    int doseNumber
+    string scheduleVersion
+    boolean isActive
+  }
+  Vaccination {
+    uuid id PK
+    uuid childId FK
+    uuid vaccineScheduleId FK
+    uuid administeredByUserId FK
+    date applicationDate
+  }
+  Alert {
+    uuid id PK
+    uuid childId FK
+    uuid reviewedByUserId FK
+    uuid resolvedByUserId FK
+    AlertType type
+    AlertSeverity severity
+    AlertStatus status
+    string sourceType
+    string sourceId
+  }
+  Notification {
+    uuid id PK
+    uuid guardianId FK
+    uuid alertId FK
+    uuid campaignRecipientId FK
+    NotificationChannel channel
+    NotificationStatus status
+    datetime deliveryClaimedAt
+  }
+  GuardianTelegramConnection {
+    uuid id PK
+    uuid guardianId FK
+    string chatId
+    datetime linkedAt
+    datetime revokedAt
+  }
+  TelegramLinkToken {
+    uuid id PK
+    uuid guardianId FK
+    uuid createdByUserId FK
+    string tokenHash
+    datetime expiresAt
+    datetime consumedAt
+  }
+  Campaign {
+    uuid id PK
+    uuid createdByUserId FK
+    string name
+    CampaignStatus status
+  }
+  CampaignRecipient {
+    uuid id PK
+    uuid campaignId FK
+    uuid guardianId FK
+    CampaignRecipientStatus status
+  }
+  QRToken {
+    uuid id PK
+    uuid childId FK
+    uuid createdByUserId FK
+    string tokenHash
+    string pinHash
+    datetime revokedAt
+  }
+  AuditLog {
+    uuid id PK
+    uuid userId FK
+    string action
+    string entityType
+    string entityId
+  }
+
+  HealthCenter o|--o{ User : healthCenterId
+  HealthCenter ||--o{ Community : healthCenterId
+  Community ||--o{ Guardian : communityId
+  Community ||--o{ Child : communityId
+  User o|--o| Guardian : userId
+  Child ||--o{ ChildGuardian : childId
+  Guardian ||--o{ ChildGuardian : guardianId
+  Child ||--o{ GrowthRecord : childId
+  User ||--o{ GrowthRecord : measuredByUserId
+  GrowthRecord ||--o{ GrowthAssessment : growthRecordId
+  Child ||--o{ GrowthFollowUp : childId
+  User ||--o{ GrowthFollowUp : scheduledByUserId
+  GrowthRecord ||--o| GrowthFollowUp : sourceGrowthRecordId
+  GrowthRecord o|--o{ GrowthFollowUp : completedByGrowthRecordId
+  Vaccine ||--o{ VaccineSchedule : vaccineId
+  VaccineScheduleVersion o|--o{ VaccineSchedule : scheduleVersionId
+  Child ||--o{ Vaccination : childId
+  VaccineSchedule ||--o{ Vaccination : vaccineScheduleId
+  User ||--o{ Vaccination : administeredByUserId
+  Child ||--o{ Alert : childId
+  User o|--o{ Alert : reviewedByUserId
+  User o|--o{ Alert : resolvedByUserId
+  Guardian o|--o{ Notification : guardianId
+  Alert o|--o{ Notification : alertId
+  CampaignRecipient o|--o{ Notification : campaignRecipientId
+  Guardian ||--o| GuardianTelegramConnection : guardianId
+  Guardian ||--o{ TelegramLinkToken : guardianId
+  User ||--o{ TelegramLinkToken : createdByUserId
+  User ||--o{ Campaign : createdByUserId
+  Campaign ||--o{ CampaignRecipient : campaignId
+  Guardian ||--o{ CampaignRecipient : guardianId
+  Child ||--o{ QRToken : childId
+  User ||--o{ QRToken : createdByUserId
+  User o|--o{ AuditLog : userId
