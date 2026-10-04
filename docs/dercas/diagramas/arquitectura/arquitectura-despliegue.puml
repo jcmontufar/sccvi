@@ -1,0 +1,69 @@
+@startuml
+title SCCVI — despliegue aislado de STAGING configurado
+caption Topología definida en Git; no acredita disponibilidad actual ni describe producción.
+
+left to right direction
+skinparam backgroundColor #F4F8FA
+skinparam shadowing false
+skinparam defaultFontName Arial
+skinparam ArrowColor #07556D
+skinparam PackageBorderColor #07556D
+skinparam PackageBackgroundColor #FFFFFF
+skinparam NodeBorderColor #07556D
+skinparam NodeBackgroundColor #EAF4F6
+skinparam CloudBorderColor #25A7B8
+skinparam CloudBackgroundColor #EAF4F6
+
+actor "Persona usuaria" as person
+node "Navegador de escritorio" as desktop
+node "Navegador móvil / PWA" as mobile
+
+package "Código y automatización · GitHub" as github {
+  artifact "Repositorio SCCVI\n(main)" as repo
+  node "GitHub Actions" as actions {
+    component "CI de calidad" as ci
+    component "Pruebas aisladas\n(integración y E2E)" as isolated
+    component "Deploy isolated staging\n(workflow manual)" as staging_workflow
+  }
+}
+
+node "Proyecto Vercel aislado · STAGING" as vercel {
+  artifact "Aplicación SCCVI\nNext.js (candidato / estable)" as app
+  component "Cron Vercel\n0 12 * * *" as cron
+}
+
+node "Proyecto Supabase aislado · STAGING" as supabase {
+  component "Supabase Auth" as auth
+  database "PostgreSQL\nSCCVI STAGING" as db
+}
+
+cloud "Supabase efímero\npara pruebas aisladas" as test_supabase
+cloud "Resend\ncorreo" as resend
+cloud "Telegram Bot API\nmensajería" as telegram
+
+person --> desktop : utiliza
+person --> mobile : utiliza
+desktop --> app : HTTPS
+mobile --> app : HTTPS
+repo --> ci : push / PR
+repo --> isolated : push / PR / manual
+repo --> staging_workflow : dispatch manual\nSHA presente en main
+isolated --> test_supabase : identidad de prueba aislada
+staging_workflow --> test_supabase : pruebas previas aisladas
+staging_workflow --> db : preflight y migraciones revisadas
+staging_workflow --> app : candidato → smoke de lectura → promoción
+app --> auth : sesión / claims
+app --> db : Prisma (servidor)
+app --> resend : envío de correo
+app --> telegram : envío de mensajes
+resend --> app : webhook de entrega
+telegram --> app : webhook del bot
+cron --> app : GET /api/internal/alerts/overdue
+
+legend bottom
+  Vercel y Supabase STAGING son componentes del entorno aislado configurado.
+  Resend, Telegram y Supabase efímero son servicios externos o de prueba.
+  GitHub y GitHub Actions son herramientas de código y despliegue, no parte del runtime.
+  No se representa una infraestructura de producción no demostrada.
+endlegend
+@enduml

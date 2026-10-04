@@ -1,0 +1,79 @@
+@startuml
+title SCCVI — arquitectura lógica
+caption Capas conceptuales dentro de una sola aplicación Next.js; no representan microservicios.
+
+left to right direction
+skinparam backgroundColor #F4F8FA
+skinparam shadowing false
+skinparam componentStyle rectangle
+skinparam defaultFontName Arial
+skinparam ArrowColor #07556D
+skinparam PackageBorderColor #07556D
+skinparam PackageBackgroundColor #FFFFFF
+skinparam ComponentBorderColor #07556D
+skinparam ComponentBackgroundColor #EAF4F6
+skinparam DatabaseBorderColor #07556D
+skinparam DatabaseBackgroundColor #EAF4F6
+
+actor "Persona usuaria" as persona
+rectangle "Navegador / PWA" as navegador #FFFFFF
+
+package "SCCVI · monolito modular Next.js" as sccvi {
+  package "Presentación" {
+    component "App Router + React\n(páginas, formularios, gráficos)" as ui
+  }
+
+  package "Aplicación y seguridad" {
+    component "Server Actions" as actions
+    component "Route Handlers\n(exportaciones, cron y webhooks)" as routes
+    component "Sesión Supabase + autorización\n(rol, centro y relación)" as security
+    component "Validación Zod y\norquestación" as orchestration
+  }
+
+  package "Módulos y servicios de dominio" {
+    component "Centros · Comunidades\nTutores · Niños" as people
+    component "Crecimiento · Vacunación\nAlertas" as clinical
+    component "Notificaciones · Campañas\nTarjeta QR" as operations
+    component "Dashboard · Reportes\nAnalítica · Auditoría" as analysis
+  }
+
+  package "Persistencia" {
+    component "Prisma + adaptador PostgreSQL" as prisma
+  }
+}
+
+cloud "Supabase Auth" as supabase_auth #EAF4F6
+database "Supabase PostgreSQL" as postgres
+cloud "Resend" as resend #EAF4F6
+cloud "Telegram Bot API" as telegram #EAF4F6
+
+persona --> navegador : interacción
+navegador --> ui : HTTPS
+ui --> actions : acciones del servidor
+ui --> routes : descarga de reportes
+actions --> security : sesión y permisos
+routes --> security : según la ruta protegida
+actions --> orchestration : entrada validada
+routes --> orchestration : rutas operativas
+orchestration --> people
+orchestration --> clinical
+orchestration --> operations
+orchestration --> analysis
+people --> prisma
+clinical --> prisma
+operations --> prisma
+analysis --> prisma
+security --> prisma : perfil de aplicación
+security --> supabase_auth : identidad y claims
+prisma --> postgres : consultas y transacciones
+operations --> resend : correo saliente
+operations --> telegram : mensaje saliente
+resend --> routes : webhook autenticado
+telegram --> routes : webhook autenticado
+
+legend bottom
+  Las agrupaciones representan código del mismo proceso/despliegue Next.js.
+  Las nubes son servicios externos; PostgreSQL es la persistencia en Supabase.
+  WhatsApp y CRUD de usuarios no se muestran como funciones implementadas.
+endlegend
+@enduml
