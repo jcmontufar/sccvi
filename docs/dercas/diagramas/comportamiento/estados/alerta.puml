@@ -1,0 +1,16 @@
+@startuml
+title Ciclo de vida persistido de Alert
+skinparam backgroundColor #F4F8FA
+[*] --> OPEN : creación con estado predeterminado
+OPEN --> REVIEWED : reviewAlert autorizado / reviewedAt
+REVIEWED --> RESOLVED : resolveAlert autorizado / resolvedAt
+note right of OPEN
+  Las alertas de crecimiento se sincronizan
+  al guardar una evaluación. Las vencidas se
+  generan desde UI o cron con deduplicación.
+end note
+note bottom of RESOLVED
+  No existe transición implementada de reapertura.
+  El envío de Notification tiene estado separado.
+end note
+@enduml

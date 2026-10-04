@@ -1,0 +1,20 @@
+@startuml
+title Ciclo de vida persistido de Notification
+skinparam backgroundColor #F4F8FA
+[*] --> PENDING : crear o reutilizar cola
+PENDING --> PENDING : claim atómico / deliveryClaimedAt
+PENDING --> SENT : proveedor informa envío exitoso
+PENDING --> FAILED : proveedor informa fallo
+SENT --> SENT : webhook Resend email.delivered
+SENT --> FAILED : webhook Resend bounced/failed/suppressed
+FAILED --> SENT : webhook Resend email.delivered posterior
+note right of PENDING
+  El claim es un campo, no un estado adicional.
+  Si ya está reclamado, no se entrega de nuevo.
+end note
+note bottom of FAILED
+  El envío manual de alerta no reintenta FAILED.
+  Las transiciones de webhook se basan en
+  providerMessageId y solo aplican a EMAIL.
+end note
+@enduml

@@ -1,0 +1,27 @@
+@startuml
+title Registro factual de vacunación
+skinparam backgroundColor #F4F8FA
+start
+:Personal envía dosis y fecha de aplicación;
+:Action resuelve usuario activo;
+:Validar entrada y fecha de negocio Guatemala;
+:Obtener niño y dosis del esquema;
+if (¿Niño, centro y rol autorizados?) then (sí)
+  if (¿Niño y dosis activos, versión aprobada,
+fecha válida y sin aplicación duplicada?) then (sí)
+    :Transacción Prisma: crear Vaccination factual;
+    :Crear AuditLog en la misma transacción;
+    :Redirigir al carné de vacunación;
+    note right
+      Los estados del carné se derivan al consultarlo.
+      Registrar no reescribe dosis previas ni dispara
+      aquí un envío de notificaciones.
+    end note
+  else (no)
+    :Mostrar error seguro; no guardar;
+  endif
+else (no)
+  :Denegar acceso;
+endif
+stop
+@enduml

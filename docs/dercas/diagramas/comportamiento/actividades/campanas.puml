@@ -1,0 +1,36 @@
+@startuml
+title Creación y envío de campañas
+skinparam backgroundColor #F4F8FA
+start
+:ADMIN o CENTER_MANAGER envía formulario;
+:Validar sesión, Zod, permiso y centro;
+:Validar comunidad y dosis seleccionada si corresponde;
+if (¿Entrada autorizada y válida?) then (sí)
+  :Seleccionar tutores por segmentación y alcance;
+  :Transacción: Campaign DRAFT,
+  CampaignRecipient y auditoría;
+  :Mostrar detalle del borrador;
+  if (¿Usuario decide enviar?) then (sí)
+    :Autorizar campaign:send y reclamar
+    DRAFT → PROCESSING de forma atómica;
+    if (¿Reclamo logrado?) then (sí)
+      while (¿Quedan destinatarios?) is (sí)
+        :Resolver canal preferido y destino elegible;
+        if (¿Destino elegible?) then (sí)
+          :Crear/reutilizar Notification;
+          :Despachar PENDING y registrar SENT o FAILED;
+        else (no)
+          :Marcar destinatario SKIPPED;
+        endif
+      endwhile (no)
+      :Marcar campaña COMPLETED o FAILED
+      y auditar resultado;
+    else (no)
+      :Rechazar envío duplicado;
+    endif
+  endif
+else (no)
+  :Mostrar error seguro;
+endif
+stop
+@enduml

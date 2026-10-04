@@ -1,0 +1,35 @@
+@startuml
+title Registro de medición y evaluación OMS
+skinparam backgroundColor #F4F8FA
+start
+:Enviar medición desde el perfil infantil;
+:Action resuelve usuario activo;
+:Servicio comprueba niño y autorización growth:create;
+:Validar fecha, peso, talla y método con Zod;
+if (¿Datos y alcance válidos?) then (sí)
+  :Abrir transacción Prisma;
+  :Crear GrowthRecord factual;
+  :Completar seguimientos anteriores pendientes;
+  if (¿Se indicó próximo control?) then (sí)
+    :Crear GrowthFollowUp;
+  endif
+  :Calcular edad nacimiento → fecha de medición;
+  if (¿Dentro de edad OMS soportada?) then (sí)
+    :Buscar referencias OMS por versión, sexo y edad;
+    if (¿Referencias completas?) then (sí)
+      :Calcular y persistir evaluaciones OMS;
+      :Sincronizar alerta preventiva de peso/edad si aplica;
+    else (no)
+      :Error; revertir transacción;
+      stop
+    endif
+  else (no)
+    :No generar evaluación fuera de rango;
+  endif
+  :Auditar y confirmar transacción;
+  :Mostrar historial actualizado;
+else (no)
+  :Mostrar error seguro sin guardar medición;
+endif
+stop
+@enduml
