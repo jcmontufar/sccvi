@@ -1,0 +1,66 @@
+erDiagram
+  Child {
+    uuid id PK
+    uuid communityId FK
+    date dateOfBirth
+    Sex sex
+  }
+  User {
+    uuid id PK
+    uuid healthCenterId FK
+    UserRole role
+  }
+  Vaccine {
+    uuid id PK
+    string officialCode
+    string name
+    string description
+    boolean isActive
+  }
+  VaccineScheduleVersion {
+    uuid id PK
+    string code
+    string name
+    string authority
+    date publishedAt
+    date effectiveFrom
+    date effectiveTo
+    string sourceUrl
+    string sourceSha256
+    boolean isActive
+  }
+  VaccineSchedule {
+    uuid id PK
+    uuid vaccineId FK
+    uuid scheduleVersionId FK
+    string doseCode
+    string doseName
+    int doseNumber
+    int recommendedAgeMonths
+    int recommendedAgeDays
+    int minimumAgeMonths
+    int minimumAgeDays
+    int maximumAgeMonths
+    int maximumAgeDays
+    boolean maximumAgeExclusive
+    int minimumIntervalDays
+    string timingNote
+    string scheduleName
+    string scheduleVersion
+    boolean isActive
+  }
+  Vaccination {
+    uuid id PK
+    uuid childId FK
+    uuid vaccineScheduleId FK
+    uuid administeredByUserId FK
+    date applicationDate
+    date nextDoseDate
+    string notes
+  }
+
+  Vaccine ||--o{ VaccineSchedule : vaccineId
+  VaccineScheduleVersion o|--o{ VaccineSchedule : scheduleVersionId
+  Child ||--o{ Vaccination : childId
+  VaccineSchedule ||--o{ Vaccination : vaccineScheduleId
+  User ||--o{ Vaccination : administeredByUserId

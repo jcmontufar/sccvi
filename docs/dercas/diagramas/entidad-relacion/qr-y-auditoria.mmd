@@ -1,0 +1,37 @@
+erDiagram
+  Child {
+    uuid id PK
+    uuid communityId FK
+    date dateOfBirth
+  }
+  User {
+    uuid id PK
+    uuid healthCenterId FK
+    UserRole role
+  }
+  QRToken {
+    uuid id PK
+    uuid childId FK
+    uuid createdByUserId FK
+    string tokenHash
+    string pinHash
+    int failedPinAttempts
+    datetime pinLockedUntil
+    datetime expiresAt
+    datetime revokedAt
+    datetime lastUsedAt
+  }
+  AuditLog {
+    uuid id PK
+    uuid userId FK
+    string action
+    string entityType
+    string entityId
+    json metadata
+    string ipAddress
+    string userAgent
+  }
+
+  Child ||--o{ QRToken : childId
+  User ||--o{ QRToken : createdByUserId
+  User o|--o{ AuditLog : userId

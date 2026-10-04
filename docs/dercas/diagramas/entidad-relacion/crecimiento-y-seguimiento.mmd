@@ -1,0 +1,62 @@
+erDiagram
+  Child {
+    uuid id PK
+    uuid communityId FK
+    date dateOfBirth
+    Sex sex
+  }
+  User {
+    uuid id PK
+    uuid healthCenterId FK
+    UserRole role
+  }
+  GrowthRecord {
+    uuid id PK
+    uuid childId FK
+    uuid measuredByUserId FK
+    date measurementDate
+    decimal weightKg
+    decimal heightCm
+    GrowthMeasurementMethod measurementMethod
+    string notes
+  }
+  GrowthAssessment {
+    uuid id PK
+    uuid growthRecordId FK
+    GrowthIndicator indicator
+    decimal zScore
+    decimal percentile
+    string classification
+    string standardName
+    string standardVersion
+    datetime calculatedAt
+  }
+  GrowthReference {
+    uuid id PK
+    string standardName
+    string standardVersion
+    Sex sex
+    GrowthIndicator indicator
+    decimal ageReference
+    decimal parameterL
+    decimal parameterM
+    decimal parameterS
+    json additionalParameters
+  }
+  GrowthFollowUp {
+    uuid id PK
+    uuid childId FK
+    uuid scheduledByUserId FK
+    uuid sourceGrowthRecordId FK
+    uuid completedByGrowthRecordId FK
+    date dueDate
+    datetime completedAt
+  }
+
+  Child ||--o{ GrowthRecord : childId
+  User ||--o{ GrowthRecord : measuredByUserId
+  GrowthRecord ||--o{ GrowthAssessment : growthRecordId
+  Child ||--o{ GrowthFollowUp : childId
+  User ||--o{ GrowthFollowUp : scheduledByUserId
+  GrowthRecord ||--o| GrowthFollowUp : sourceGrowthRecordId
+  GrowthRecord o|--o{ GrowthFollowUp : completedByGrowthRecordId

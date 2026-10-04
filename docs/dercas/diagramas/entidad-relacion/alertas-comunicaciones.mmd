@@ -1,0 +1,95 @@
+erDiagram
+  Child {
+    uuid id PK
+    uuid communityId FK
+    string fullName
+  }
+  User {
+    uuid id PK
+    uuid healthCenterId FK
+    UserRole role
+  }
+  Guardian {
+    uuid id PK
+    uuid communityId FK
+    uuid userId FK
+    NotificationChannel preferredNotificationChannel
+  }
+  Alert {
+    uuid id PK
+    uuid childId FK
+    uuid reviewedByUserId FK
+    uuid resolvedByUserId FK
+    AlertType type
+    AlertSeverity severity
+    AlertStatus status
+    string title
+    string message
+    string sourceType
+    string sourceId
+    datetime reviewedAt
+    datetime resolvedAt
+  }
+  Notification {
+    uuid id PK
+    uuid guardianId FK
+    uuid alertId FK
+    uuid campaignRecipientId FK
+    NotificationChannel channel
+    string destination
+    string subject
+    string message
+    NotificationStatus status
+    string providerMessageId
+    string errorMessage
+    datetime sentAt
+    datetime deliveryClaimedAt
+  }
+  GuardianTelegramConnection {
+    uuid id PK
+    uuid guardianId FK
+    string chatId
+    datetime linkedAt
+    datetime consentedAt
+    datetime revokedAt
+  }
+  TelegramLinkToken {
+    uuid id PK
+    uuid guardianId FK
+    uuid createdByUserId FK
+    string tokenHash
+    datetime expiresAt
+    datetime consumedAt
+    datetime revokedAt
+  }
+  Campaign {
+    uuid id PK
+    uuid createdByUserId FK
+    string name
+    string subject
+    string message
+    CampaignStatus status
+    json segmentation
+    datetime scheduledAt
+    datetime startedAt
+    datetime completedAt
+  }
+  CampaignRecipient {
+    uuid id PK
+    uuid campaignId FK
+    uuid guardianId FK
+    CampaignRecipientStatus status
+  }
+
+  Child ||--o{ Alert : childId
+  User o|--o{ Alert : reviewedByUserId
+  User o|--o{ Alert : resolvedByUserId
+  Guardian o|--o{ Notification : guardianId
+  Alert o|--o{ Notification : alertId
+  CampaignRecipient o|--o{ Notification : campaignRecipientId
+  Guardian ||--o| GuardianTelegramConnection : guardianId
+  Guardian ||--o{ TelegramLinkToken : guardianId
+  User ||--o{ TelegramLinkToken : createdByUserId
+  User ||--o{ Campaign : createdByUserId
+  Campaign ||--o{ CampaignRecipient : campaignId
+  Guardian ||--o{ CampaignRecipient : guardianId
