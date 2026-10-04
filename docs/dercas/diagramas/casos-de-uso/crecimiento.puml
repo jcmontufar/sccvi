@@ -1,0 +1,38 @@
+@startuml
+title SCCVI — crecimiento infantil
+left to right direction
+skinparam backgroundColor #F4F8FA
+skinparam shadowing false
+skinparam actorBorderColor #07556D
+skinparam usecaseBorderColor #07556D
+skinparam usecaseBackgroundColor #EAF4F6
+skinparam ArrowColor #07556D
+
+actor "Administrador\n(ADMIN)" as admin
+actor "Personal de salud\n(HEALTH_STAFF)" as staff
+actor "Responsable de centro\n(CENTER_MANAGER)" as manager
+actor "Tutor con cuenta\n(GUARDIAN)" as guardian
+
+rectangle "SCCVI · crecimiento" {
+  usecase "Registrar medición" as create
+  usecase "Corregir medición" as correct
+  usecase "Calcular y guardar\nevaluación OMS" as assess
+  usecase "Consultar historial,\nevaluaciones y gráficas" as history
+}
+
+admin --> create
+staff --> create
+admin --> correct
+staff --> correct
+admin --> history
+staff --> history
+manager --> history
+guardian --> history
+create ..> assess : <<include>>
+correct ..> assess : <<include>>
+
+note bottom of create
+  En el formulario puede programarse la próxima fecha.
+  Las evaluaciones son preventivas, no diagnósticos.
+end note
+@enduml

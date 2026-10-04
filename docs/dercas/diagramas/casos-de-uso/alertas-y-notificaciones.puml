@@ -1,0 +1,52 @@
+@startuml
+title SCCVI — alertas y notificaciones
+left to right direction
+skinparam backgroundColor #F4F8FA
+skinparam shadowing false
+skinparam actorBorderColor #07556D
+skinparam usecaseBorderColor #07556D
+skinparam usecaseBackgroundColor #EAF4F6
+skinparam ArrowColor #07556D
+
+actor "Administrador\n(ADMIN)" as admin
+actor "Personal de salud\n(HEALTH_STAFF)" as staff
+actor "Responsable de centro\n(CENTER_MANAGER)" as manager
+actor "Tutor con cuenta\n(GUARDIAN)" as guardian
+
+rectangle "SCCVI · alertas y comunicaciones" {
+  usecase "Consultar alertas" as read
+  usecase "Revisar alerta" as review
+  usecase "Resolver alerta" as resolve
+  usecase "Actualizar alertas por\nseguimientos o dosis vencidas" as refresh
+  usecase "Notificar una alerta abierta\na un tutor asociado" as notify
+  usecase "Consultar estado de\nnotificación" as delivery
+  usecase "Solicitar vínculo o\ndesvincular Telegram" as telegram_link
+}
+
+admin --> read
+staff --> read
+manager --> read
+guardian --> read
+admin --> review
+staff --> review
+manager --> review
+admin --> resolve
+staff --> resolve
+manager --> resolve
+admin --> refresh
+staff --> refresh
+manager --> refresh
+admin --> notify
+staff --> notify
+manager --> notify
+admin --> delivery
+staff --> delivery
+manager --> delivery
+admin --> telegram_link
+staff --> telegram_link
+
+note bottom of notify
+  Solo alerta abierta y tutor asociado con destino elegible.
+  El cron también actualiza alertas vencidas sin intervención humana.
+end note
+@enduml

@@ -1,0 +1,38 @@
+@startuml
+title SCCVI — vacunación
+left to right direction
+skinparam backgroundColor #F4F8FA
+skinparam shadowing false
+skinparam actorBorderColor #07556D
+skinparam usecaseBorderColor #07556D
+skinparam usecaseBackgroundColor #EAF4F6
+skinparam ArrowColor #07556D
+
+actor "Administrador\n(ADMIN)" as admin
+actor "Personal de salud\n(HEALTH_STAFF)" as staff
+actor "Responsable de centro\n(CENTER_MANAGER)" as manager
+actor "Tutor con cuenta\n(GUARDIAN)" as guardian
+
+rectangle "SCCVI · vacunación" {
+  usecase "Consultar carné, estados\ne historial de dosis" as history
+  usecase "Registrar dosis aplicada" as apply
+  usecase "Consultar catálogo\nde vacunas" as catalog_read
+  usecase "Crear, actualizar o\ndesactivar vacuna" as catalog_manage
+}
+
+admin --> history
+staff --> history
+manager --> history
+guardian --> history
+admin --> apply
+staff --> apply
+admin --> catalog_read
+staff --> catalog_read
+manager --> catalog_read
+admin --> catalog_manage
+
+note bottom of history
+  Los estados se derivan del esquema aplicable
+  y del historial factual; no son un CRUD.
+end note
+@enduml

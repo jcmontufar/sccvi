@@ -1,0 +1,36 @@
+@startuml
+title SCCVI — carné digital QR
+left to right direction
+skinparam backgroundColor #F4F8FA
+skinparam shadowing false
+skinparam actorBorderColor #07556D
+skinparam usecaseBorderColor #07556D
+skinparam usecaseBackgroundColor #EAF4F6
+skinparam ArrowColor #07556D
+
+actor "Administrador\n(ADMIN)" as admin
+actor "Personal de salud\n(HEALTH_STAFF)" as staff
+actor "Portador de credencial QR\n(sin rol requerido)" as visitor
+
+rectangle "SCCVI · carné digital" {
+  usecase "Consultar credenciales\nde un niño" as list
+  usecase "Generar credencial QR" as create
+  usecase "Revocar credencial QR" as revoke
+  usecase "Consultar carné protegido" as access
+  usecase "Validar token, vigencia\ny revocación" as validate
+}
+
+admin --> list
+staff --> list
+admin --> create
+staff --> create
+admin --> revoke
+staff --> revoke
+visitor --> access
+access ..> validate : <<include>>
+
+note bottom of access
+  El PIN se exige solo si la credencial lo configura.
+  La consulta pública no requiere sesión de usuario.
+end note
+@enduml
