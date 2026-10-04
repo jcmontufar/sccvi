@@ -1,0 +1,29 @@
+@startuml
+title Registro de niño y asociación con tutor
+skinparam backgroundColor #F4F8FA
+start
+:Personal autorizado envía formulario de niño;
+:Server Action obtiene usuario activo;
+if (¿Sesión y datos válidos?) then (sí)
+  :Servicio comprueba comunidad activa y alcance del centro;
+  if (¿Autorizado?) then (sí)
+    :Transacción: crear Child y AuditLog;
+    :Redirigir al perfil del niño;
+    if (¿Se asocia tutor?) then (sí)
+      :Enviar tutor y relación desde el perfil;
+      :Validar niño, tutor activo, centro y vínculo no duplicado;
+      if (¿Asociación válida y autorizada?) then (sí)
+        :Transacción: crear ChildGuardian y AuditLog;
+        :Actualizar perfil;
+      else (no)
+        :Mostrar error seguro;
+      endif
+    endif
+  else (no)
+    :Mostrar error seguro;
+  endif
+else (no)
+  :Mostrar error de sesión o validación;
+endif
+stop
+@enduml

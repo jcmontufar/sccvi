@@ -1,0 +1,45 @@
+@startuml
+title Registro de medición de crecimiento
+skinparam backgroundColor #F4F8FA
+actor "Personal de salud" as U
+boundary "Interfaz Next.js" as UI
+control "Server Action" as A
+control "Sesión y autorización" as Auth
+control "Servicio de crecimiento" as S
+database "Prisma" as P
+database "PostgreSQL" as DB
+U -> UI : Completa y envía medición
+UI -> A : createGrowthRecordAction(childId, FormData)
+A -> Auth : requireApplicationUser()
+Auth --> A : usuario activo / error
+A -> S : createGrowthRecord(usuario, childId, datos)
+S -> Auth : getChild + authorize(growth:create, centro)
+Auth --> S : acceso autorizado / error
+S -> S : niño activo, Zod y fecha posterior al nacimiento
+alt entrada y alcance válidos
+  S -> P : $transaction: crear GrowthRecord
+  P -> DB : INSERT factual
+  DB --> P : registro
+  S -> P : completar/crear GrowthFollowUp si aplica
+  P -> DB : UPDATE/INSERT de seguimiento
+  S -> S : calcular edad exacta nacimiento → medición
+  alt edad dentro del rango OMS
+    S -> P : leer GrowthReference OMS versionada
+    P -> DB : SELECT referencias por edad/sexo
+    DB --> P : referencias
+    S -> S : evaluar OMS si referencias completas
+    S -> P : persistir GrowthAssessment\ny sincronizar alerta si aplica
+  else edad fuera del rango OMS
+    S -> S : omitir evaluación derivada
+  end
+  S -> P : crear AuditLog
+  P -> DB : escrituras dentro de la transacción
+  DB --> P : confirmación
+  P --> S : commit
+  S --> A : registro guardado
+  A --> UI : revalidar y redirigir al historial
+else error de autorización, entrada o referencia
+  S --> A : error; transacción revertida si se abrió
+  A --> UI : mensaje seguro en español
+end
+@enduml

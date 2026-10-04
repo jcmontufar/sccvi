@@ -1,0 +1,33 @@
+@startuml
+title Generación, revisión y comunicación de alertas
+skinparam backgroundColor #F4F8FA
+start
+if (¿Origen de generación?) then (medición)
+  :Al guardar evaluación, sincronizar alerta
+  preventiva de percentil peso/edad;
+else (vencimientos)
+  :Control autorizado en UI o GET interno programado;
+  if (¿Cron?) then (sí)
+    :Verificar secreto antes del job;
+  else (no)
+    :Verificar sesión y permiso alert:review;
+  endif
+  :Evaluar seguimientos vencidos y dosis OVERDUE aplicables;
+  :Deduplicar por tipo y fuente; persistir alertas;
+  :Seleccionar tutores elegibles por preferencia;
+  :Crear Notification pendiente y despachar;
+endif
+if (¿Personal revisa alerta?) then (sí)
+  :Autorizar rol, centro y transición OPEN → REVIEWED;
+  :Guardar revisión y auditoría;
+  if (¿Resuelve después?) then (sí)
+    :Autorizar REVIEWED → RESOLVED;
+    :Guardar resolución y auditoría;
+  endif
+endif
+note right
+  El envío individual desde una alerta OPEN es otro
+  disparador y no crea alertas nuevas.
+end note
+stop
+@enduml

@@ -1,0 +1,44 @@
+@startuml
+title Registro de vacunación y lectura del estado derivado
+skinparam backgroundColor #F4F8FA
+actor "Personal autorizado" as U
+boundary "Formulario y carné" as UI
+control "Server Action" as A
+control "Servicio de vacunación" as S
+control "Autorización y evaluador MSPAS" as E
+database "Prisma / PostgreSQL" as DB
+U -> UI : Envía dosis y fecha
+UI -> A : createVaccinationAction(FormData)
+A -> A : requireApplicationUser()
+A -> S : createVaccination(usuario, entrada)
+S -> S : Zod y fecha local no futura
+S -> DB : leer niño
+DB --> S : niño y comunidad
+S -> E : getChild autoriza child:read
+E --> S : acceso al niño / error
+S -> DB : leer dosis/version y duplicado
+DB --> S : hechos persistidos
+S -> E : authorize(vaccination:create, centro)
+E --> S : permitido / denegado
+S -> S : validar niño/dosis activos, versión,\nfecha >= nacimiento y ausencia de duplicado
+alt válido
+  S -> DB : $transaction: INSERT Vaccination + AuditLog
+  DB --> S : aplicación factual confirmada
+  S --> A : éxito
+  A --> UI : revalidar carné y redirigir
+  UI -> S : consultar estados del niño
+  S -> DB : leer versión, dosis e historial
+  DB --> S : datos vigentes e históricos
+  S -> E : evaluar aplicabilidad y estados
+  E --> S : APPLIED / PENDING / OVERDUE aplicables
+  S --> UI : carné actualizado
+else inválido o duplicado
+  S --> A : error seguro; ninguna aplicación creada
+  A --> UI : mostrar error
+end
+note over S,E
+  El registro no modifica el historial anterior,
+  no recalcula estados persistidos y no envía
+  notificaciones en esta acción.
+end note
+@enduml

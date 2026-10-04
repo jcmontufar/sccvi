@@ -1,0 +1,43 @@
+@startuml
+title Cola y entrega de notificación por canal
+skinparam backgroundColor #F4F8FA
+actor "Acción autorizada o job programado" as Trigger
+control "Política de destinatario" as Policy
+control "Servicio de notificaciones" as N
+database "Prisma / PostgreSQL" as DB
+control "Registro de proveedores" as Registry
+participant "Resend / Telegram Bot API" as Provider
+participant "Webhook Resend autenticado" as Hook
+Trigger -> Policy : alerta/campaña y tutor asociado
+Policy -> Policy : centro, preferencia, consentimiento\ny destino EMAIL o TELEGRAM elegible
+alt no elegible
+  Policy --> Trigger : omitir; sin entrega
+else elegible
+  Policy -> N : un canal seleccionado
+  N -> DB : crear/reutilizar Notification PENDING
+  DB --> N : id y estado actual
+  N -> Registry : resolver provider del mismo canal
+  Registry --> N : provider verificado
+  N -> DB : claim atómico PENDING + claimedAt nulo
+  alt claim obtenido
+    N -> Provider : deliver con clave idempotente
+    Provider --> N : éxito/id o fallo
+    N -> DB : actualizar SENT o FAILED
+  else duplicado, ya reclamado o no pendiente
+    N -> DB : leer estado; no reenviar
+  end
+end
+... evento externo posterior solo para EMAIL ...
+Provider -> Hook : POST firmado de Resend
+Hook -> Hook : verificar firma y tipo
+alt firma válida y providerMessageId conocido
+Hook -> DB : delivered → SENT;\nbounced/failed/suppressed → FAILED
+else firma inválida
+  Hook --> Provider : HTTP 401; sin mutación
+end
+note over N,Provider
+  No hay fallback al otro canal ni doble envío.
+  El webhook Telegram implementado vincula/revoca
+  chats; no confirma entrega de Notification.
+end note
+@enduml

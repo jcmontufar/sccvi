@@ -1,0 +1,17 @@
+@startuml
+title Ciclo de vida implementado de Campaign
+skinparam backgroundColor #F4F8FA
+[*] --> DRAFT : createCampaign
+DRAFT --> PROCESSING : sendCampaign / claim atómico
+PROCESSING --> COMPLETED : sin fallos de destinatarios
+PROCESSING --> FAILED : al menos un FAILED o excepción
+note right of DRAFT
+  El enum Prisma declara SCHEDULED,
+  pero no hay transición hacia él en
+  el flujo actual de campaña.
+end note
+note bottom of PROCESSING
+  Cada CampaignRecipient se marca SENT,
+  FAILED o SKIPPED según su entrega.
+end note
+@enduml

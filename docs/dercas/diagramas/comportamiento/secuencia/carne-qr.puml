@@ -1,0 +1,40 @@
+@startuml
+title Generación y consulta protegida del carné QR
+skinparam backgroundColor #F4F8FA
+actor "Personal autorizado" as Staff
+boundary "Interfaz de credenciales" as UI
+control "Action y servicio QR" as QR
+control "Autorización" as Auth
+database "Prisma / PostgreSQL" as DB
+actor "Portador del enlace" as Visitor
+boundary "Página /tarjeta/{token}" as Page
+Staff -> UI : Generar credencial para un niño
+UI -> QR : generateCredentialAction(childId, datos)
+QR -> Auth : sesión, niño y qr:manage en su centro
+Auth --> QR : autorizado / error
+QR -> QR : token aleatorio; hash SHA-256;\nPIN opcional con scrypt
+QR -> DB : transacción: QRToken(hash) + AuditLog
+DB --> QR : credencial creada
+QR --> UI : token opaco solo en respuesta de creación
+... consulta pública posterior, sin sesión ...
+Visitor -> Page : GET /tarjeta/{token}
+Page -> QR : accessDigitalCard(token)
+QR -> DB : buscar hash y bloquear fila en transacción
+DB --> QR : credencial, niño y datos limitados
+QR -> QR : validar vigencia, revocación y niño activo
+alt token inválido, vencido o revocado
+  QR --> Page : error seguro
+else PIN configurado
+  QR --> Page : solicitar PIN
+  Visitor -> Page : enviar PIN
+  Page -> QR : accessDigitalCardAction(token, PIN)
+  QR -> DB : comprobar bloqueo y actualizar intentos
+  alt PIN correcto y no bloqueado
+    QR --> Page : tarjeta limitada; restablecer intentos
+  else PIN incorrecto o bloqueado
+    QR --> Page : acceso denegado sin datos clínicos
+  end
+else sin PIN
+  QR --> Page : tarjeta limitada
+end
+@enduml
