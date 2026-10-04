@@ -96,7 +96,8 @@ La [matriz de trazabilidad](../requisitos/matriz-trazabilidad.md) es la correspo
 | Crecimiento y seguimiento | `RF-009`–`RF-011`, `RN-003`–`RN-005` | `FIG-DERCAS-CU-03`, `FIG-DERCAS-ER-03`, `FIG-DERCAS-ACT-02`, `FIG-DERCAS-SEQ-01` separan dato factual, cálculo y seguimiento. |
 | Vacunación | `RF-012`–`RF-015`, `RN-006`, `RN-007` | `FIG-DERCAS-ER-04`, `FIG-DERCAS-ACT-03`, `FIG-DERCAS-SEQ-02` muestran versión, aplicación y estado derivado por cohorte. |
 | Alertas y entrega | `RF-016`–`RF-019`, `RN-008`–`RN-010` | `FIG-DERCAS-ACT-04`, `FIG-DERCAS-SEQ-04` y `FIG-DERCAS-EST-01`–`FIG-DERCAS-EST-03` distinguen generación, proveedor y ciclos persistidos. |
-| QR y lectura autorizada | `RF-020`, `RF-023`, `RNF-011`, `RN-011`, `RN-012` | `FIG-DERCAS-CU-07`, `FIG-DERCAS-ER-06`, `FIG-DERCAS-SEQ-03` y `FIG-DERCAS-CU-06` separan acceso público limitado y consulta/exportación autorizada. |
+| Carné QR protegido | `RF-020`, `RNF-011`, `RN-011` | `FIG-DERCAS-CU-07`, `FIG-DERCAS-ER-06` y `FIG-DERCAS-SEQ-03` separan credencial, consulta pública limitada y controles de acceso. |
+| Reportes y cobertura vacunal | `RF-023`, `RN-012` | `FIG-DERCAS-CU-06` y `FIG-DERCAS-ER-04` relacionan la consulta/exportación autorizada con dosis y aplicaciones factuales; la fórmula de cobertura se verifica en el servicio, no en el ER. |
 
 La relación entre figuras y requisitos orienta una revisión, pero la prueba de cumplimiento sigue en los criterios y servicios. Por ejemplo, una cardinalidad en **FIG-DERCAS-ER-02** no demuestra por sí sola la comprobación de IDOR exigida por `RNF-001`; una flecha de proveedor en **FIG-DERCAS-ARQ-01** tampoco prueba entrega real. Esta distinción conserva el método del [capítulo III](03-analisis-requisitos.md).
 
