@@ -1,0 +1,48 @@
+@startuml
+title SCCVI — casos de uso principales
+left to right direction
+skinparam backgroundColor #F4F8FA
+skinparam shadowing false
+skinparam actorBorderColor #07556D
+skinparam usecaseBorderColor #07556D
+skinparam usecaseBackgroundColor #EAF4F6
+skinparam ArrowColor #07556D
+
+actor "Administrador\n(ADMIN)" as admin
+actor "Personal de salud\n(HEALTH_STAFF)" as staff
+actor "Responsable de centro\n(CENTER_MANAGER)" as manager
+actor "Tutor con cuenta\n(GUARDIAN)" as guardian
+
+rectangle "SCCVI" {
+  usecase "Consultar información\ninfantil autorizada" as read_child
+  usecase "Gestionar niños, tutores\ny controles" as records
+  usecase "Gestionar alertas\ny notificaciones" as alerts
+  usecase "Gestionar centro,\ncomunidades y campañas" as organization
+  usecase "Administrar catálogo\nde vacunas" as catalog
+  usecase "Consultar reportes\ny analítica" as reports
+  usecase "Gestionar credenciales QR" as qr
+}
+
+admin --> read_child
+staff --> read_child
+manager --> read_child
+guardian --> read_child
+admin --> records
+staff --> records
+admin --> alerts
+staff --> alerts
+manager --> alerts
+admin --> organization
+manager --> organization
+admin --> catalog
+admin --> reports
+staff --> reports
+manager --> reports
+admin --> qr
+staff --> qr
+
+note bottom of read_child
+  El tutor solo consulta niños vinculados;
+  el personal no administrador, su centro.
+end note
+@enduml

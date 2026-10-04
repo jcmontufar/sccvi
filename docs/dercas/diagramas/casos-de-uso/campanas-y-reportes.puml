@@ -1,0 +1,44 @@
+@startuml
+title SCCVI — campañas, reportes y analítica
+left to right direction
+skinparam backgroundColor #F4F8FA
+skinparam shadowing false
+skinparam actorBorderColor #07556D
+skinparam usecaseBorderColor #07556D
+skinparam usecaseBackgroundColor #EAF4F6
+skinparam ArrowColor #07556D
+
+actor "Administrador\n(ADMIN)" as admin
+actor "Personal de salud\n(HEALTH_STAFF)" as staff
+actor "Responsable de centro\n(CENTER_MANAGER)" as manager
+
+rectangle "SCCVI · operación y análisis" {
+  usecase "Crear campaña segmentada" as create
+  usecase "Consultar campaña\ny destinatarios" as campaign_read
+  usecase "Enviar campaña" as send
+  usecase "Consultar reportes" as report
+  usecase "Exportar reporte\na PDF o Excel" as export
+  usecase "Consultar analítica\noperativa" as analytics
+}
+
+admin --> create
+manager --> create
+admin --> campaign_read
+manager --> campaign_read
+admin --> send
+manager --> send
+admin --> report
+staff --> report
+manager --> report
+admin --> export
+staff --> export
+manager --> export
+admin --> analytics
+staff --> analytics
+manager --> analytics
+
+note bottom of create
+  La segmentación y el alcance por centro se validan
+  antes de materializar los destinatarios.
+end note
+@enduml
