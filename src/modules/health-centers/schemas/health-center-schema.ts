@@ -24,3 +24,5 @@ export const updateHealthCenterSchema = z.object({
 });
 
 export type UpdateHealthCenterInput = z.infer<typeof updateHealthCenterSchema>;
+
+export const createHealthCenterSchema = updateHealthCenterSchema;

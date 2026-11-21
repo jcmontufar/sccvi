@@ -12,12 +12,12 @@ export default async function HealthCenterPage({
   searchParams,
 }: {
   params: Promise<{ id: string }>;
-  searchParams: Promise<{ actualizado?: string }>;
+  searchParams: Promise<{ actualizado?: string; creado?: string }>;
 }) {
   const user = await requireApplicationUser();
   const { id } = await params;
   const healthCenter = await getHealthCenter(user, id).catch(() => notFound());
-  const { actualizado } = await searchParams;
+  const { actualizado, creado } = await searchParams;
   const editable = can(user, "health-center:update", { healthCenterId: id });
 
   return (
@@ -30,9 +30,11 @@ export default async function HealthCenterPage({
         <p className="text-sm font-medium text-primary">Centro de salud</p>
         <h1 className="text-3xl font-semibold">{healthCenter.name}</h1>
       </header>
-      {actualizado ? (
+      {actualizado || creado ? (
         <p className="rounded-lg bg-primary/10 p-3 text-sm">
-          La información se actualizó correctamente.
+          {creado
+            ? "El centro de salud se creó correctamente."
+            : "La información se actualizó correctamente."}
         </p>
       ) : null}
       {editable ? (

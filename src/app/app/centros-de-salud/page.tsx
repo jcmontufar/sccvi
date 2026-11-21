@@ -1,6 +1,7 @@
 import Link from "next/link";
 
 import { Button } from "@/components/ui/button";
+import { can } from "@/modules/auth/authorization";
 import { requireApplicationUser } from "@/modules/auth/session";
 import { listHealthCenters } from "@/modules/health-centers/services/health-center-service";
 
@@ -15,6 +16,14 @@ export default async function HealthCentersPage() {
         <p className="mt-2 text-muted-foreground">
           Consulta la información organizacional autorizada.
         </p>
+        {can(user, "health-center:create") ? (
+          <Button
+            className="mt-4"
+            render={<Link href="/app/centros-de-salud/nuevo" />}
+          >
+            Crear centro de salud
+          </Button>
+        ) : null}
       </header>
       {healthCenters.length ? (
         <div className="grid gap-4 md:grid-cols-2">

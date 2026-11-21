@@ -757,6 +757,13 @@ Codex must report the missing dependency rather than inventing clinical data.
 
 ## BR-064 — Health Center Scalability
 
+Only an active ADMIN may create a health center. Creation validates the same
+organizational fields as editing. A nonempty code must be unique according to
+the existing PostgreSQL constraint; blank optional fields are stored as null.
+The center starts active. Creation and `HEALTH_CENTER_CREATED` audit persistence
+are atomic, and the audit contains actor/entity identifiers without contact data.
+Creation grants no automatic center assignment to existing users.
+
 The initial SCCVI deployment may use a single health center.
 
 The data model should preserve the ability to support multiple health centers without requiring a complete architectural redesign.

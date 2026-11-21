@@ -1,5 +1,7 @@
 import "server-only";
 
+import { Prisma } from "@/generated/prisma/client";
+
 import { ApplicationError } from "@/lib/errors/application-error";
 import { getPrisma } from "@/lib/prisma";
 import { activeStateSchema } from "@/lib/validation/common-schema";
@@ -7,6 +9,7 @@ import { authorize } from "@/modules/auth/authorization";
 import type { ApplicationUser } from "@/modules/auth/types";
 import { recordAuditEvent } from "@/modules/audit/services/audit-service";
 import {
+  createHealthCenterSchema,
   healthCenterIdSchema,
   updateHealthCenterSchema,
 } from "@/modules/health-centers/schemas/health-center-schema";
@@ -21,6 +24,37 @@ const healthCenterSelect = {
   isActive: true,
   updatedAt: true,
 } as const;
+
+export async function createHealthCenter(
+  user: ApplicationUser,
+  input: unknown,
+) {
+  authorize(user, "health-center:create");
+  const data = createHealthCenterSchema.parse(input);
+  try {
+    return await getPrisma().$transaction(async (transaction) => {
+      const healthCenter = await transaction.healthCenter.create({
+        data,
+        select: healthCenterSelect,
+      });
+      await recordAuditEvent(transaction, {
+        userId: user.id,
+        action: "HEALTH_CENTER_CREATED",
+        entityType: "HealthCenter",
+        entityId: healthCenter.id,
+      });
+      return healthCenter;
+    });
+  } catch (error) {
+    if (
+      error instanceof Prisma.PrismaClientKnownRequestError &&
+      error.code === "P2002"
+    ) {
+      throw new ApplicationError("HEALTH_CENTER_DUPLICATE");
+    }
+    throw error;
+  }
+}
 
 export async function listHealthCenters(user: ApplicationUser) {
   authorize(user, "health-center:list");

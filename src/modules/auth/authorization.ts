@@ -9,6 +9,7 @@ export type AuthorizedAction =
   | "user:change-status"
   | "health-center:list"
   | "health-center:read"
+  | "health-center:create"
   | "health-center:update"
   | "health-center:change-status"
   | "community:list"
@@ -63,6 +64,7 @@ const allowedRoles: Record<AuthorizedAction, readonly ApplicationRole[]> = {
   "user:change-status": ["ADMIN"],
   "health-center:list": ["ADMIN", "HEALTH_STAFF", "CENTER_MANAGER"],
   "health-center:read": ["ADMIN", "HEALTH_STAFF", "CENTER_MANAGER"],
+  "health-center:create": ["ADMIN"],
   "health-center:update": ["ADMIN", "CENTER_MANAGER"],
   "health-center:change-status": ["ADMIN"],
   "community:list": ["ADMIN", "HEALTH_STAFF", "CENTER_MANAGER"],
