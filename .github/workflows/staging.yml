@@ -142,7 +142,7 @@ jobs:
         run: npm run staging:bootstrap:${{ inputs.bootstrap_action }}
       - name: Pull staging-project runtime configuration
         run: npx --yes vercel@59.10.0 pull --yes --environment=production --token="$VERCEL_TOKEN"
-      - name: Reject administrative secrets in Vercel runtime
+      - name: Verify isolated staging runtime secrets
         shell: bash
         run: |
           runtime_file=.vercel/.env.production.local
@@ -161,8 +161,12 @@ jobs:
             echo "Deployment blocked: Vercel project is not the isolated staging project."
             exit 1
           fi
-          if grep -Eq '^(DIRECT_URL|SUPABASE_SERVICE_ROLE_KEY|SUPABASE_SECRET_KEY|TEST_DATABASE_URL|STAGING_SMOKE_USER_PASSWORD|VERCEL_TOKEN)=' "$runtime_file"; then
-            echo "Deployment blocked: administrative or smoke secret is configured in Vercel runtime."
+          if grep -Eq '^(DIRECT_URL|SUPABASE_SECRET_KEY|TEST_DATABASE_URL|STAGING_SMOKE_USER_PASSWORD|VERCEL_TOKEN)=' "$runtime_file"; then
+            echo "Deployment blocked: an unrelated administrative or smoke secret is configured in Vercel runtime."
+            exit 1
+          fi
+          if ! grep -Eq '^SUPABASE_SERVICE_ROLE_KEY=' "$runtime_file"; then
+            echo "Deployment blocked: server-only user provisioning is not configured."
             exit 1
           fi
           if grep -Eq '^SCCVI_DEPLOYMENT_ENV="?STAGING"?$' "$runtime_file"; then

@@ -4,6 +4,8 @@ import type { Prisma } from "@/generated/prisma/client";
 
 export type AuditAction =
   | "USER_CREATED"
+  | "USER_UPDATED"
+  | "USER_STATUS_CHANGED"
   | "CHILD_CREATED"
   | "CHILD_UPDATED"
   | "CHILD_STATUS_CHANGED"

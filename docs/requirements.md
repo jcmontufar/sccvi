@@ -107,6 +107,16 @@ Initial roles:
 - CENTER_MANAGER
 - GUARDIAN
 
+RF-003 is implemented as an ADMIN-only user-management workflow. Administrators
+invite a new identity through Supabase Auth, then SCCVI stores its application
+profile and a sanitized audit event. Existing users can be consulted, assigned
+an approved role and center, updated in their permitted profile fields, and
+activated or deactivated. An invited GUARDIAN must be linked explicitly to an
+existing, verified guardian record. Self-registration and physical deletion of
+historical user profiles are not part of this workflow. The Auth email address
+is not edited here because an uncoordinated change would desynchronize the two
+identity stores.
+
 ---
 
 ## 5. Health Centers

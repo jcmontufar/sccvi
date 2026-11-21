@@ -24,3 +24,13 @@ Los directorios vacíos contienen `.gitkeep`. La documentación UML anterior per
 4. No incorporar credenciales, datos reales de pacientes, capturas privadas ni valores de variables de entorno a `evidencias/`.
 
 Fuentes normativas y de diseño: `AGENTS.md`, `docs/requirements.md`, `docs/business-rules.md`, `docs/architecture.md`, `docs/database.md`, `docs/backlog.md`, `docs/api/openapi.yaml`.
+
+## Actualización posterior al documento compilado
+
+El documento Word/PDF de `entrega/` y los capítulos I–IX conservan la fotografía
+documental con la que se redactaron. La implementación posterior de RF-003
+introdujo administración de usuarios en `src/modules/users/` y
+`src/app/app/usuarios/`; por tanto, las afirmaciones antiguas que lo describen
+como pendiente no deben citarse como estado vigente. Antes de presentar una
+revisión académica definitiva se deben reconciliar catálogo, matriz,
+diagramas, capítulos y exportaciones con el código actual.

@@ -23,6 +23,23 @@ function user(
 }
 
 describe("authorization", () => {
+  it("reserves user administration for active administrators", () => {
+    for (const action of [
+      "user:list",
+      "user:read",
+      "user:create",
+      "user:update",
+      "user:change-status",
+    ] as const) {
+      expect(can(user("ADMIN", null), action)).toBe(true);
+      expect(can(user("HEALTH_STAFF"), action)).toBe(false);
+      expect(can(user("CENTER_MANAGER"), action)).toBe(false);
+      expect(can(user("GUARDIAN"), action)).toBe(false);
+      expect(can({ ...user("ADMIN", null), isActive: false }, action)).toBe(
+        false,
+      );
+    }
+  });
   it("allows an administrator to manage any center", () => {
     expect(
       can(user("ADMIN", null), "community:update", { healthCenterId: centerB }),

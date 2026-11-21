@@ -952,8 +952,11 @@ without a clear purpose.
 Staging preserves the modular monolith: one dedicated Vercel project runs the
 Next.js application and one dedicated Supabase project provides PostgreSQL and
 Auth. Runtime Prisma uses the pooled `DATABASE_URL`; protected deployment tooling
-alone receives `DIRECT_URL`. No service-role credential is required by normal
-application runtime.
+alone receives `DIRECT_URL`. RF-003 user administration is an explicit exception:
+the server runtime needs `SUPABASE_SERVICE_ROLE_KEY` solely for ADMIN-authorized
+Auth invitations. The key must remain server-only and never reach the browser;
+the staging workflow rejects other administrative secrets and fails closed if
+this required key is missing.
 
 The deployment path is GitHub manual dispatch for a commit already on `main`,
 quality checks, isolated tests, protected staging approval, identity-guarded
