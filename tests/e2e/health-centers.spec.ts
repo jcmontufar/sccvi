@@ -48,7 +48,9 @@ test("administración: crear centro y rechazar código duplicado", async ({
   await page
     .getByRole("button", { name: "Crear centro de salud", exact: true })
     .click();
-  await expect(page.getByRole("alert")).toHaveText(
-    "Ya existe un centro de salud con ese código.",
-  );
+  await expect(
+    page
+      .getByRole("alert")
+      .filter({ hasText: "Ya existe un centro de salud con ese código." }),
+  ).toHaveText("Ya existe un centro de salud con ese código.");
 });
