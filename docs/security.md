@@ -55,8 +55,21 @@ or architecture decision.
 
 Staging administrative tooling also verifies the persisted STAGING marker and
 rejects known development, isolated-test and production markers before every
-write. `DIRECT_URL`, service-role credentials, bootstrap values and smoke
-credentials are forbidden in Vercel runtime configuration.
+write. `DIRECT_URL`, bootstrap values and smoke credentials remain forbidden
+in Vercel runtime configuration. RF-003 permits one explicit exception:
+`SUPABASE_SERVICE_ROLE_KEY` is available only to the server for ADMIN-authorized
+Supabase Auth invitations. It is never exposed to browser code, audit metadata
+or logs. Vercel project settings and GitHub deployment permissions must be
+restricted accordingly.
+
+The ADMIN user-management actions validate role, center and guardian linkage
+server-side. The account invitation is issued before the profile transaction;
+if profile or audit persistence fails, SCCVI attempts to remove only the new
+Supabase identity and reports a safe manual-reconciliation error if that
+compensation fails. Role and activation changes are audited transactionally.
+Self-demotion and self-deactivation are denied, and the last active ADMIN may
+not be demoted or deactivated. Deactivation blocks SCCVI access without
+physically deleting either the user profile or historical records.
 
 ## Guardian and Child Resource Access
 

@@ -2,6 +2,11 @@ import { ApplicationError } from "@/lib/errors/application-error";
 import type { ApplicationRole, ApplicationUser } from "@/modules/auth/types";
 
 export type AuthorizedAction =
+  | "user:list"
+  | "user:read"
+  | "user:create"
+  | "user:update"
+  | "user:change-status"
   | "health-center:list"
   | "health-center:read"
   | "health-center:update"
@@ -51,6 +56,11 @@ export type AuthorizationResource = {
 };
 
 const allowedRoles: Record<AuthorizedAction, readonly ApplicationRole[]> = {
+  "user:list": ["ADMIN"],
+  "user:read": ["ADMIN"],
+  "user:create": ["ADMIN"],
+  "user:update": ["ADMIN"],
+  "user:change-status": ["ADMIN"],
   "health-center:list": ["ADMIN", "HEALTH_STAFF", "CENTER_MANAGER"],
   "health-center:read": ["ADMIN", "HEALTH_STAFF", "CENTER_MANAGER"],
   "health-center:update": ["ADMIN", "CENTER_MANAGER"],

@@ -17,10 +17,11 @@ test or production marker blocks the operation.
 ## Secret scopes
 
 Vercel runtime contains only `APP_URL`, `DATABASE_URL`, the public Supabase URL
-and anonymous key, `SCCVI_DEPLOYMENT_ENV=STAGING`, `STAGING_DATABASE_ID`, and the
+and anonymous key, the server-only `SUPABASE_SERVICE_ROLE_KEY` needed for
+ADMIN-initiated account invitations, `SCCVI_DEPLOYMENT_ENV=STAGING`, `STAGING_DATABASE_ID`, and the
 complete Resend configuration (including its webhook secret) when email is
 enabled, and the complete Telegram bot configuration when Telegram is enabled.
-`DIRECT_URL`, service-role keys,
+`DIRECT_URL`, other administrative keys,
 Vercel credentials, bootstrap values and smoke credentials must not be Vercel
 runtime variables.
 
@@ -146,9 +147,18 @@ operation is manual and is not part of `Deploy isolated staging`.
 
 ## Deployment and smoke
 
-The workflow pulls only the dedicated staging Vercel project. It rejects
-`DIRECT_URL`, a Supabase service-role key, smoke password or Vercel token if found
-in downloaded Vercel runtime configuration. It builds and deploys an immutable
+The workflow pulls only the dedicated staging Vercel project. It requires
+`SUPABASE_SERVICE_ROLE_KEY` for server-only account invitations and rejects
+`DIRECT_URL`, other administrative credentials, smoke passwords and Vercel tokens
+in downloaded Vercel runtime configuration. Configure the key only as a Vercel
+server-side secret in the isolated staging project; never use a public-prefixed
+variable. Restrict access to staging project settings and rotate the key after
+suspected exposure. Supabase Auth must allow the exact `APP_URL` redirect
+`/aceptar-invitacion` for invited users. The invitation email template must
+retain the provider-generated confirmation link; this release has no custom
+server-side token endpoint. Supabase Auth invitation email delivery is configured
+separately from SCCVI's Resend notification provider and must be verified with a
+fictional account before operational use. The workflow builds and deploys an immutable
 candidate using `--prod --skip-domain`, leaving the stable hostname on the prior
 working deployment.
 

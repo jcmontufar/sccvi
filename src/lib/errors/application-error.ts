@@ -6,6 +6,13 @@ export type ApplicationErrorCode =
   | "VALIDATION_ERROR"
   | "PROFILE_INACTIVE"
   | "PROFILE_NOT_FOUND"
+  | "USER_NOT_FOUND"
+  | "USER_DUPLICATE"
+  | "USER_PROVISIONING_UNAVAILABLE"
+  | "USER_PROVISIONING_FAILED"
+  | "USER_PROVISIONING_RECOVERY_REQUIRED"
+  | "SELF_USER_CHANGE_FORBIDDEN"
+  | "LAST_ADMIN_REQUIRED"
   | "HEALTH_CENTER_NOT_FOUND"
   | "COMMUNITY_NOT_FOUND"
   | "COMMUNITY_DUPLICATE"
@@ -34,6 +41,18 @@ const publicMessages: Record<ApplicationErrorCode, string> = {
   VALIDATION_ERROR: "Revisa la información ingresada.",
   PROFILE_INACTIVE: "Tu cuenta de SCCVI está inactiva.",
   PROFILE_NOT_FOUND: "Tu cuenta no tiene un perfil activo en SCCVI.",
+  USER_NOT_FOUND: "No se encontró el usuario solicitado.",
+  USER_DUPLICATE: "Ya existe una cuenta con ese correo electrónico.",
+  USER_PROVISIONING_UNAVAILABLE:
+    "El alta de usuarios no está disponible en este entorno.",
+  USER_PROVISIONING_FAILED:
+    "No fue posible enviar la invitación. Inténtalo de nuevo.",
+  USER_PROVISIONING_RECOVERY_REQUIRED:
+    "El alta quedó incompleta. Solicita a la administración revisar Supabase Auth antes de reintentar.",
+  SELF_USER_CHANGE_FORBIDDEN:
+    "No puedes cambiar tu propio rol, centro o estado.",
+  LAST_ADMIN_REQUIRED:
+    "Debe permanecer al menos una cuenta administradora activa.",
   HEALTH_CENTER_NOT_FOUND: "No se encontró el centro de salud.",
   COMMUNITY_NOT_FOUND: "No se encontró la comunidad.",
   COMMUNITY_DUPLICATE:

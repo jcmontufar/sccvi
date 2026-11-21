@@ -46,6 +46,13 @@ A guardian may exist only as a contact and responsible person.
 
 When a guardian has application access, the guardian may be associated with an application User.
 
+An ADMIN may invite a GUARDIAN account only after selecting an existing active
+guardian record and verifying the intended identity and child relationship.
+The application derives the account's health center from that guardian's
+community; a browser-supplied center cannot override it. An inactive User is
+denied access even if its Supabase Auth identity still exists. User profiles
+are deactivated rather than physically removed to preserve history and audit.
+
 ---
 
 ## BR-006 — Guardian Access
