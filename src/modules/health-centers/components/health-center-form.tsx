@@ -5,11 +5,12 @@ import { useActionState } from "react";
 import { Button } from "@/components/ui/button";
 import {
   type HealthCenterFormState,
+  createHealthCenterAction,
   updateHealthCenterAction,
 } from "@/modules/health-centers/actions/health-center-actions";
 
 type HealthCenterFormProps = {
-  healthCenter: {
+  healthCenter?: {
     id: string;
     name: string;
     code: string | null;
@@ -22,14 +23,16 @@ type HealthCenterFormProps = {
 const initialState: HealthCenterFormState = {};
 
 export function HealthCenterForm({ healthCenter }: HealthCenterFormProps) {
-  const action = updateHealthCenterAction.bind(null, healthCenter.id);
+  const action = healthCenter
+    ? updateHealthCenterAction.bind(null, healthCenter.id)
+    : createHealthCenterAction;
   const [state, formAction, pending] = useActionState(action, initialState);
   const fields = [
-    ["name", "Nombre", healthCenter.name, true, "text"],
-    ["code", "Código", healthCenter.code, false, "text"],
-    ["address", "Dirección", healthCenter.address, false, "text"],
-    ["phone", "Teléfono", healthCenter.phone, false, "tel"],
-    ["email", "Correo electrónico", healthCenter.email, false, "email"],
+    ["name", "Nombre", healthCenter?.name, true, "text"],
+    ["code", "Código", healthCenter?.code, false, "text"],
+    ["address", "Dirección", healthCenter?.address, false, "text"],
+    ["phone", "Teléfono", healthCenter?.phone, false, "tel"],
+    ["email", "Correo electrónico", healthCenter?.email, false, "email"],
   ] as const;
 
   return (
@@ -60,7 +63,11 @@ export function HealthCenterForm({ healthCenter }: HealthCenterFormProps) {
         </p>
       ) : null}
       <Button disabled={pending} type="submit">
-        {pending ? "Guardando…" : "Guardar cambios"}
+        {pending
+          ? "Guardando…"
+          : healthCenter
+            ? "Guardar cambios"
+            : "Crear centro de salud"}
       </Button>
     </form>
   );

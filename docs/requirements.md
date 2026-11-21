@@ -130,6 +130,12 @@ A health center may contain:
 
 The initial implementation may operate with one center while preserving the ability to expand later.
 
+ADMIN may create additional health centers from Centros de salud. The server
+validates the name and optional code/contact fields, preserves the existing
+unique-code constraint, and creates an active center together with a sanitized
+`HEALTH_CENTER_CREATED` audit event in one transaction. Other roles cannot create
+centers. A new center does not automatically receive users or communities.
+
 ---
 
 ## 6. Communities

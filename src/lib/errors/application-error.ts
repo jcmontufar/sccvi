@@ -14,6 +14,7 @@ export type ApplicationErrorCode =
   | "SELF_USER_CHANGE_FORBIDDEN"
   | "LAST_ADMIN_REQUIRED"
   | "HEALTH_CENTER_NOT_FOUND"
+  | "HEALTH_CENTER_DUPLICATE"
   | "COMMUNITY_NOT_FOUND"
   | "COMMUNITY_DUPLICATE"
   | "GUARDIAN_NOT_FOUND"
@@ -54,6 +55,7 @@ const publicMessages: Record<ApplicationErrorCode, string> = {
   LAST_ADMIN_REQUIRED:
     "Debe permanecer al menos una cuenta administradora activa.",
   HEALTH_CENTER_NOT_FOUND: "No se encontró el centro de salud.",
+  HEALTH_CENTER_DUPLICATE: "Ya existe un centro de salud con ese código.",
   COMMUNITY_NOT_FOUND: "No se encontró la comunidad.",
   COMMUNITY_DUPLICATE:
     "Ya existe una comunidad con ese nombre en el centro de salud.",

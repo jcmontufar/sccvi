@@ -77,6 +77,27 @@ async function withVerifiedCleanup(
   }
 }
 
+export async function cleanupHealthCenterFixture(code: string) {
+  if (!code.startsWith("E2E-CENTER-")) {
+    throw new Error("Health-center cleanup requires a dedicated fixture code.");
+  }
+  await withVerifiedCleanup(async (client) => {
+    const centers = await client.query<{ id: string }>(
+      'SELECT "id" FROM "HealthCenter" WHERE "code" = $1',
+      [code],
+    );
+    const ids = centers.rows.map(({ id }) => id);
+    await client.query(
+      'DELETE FROM "AuditLog" WHERE "entityType" = \'HealthCenter\' AND "entityId" = ANY($1::text[])',
+      [ids],
+    );
+    await client.query(
+      'DELETE FROM "HealthCenter" WHERE "id" = ANY($1::uuid[])',
+      [ids],
+    );
+  });
+}
+
 export async function cleanupGrowthFixture(fixture: {
   childId: string;
   notes: string;

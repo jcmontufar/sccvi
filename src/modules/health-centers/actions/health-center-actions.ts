@@ -7,11 +7,39 @@ import { ZodError } from "zod";
 import { getSafeErrorMessage } from "@/lib/errors/application-error";
 import { requireApplicationUser } from "@/modules/auth/session";
 import {
+  createHealthCenter,
   setHealthCenterActive,
   updateHealthCenter,
 } from "@/modules/health-centers/services/health-center-service";
 
 export type HealthCenterFormState = { error?: string };
+
+export async function createHealthCenterAction(
+  _state: HealthCenterFormState,
+  formData: FormData,
+): Promise<HealthCenterFormState> {
+  let id: string;
+  try {
+    const user = await requireApplicationUser();
+    const center = await createHealthCenter(user, {
+      name: formData.get("name"),
+      code: formData.get("code"),
+      address: formData.get("address"),
+      phone: formData.get("phone"),
+      email: formData.get("email"),
+    });
+    id = center.id;
+  } catch (error) {
+    return {
+      error:
+        error instanceof ZodError
+          ? error.issues[0]?.message
+          : getSafeErrorMessage(error),
+    };
+  }
+  revalidatePath("/app/centros-de-salud");
+  redirect(`/app/centros-de-salud/${id}?creado=1`);
+}
 
 export async function updateHealthCenterAction(
   id: string,

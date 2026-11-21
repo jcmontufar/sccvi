@@ -445,6 +445,11 @@ Requirements:
 - Update authorized fields
 - Support active state where appropriate
 
+Additional owner-approved scope (IN_REVIEW): ADMIN-only center creation with
+server validation, unique-code handling, transactional sanitized audit and a
+Spanish creation form. Existing editing and center isolation remain unchanged;
+no schema migration is required.
+
 Acceptance Criteria:
 
 - Unauthorized users cannot modify health center
